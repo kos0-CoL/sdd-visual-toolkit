@@ -102,7 +102,7 @@ El run manual reporta los mismos nombres de check sobre el mismo commit, así
 que satisface el ruleset. Antes de fusionar, `mergeStateStatus` debe ser
 `CLEAN`: los cinco checks verdes de un run no bastan si hay otro en curso.
 Lanzarlo cuando ya había un run duplica los jobs (le pasó al PR #25, que
-creó el suyo en 8 s: ambos terminaron en verde y el merge siguió `CLEAN`,
+creó el suyo en 11 s: ambos terminaron en verde y el merge siguió `CLEAN`,
 pero se ejecutó el doble de trabajo sin necesidad).
 
 ## Riesgo asumido
