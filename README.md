@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-269%20passed-green)
+![Tests](https://img.shields.io/badge/tests-284%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 

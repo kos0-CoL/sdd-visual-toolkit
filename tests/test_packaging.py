@@ -32,12 +32,16 @@ def _find() -> dict:
 
 
 def _paquetes_reales() -> set[str]:
-    """Carpetas de la raíz con módulos Python, excluyendo la suite y los docs."""
+    """Carpetas de la raíz con módulos Python, excluyendo lo que no se instala.
+
+    `tests`, `docs`, `ide` y `scripts` son suite, documentación y herramientas
+    de mantenimiento: se ejecutan desde el árbol, no forman parte del paquete.
+    """
     encontrados = set()
     for carpeta in sorted(RAIZ.iterdir()):
         if not carpeta.is_dir() or carpeta.name.startswith("."):
             continue
-        if carpeta.name in {"tests", "docs", "ide"}:
+        if carpeta.name in {"tests", "docs", "ide", "scripts"}:
             continue
         if any(carpeta.rglob("*.py")):
             encontrados.add(carpeta.name)

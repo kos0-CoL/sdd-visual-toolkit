@@ -9,9 +9,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 ### Añadido
 
 - `docs/RELEASES.md` incluye el paso posterior a publicar: comprobar que el
-tag anotado existe en el remoto y apunta al commit con la versión, que la
-release no quedó en borrador y que los enlaces de las notas resuelven en la
-ref del tag.
+  tag anotado existe en el remoto y apunta al commit con la versión, que la
+  release no quedó en borrador y que los enlaces de las notas resuelven en
+  la ref del tag.
+- `scripts/verificar_release.py` hace esas comprobaciones en un solo
+  comando: tag anotado local y remoto, versión en `pyproject.toml` y
+  CHANGELOG dentro del tag, release publicada y enlaces de las notas
+  resueltos en la ref del tag. Sin dependencias: solo usa `git` y `gh`.
 
 ## [0.1.2] — 2026-11-10
 
