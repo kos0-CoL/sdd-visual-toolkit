@@ -68,3 +68,4 @@ este repositorio (ver `LICENSE`).
 - Cambios: `CHANGELOG.md`
 - Releases: `docs/RELEASES.md`
 - Seguridad: `SECURITY.md`
+- Conducta: `CODE_OF_CONDUCT.md`

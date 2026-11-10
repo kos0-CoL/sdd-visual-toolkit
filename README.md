@@ -220,6 +220,7 @@ docs/       SPEC-v0.1.md (fuente de las RF)
 ## Contribuir
 
 - Guía: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- Código de conducta: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 - Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md).
 - Proceso de release: [`docs/RELEASES.md`](docs/RELEASES.md).
 - Integración continua: `.github/workflows/ci.yml` (Python 3.11–3.14).
