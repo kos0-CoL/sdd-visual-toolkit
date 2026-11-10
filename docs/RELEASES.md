@@ -42,28 +42,28 @@ verde y los artefactos corresponden al tag.
 
 ## Verificar tras publicar
 
-Crear el tag no termina la release. Compruebe que es el tag anotado que
-apunta al commit con la versión y que la release quedó pública:
+Crear el tag no termina la release. El script del repo lo comprueba todo de
+una vez, sin instalar nada y sin modificar nada:
 
 ```bash
-git describe --tags                       # vX.Y.Z
-git ls-remote --tags origin | grep vX.Y.Z  # el tag existe en el remoto
-gh release view vX.Y.Z --json tagName,isDraft,isPrerelease
+python3 scripts/verificar_release.py          # versión de pyproject.toml
+python3 scripts/verificar_release.py 0.1.2    # o una versión concreta
 ```
 
-`isDraft` e `isPrerelease` deben ser `false`. Si la release quedó como
-borrador, publíquela con `gh release edit vX.Y.Z --draft=false`.
+Revisa, para `vX.Y.Z`:
 
-Compruebe también que los enlaces de las notas apuntan a la ref del tag y
-no a `main`, que sigue avanzando:
+1. que el tag existe en local y en `origin`, que es anotado y que ambos
+   apuntan al mismo objeto;
+2. que ese tag contiene la versión en `pyproject.toml` y como primera
+   entrada con fecha del CHANGELOG;
+3. que la release no quedó en borrador ni marcada como previa;
+4. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
+   apunta al tag —no a `main`, que sigue avanzando— y que la ruta existe en
+   esa ref.
 
-```bash
-for f in CHANGELOG.md CONTRIBUTING.md SECURITY.md docs/release-notes-vX.Y.Z.md; do
-  gh api "repos/kos0-CoL/sdd-visual-toolkit/contents/$f?ref=vX.Y.Z" --jq .path
-done
-```
-
-Un `404` es un enlace roto: corrija las notas y actualícelas con
+Sale con 0 si todo pasa y con 1 listando los fallos. Si la release quedó
+como borrador, publíquela con `gh release edit vX.Y.Z --draft=false`. Un
+`404` en un enlace es un enlace roto: corrija las notas y actualícelas con
 `gh release edit vX.Y.Z --notes-file docs/release-notes-vX.Y.Z.md`. El tag
 no se toca, porque los tags `v*` son inmutables.
 
