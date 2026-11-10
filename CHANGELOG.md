@@ -6,6 +6,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Corregido
+
+- Las notas de 0.1.0 enlazaban en relativo y la página de la release los
+  resolvía contra la raíz del repo: los cuatro daban 404. Ahora apuntan a
+  `blob/v0.1.0`, y el verificador compara esa versión con las notas del árbol
+  porque su tag es inmutable.
+
 ## [0.1.4] — 2026-11-10
 
 Versión de mantenimiento: sin cambios en la CLI, en el motor ni en el

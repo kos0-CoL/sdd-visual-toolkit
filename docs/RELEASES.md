@@ -101,6 +101,13 @@ Revisa, para `vX.Y.Z`:
    apunta al tag —no a `main`, que sigue avanzando— y que la ruta existe en
    esa ref.
 
+`v0.1.0` es la excepción documentada: sus notas enlazaban en relativo, GitHub
+las resolvía contra la raíz del repo y las cuatro daban 404, y su tag no se
+puede corregir. Para esa versión el script compara el cuerpo con
+`docs/release-notes-v0.1.0.md` del árbol, ya arreglado, en lugar de con la
+copia del tag (`NOTAS_DEL_ARBOL` en `scripts/verificar_release.py`). Las
+notas se escriben con enlaces absolutos desde 0.1.1 justamente por esto.
+
 Sale con 0 si todo pasa y con 1 listando los fallos. Si la release quedó
 como borrador, publíquela con `gh release edit vX.Y.Z --draft=false`. Si el
 cuerpo no coincide, actualícelo con `gh release edit vX.Y.Z --notes-file

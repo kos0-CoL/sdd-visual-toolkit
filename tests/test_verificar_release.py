@@ -147,6 +147,22 @@ class TestVerificarRelease(unittest.TestCase):
                     "body": _notas() + "\n"}))})
         self.assertEqual([m for ok, m in resultados if not ok], [])
 
+    def test_tag_legado_se_compara_con_las_notas_del_arbol(self):
+        """0.1.0: su tag conserva notas que la página rompe y es inmutable."""
+        with tempfile.TemporaryDirectory() as temporal:
+            raiz = Path(temporal)
+            (raiz / "docs").mkdir()
+            (raiz / "docs" / f"release-notes-{TAG}.md").write_text(
+                _notas(), encoding="utf-8")
+            respuestas = _respuestas()
+            respuestas[("git", "show",
+                        f"{TAG}:docs/release-notes-{TAG}.md")] = \
+                _salida(stdout=_notas("main"))  # el tag quedó desfasado
+            with mock.patch.object(vr, "NOTAS_DEL_ARBOL", {TAG}):
+                resultados = vr.verificar("0.1.2", _correr_con(respuestas),
+                                          raiz=raiz)
+        self.assertEqual([mensaje for ok, mensaje in resultados if not ok], [])
+
     def test_enlace_a_otra_ref(self):
         resultados = self.verificar({
             ("git", "show", f"{TAG}:docs/release-notes-{TAG}.md"):
