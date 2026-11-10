@@ -46,7 +46,8 @@ menos un test que la verifique.
 2. Cree una rama (`fix/...`, `feat/...`, `docs/...`).
 3. Haga el cambio con sus tests.
 4. Ejecute `python3 -m pytest tests/ -q`.
-5. Abra un pull request; la integración continua debe quedar verde.
+5. Abra un pull request; la integración continua debe quedar verde y no se
+   fusiona con conversaciones abiertas (ver `docs/BRANCH_PROTECTION.md`).
 
 ## Estilo de commits
 
@@ -67,5 +68,6 @@ este repositorio (ver `LICENSE`).
 - Remediación: `docs/REMEDIACION.md`
 - Cambios: `CHANGELOG.md`
 - Releases: `docs/RELEASES.md`
+- Rama protegida: `docs/BRANCH_PROTECTION.md`
 - Seguridad: `SECURITY.md`
 - Conducta: `CODE_OF_CONDUCT.md`
