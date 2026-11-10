@@ -23,6 +23,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `CONTRIBUTING.md` seguía recomendando `--upgrade pip` al preparar el
+  entorno, cuando el README y la CI no lo hacen y las notas de 0.1.2
+  registran haberlo retirado por coste (4,0 s → 2,0 s de mediana por job).
 - `ide/COMPATIBILIDAD.md` describía el MCP con tres herramientas de solo
   lectura y citaba como evidencia `tests/test_mcp.py`, que exige las seis:
   las tres de lectura y las tres operativas.

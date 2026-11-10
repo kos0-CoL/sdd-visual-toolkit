@@ -17,7 +17,7 @@ git clone https://github.com/kos0-CoL/sdd-visual-toolkit.git
 cd sdd-visual-toolkit
 python3 -m venv .venv
 source .venv/bin/activate
-python3 -m pip install --upgrade pip -r requirements-dev.txt
+python3 -m pip install -r requirements-dev.txt
 ```
 
 ## Ejecutar las pruebas
