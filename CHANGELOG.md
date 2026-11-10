@@ -6,7 +6,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
-Sin cambios pendientes de publicar.
+### Corregido
+
+- `pip install -e .` fallaba con «Multiple top-level packages discovered»;
+  ahora `pyproject.toml` declara el backend y los paquetes de espacio de
+  nombres, y el comando `toolkit` queda disponible tras instalar.
 
 ## [0.1.0] — 2026-11-10
 
