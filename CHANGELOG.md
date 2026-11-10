@@ -21,6 +21,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   CHANGELOG dentro del tag, release publicada y enlaces de las notas
   resueltos en la ref del tag. Sin dependencias: solo usa `git` y `gh`.
 
+### Corregido
+
+- El README anunciaba 269 pruebas en dos frases mientras su badge y la
+  suite tenían 284. Los conteos se escriben a mano y solo el badge tenía
+  prueba; ahora `tests/test_readme.py` compara también las menciones
+  «N tests» de la prosa.
+
 ## [0.1.2] — 2026-11-10
 
 Versión de mantenimiento y herramientas: sin cambios en el motor ni en el
