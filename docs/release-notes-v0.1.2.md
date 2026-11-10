@@ -2,6 +2,8 @@
 
 Versión de mantenimiento y herramientas. Sin cambios en el motor ni en el
 formato de `.specify/`: es compatible con proyectos creados con 0.1.0 y 0.1.1.
+Agrupa todo lo acumulado desde 0.1.1, porque esta versión aún no se había
+etiquetado.
 
 ## Añadido
 
@@ -20,10 +22,12 @@ formato de `.specify/`: es compatible con proyectos creados con 0.1.0 y 0.1.1.
   de cada una, el acoplamiento con los nombres de los jobs de CI y los
   comandos para replicar y comprobar la configuración.
 - **CI**: caché de dependencias de pip por versión de Python y hash de
-  `pyproject.toml`.
+  `requirements-dev.txt`.
 - **Pruebas de consistencia**: la versión de `pyproject.toml` debe coincidir
   con la primera entrada del CHANGELOG, y el badge de tests del README con lo
   que recolecta pytest.
+- **Tags inmutables**: un ruleset impide mover o borrar los tags `v*` una vez
+  publicados. Crear releases nuevos funciona igual.
 
 ## Cambiado
 
@@ -34,9 +38,18 @@ formato de `.specify/`: es compatible con proyectos creados con 0.1.0 y 0.1.1.
 - **Protección de `main` con ruleset** en lugar de la protección clásica:
   todo cambio entra por pull request, sin exención para administradores,
   y la configuración queda versionada y consultable.
+- **Dependencias de desarrollo declaradas**: `requirements-dev.txt` es la
+  única lista de `pytest` y `pytest-xdist`; de ahí instalan la CI,
+  `CONTRIBUTING.md` y el README, y es la clave de la caché de pip.
+- **La CI ya no actualiza pip** antes de instalar: el paso baja de 4,0 s a
+  2,0 s de mediana por job (24 jobs antes, 20 después).
 
 ## Corregido
 
+- **`status` no mostraba la tarea en curso**: el tablero buscaba el estado
+  `"en curso"` mientras `build` marca `en_curso`, así que «Tarea actual»
+  salía vacía y la próxima acción nunca decía «continuar TASK-xxx». Ahora
+  `status`, `tablero` y `siguiente` usan la constante del motor.
 - El servidor MCP informaba `0.1.0` después de publicar la 0.1.1: CLI y MCP
   comparten ahora una sola fuente de versión, así que no pueden desfasarse.
 - El badge de tests del README anunciaba 259 pruebas frente a una suite

@@ -6,25 +6,7 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
-### Añadido
-
-- Los tags `v*` son inmutables: un ruleset impide moverlos o borrarlos una
-  vez publicados. Los releases nuevos se siguen creando igual; detalles en
-  `docs/BRANCH_PROTECTION.md`.
-
-### Cambiado
-
-- Las dependencias de desarrollo (`pytest`, `pytest-xdist`) se declaran en
-  `requirements-dev.txt`; la CI y `CONTRIBUTING.md` instalan desde ahí en vez
-  de repetir la lista, y la caché de pip usa esa clave.
-- La CI ya no actualiza pip antes de instalar: el paso baja de 4,0 s a 2,0 s
-  de mediana por job (24 jobs antes, 20 después).
-
-### Corregido
-
-- El tablero buscaba el estado `"en curso"`, pero `build` marca `en_curso`: la
-  «Tarea actual» nunca aparecía. `status`, `tablero` y `siguiente` usan ahora
-  la constante del motor, con una prueba de regresión.
+Sin cambios pendientes de publicar.
 
 ## [0.1.2] — 2026-11-10
 
@@ -39,9 +21,12 @@ formato de `.specify/`.
 - `docs/BRANCH_PROTECTION.md` describe las reglas de `main`, el motivo de
   cada una y cómo replicarlas; enlazado desde `CONTRIBUTING.md`.
 - Caché de las dependencias de pip en la CI, con clave por versión de Python
-  y hash de `pyproject.toml`.
+  y hash de `requirements-dev.txt`.
 - Pruebas que mantienen alineadas la versión de `pyproject.toml` con la
   primera entrada del CHANGELOG y el badge de tests del README con la suite.
+- Los tags `v*` son inmutables: un ruleset impide moverlos o borrarlos una
+  vez publicados. Los releases nuevos se siguen creando igual; detalles en
+  `docs/BRANCH_PROTECTION.md`.
 
 ### Cambiado
 
@@ -51,9 +36,17 @@ formato de `.specify/`.
 - La protección de `main` usa un ruleset de repositorio en vez de la
   protección clásica: todo cambio debe entrar por pull request, sin exención
   para administradores. Detalles en `docs/BRANCH_PROTECTION.md`.
+- Las dependencias de desarrollo (`pytest`, `pytest-xdist`) se declaran en
+  `requirements-dev.txt`; la CI y `CONTRIBUTING.md` instalan desde ahí en vez
+  de repetir la lista, y la caché de pip usa esa clave.
+- La CI ya no actualiza pip antes de instalar: el paso de instalación baja de
+  4,0 s a 2,0 s de mediana por job (24 jobs antes, 20 después).
 
 ### Corregido
 
+- El tablero buscaba el estado `"en curso"`, pero `build` marca `en_curso`:
+  la «Tarea actual» nunca aparecía. `status`, `tablero` y `siguiente` usan
+  ahora la constante del motor, con una prueba de regresión.
 - El servidor MCP informaba `0.1.0` después de publicar la 0.1.1.
 - El badge de tests del README anunciaba 259 pruebas frente a una suite
   mayor.
