@@ -6,6 +6,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+## [0.1.3] — 2026-11-10
+
+Versión de mantenimiento: documentación, pruebas y herramientas. Sin cambios
+en el motor ni en el formato de `.specify/`: es compatible con proyectos
+creados con 0.1.0 a 0.1.2.
+
 ### Añadido
 
 - `docs/RELEASES.md` incluye el paso posterior a publicar: comprobar que el
@@ -159,7 +165,8 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.2...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.3
 [0.1.2]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.2
 [0.1.1]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.1
 [0.1.0]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.0
