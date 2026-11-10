@@ -51,6 +51,18 @@ si una prueba comparte estado con otra, se verá ahí.
 5. Abra un pull request; la integración continua debe quedar verde y no se
    fusiona con conversaciones abiertas (ver `docs/BRANCH_PROTECTION.md`).
 
+GitHub puede tardar varios minutos en crear el run del pull request. No
+cierre y reabra el PR: eso emite un segundo evento, duplica los jobs y deja
+el merge bloqueado hasta que terminan ambos runs. Arránquelo a mano:
+
+```bash
+gh workflow run CI --ref <rama>
+gh pr checks <n> --watch --interval 10
+```
+
+El run manual reporta los mismos checks sobre el mismo commit. Espere a que
+`mergeStateStatus` sea `CLEAN` antes de fusionar.
+
 ## Estilo de commits
 
 Mensajes en imperativo y enfocados en el porqué. Ejemplo:
