@@ -23,6 +23,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `docs/BRANCH_PROTECTION.md` atribuía la espera del CI a GitHub en general.
+  La medición de 31 runs de `push` (3–4 s, salvo un commit empujado diez
+  minutos después de crearse) frente a 20 de `pull_request` (4 s a 447 s)
+  sitúa la demora en el evento del PR, no en la cola de runners.
 - El README anunciaba 269 pruebas en dos frases mientras su badge y la
   suite tenían 284. Los conteos se escriben a mano y solo el badge tenía
   prueba; ahora `tests/test_readme.py` compara también las menciones
