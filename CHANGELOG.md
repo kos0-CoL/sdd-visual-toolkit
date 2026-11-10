@@ -15,6 +15,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 ### Corregido
 
 - El servidor MCP informaba `0.1.0` después de publicar la 0.1.1.
+- El badge de tests del README anunciaba 259 pruebas con 268 en la suite;
+  ahora `tests/test_readme.py` compara el badge con lo que recolecta pytest
+  y falla cuando se desfasa.
 
 ## [0.1.1] — 2026-11-10
 
