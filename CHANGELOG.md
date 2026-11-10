@@ -6,6 +6,14 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+## [0.1.4] — 2026-11-10
+
+Versión de mantenimiento: sin cambios en la CLI, en el motor ni en el
+formato de `.specify/`, así que sigue siendo compatible con proyectos
+creados con 0.1.0 a 0.1.3. Es PARCHE por la misma razón que 0.1.3: lo
+que cambia son las herramientas de release, las pruebas y la
+documentación.
+
 ### Añadido
 
 - `scripts/verificar_release.py --previo` comprueba antes de crear el tag
@@ -27,11 +35,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   señala el `gh release edit --notes-file` para arreglarlo. Aplicado hacia
   atrás, **v0.1.0 queda marcada**: su cuerpo tiene enlaces absolutos y el
   archivo del tag, relativos.
-- `docs/RELEASES.md` describía el orden al revés: las notas aparecían después
-  del tag, la release se creaba sin `--notes-file` —GitHub autogenera el
-  «What's Changed»— y el modo `--previo` quedaba fuera del checklist, así que
-  se podía etiquetar sin haberlo ejecutado. Ahora las notas se escriben antes
-  de etiquetar, el último paso del checklist es
+- `docs/RELEASES.md` describía el orden al revés: las notas aparecían
+  después del tag, la release se creaba sin `--notes-file` —GitHub autogenera
+  el «What's Changed»— y el modo `--previo` quedaba fuera del checklist, así
+  que se podía etiquetar sin haberlo ejecutado. Ahora las notas se escriben
+  antes de etiquetar, el último paso del checklist es
   `verificar_release.py --previo X.Y.Z` y la release se crea con
   `--verify-tag` y `--notes-file`.
 
@@ -203,7 +211,8 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.3...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.4
 [0.1.3]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.3
 [0.1.2]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.2
 [0.1.1]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.1
