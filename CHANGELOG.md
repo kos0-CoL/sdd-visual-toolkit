@@ -12,6 +12,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   vez publicados. Los releases nuevos se siguen creando igual; detalles en
   `docs/BRANCH_PROTECTION.md`.
 
+### Corregido
+
+- El tablero buscaba el estado `"en curso"`, pero `build` marca `en_curso`: la
+  «Tarea actual» nunca aparecía. `status`, `tablero` y `siguiente` usan ahora
+  la constante del motor, con una prueba de regresión.
+
 ## [0.1.2] — 2026-11-10
 
 Versión de mantenimiento y herramientas: sin cambios en el motor ni en el
@@ -41,9 +47,10 @@ formato de `.specify/`.
 ### Corregido
 
 - El servidor MCP informaba `0.1.0` después de publicar la 0.1.1.
-- El badge de tests del README anunciaba 259 pruebas con 268 en la suite.
+- El badge de tests del README anunciaba 259 pruebas frente a una suite
+  mayor.
 - `README.md`: las instrucciones ejecutaban `pytest` sin instalarlo (un
-  entorno limpio fallaba en ese paso), decían 259 pruebas con 268, el ejemplo
+  entorno limpio fallaba en ese paso), decían 259 pruebas, el ejemplo
   de sesión mostraba un formato de salida que ya no existe y el rango de RF
   omitía las primeras.
 

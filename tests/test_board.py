@@ -1,6 +1,7 @@
 """Pruebas de RF-31 — Panel de estado general (§20)."""
 
 import io
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -48,8 +49,8 @@ class TestRender(unittest.TestCase):
 class TestRecopilar(unittest.TestCase):
     """recopilar() sobre un proyecto real construido con la CLI."""
 
-    def test_pipeline_medio_muestra_fase_y_proxima(self):
-        import subprocess  # noqa: PLC0415
+    def _proyecto(self):
+        """Crea el proyecto hasta el plan validado; devuelve (root, cli)."""
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
@@ -60,26 +61,25 @@ class TestRecopilar(unittest.TestCase):
                                text=True, cwd=Path.cwd(), input="",
                                timeout=60)
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            return r.stdout
 
         cli("init", str(root))
         cli("enrich", "Quiero un dashboard para gestionar un kiosco.")
         cli("enrich", "--accept", "ENR-001")
         cli("specify", "ENR-001", "--titulo", "Kiosco")
-        out = subprocess.run(
-            [*toolkit, "clarify", "--list", "SPEC-001"],
-            capture_output=True, text=True, cwd=Path.cwd(), input="",
-            timeout=60).stdout
-        ids = [l.split()[1] for l in out.splitlines()
-               if l.strip().startswith("○")]
+        ids = [l.split()[1] for l in cli("clarify", "--list", "SPEC-001")
+               .splitlines() if l.strip().startswith("○")]
         args = ["clarify", "SPEC-001"]
         for i in ids:
             args += ["--answer", i, "Aceptado"]
         cli(*args)
         cli("plan", "SPEC-001")
         cli("plan", "--gate", "PLAN-001")
-        out = subprocess.run(
-            [*toolkit, "tablero"], capture_output=True, text=True,
-            cwd=Path.cwd(), input="", timeout=60).stdout
+        return root, cli
+
+    def test_pipeline_medio_muestra_fase_y_proxima(self):
+        root, cli = self._proyecto()
+        out = cli("tablero")
         self.assertIn("SPEC-001", out)
         self.assertIn("tasks PLAN-001", out)
         cli("tasks", "PLAN-001")
@@ -91,6 +91,20 @@ class TestRecopilar(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertIn("💾 Tareas", buf.getvalue())
         self.assertIn("build PLAN-001", buf.getvalue())
+
+    def test_tarea_en_curso_aparece_como_actual(self):
+        """La tarea marcada `en_curso` debe ser la «Tarea actual»."""
+        root, cli = self._proyecto()
+        cli("tasks", "PLAN-001")
+        cli("analyze", "PLAN-001")
+        cli("tasks", "--gate", "PLAN-001")
+        cli("build", "PLAN-001")
+
+        from cli.commands import tablero as mod  # noqa: PLC0415
+        estado = mod.recopilar(root)
+        self.assertEqual(estado["tarea_actual"], "TASK-001")
+        self.assertIn("continuar TASK-001", estado["proxima"])
+        self.assertIn("Tarea actual: TASK-001", render(estado))
 
 
 if __name__ == "__main__":

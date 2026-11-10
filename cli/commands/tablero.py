@@ -14,6 +14,7 @@ from cli.commands import plan as mod_plan
 from cli.commands import specify as mod_specify
 from cli.commands import tasks as mod_tasks
 from core.board import render
+from core.build import EN_CURSO
 from core.journal import historial
 from state import store
 
@@ -78,7 +79,7 @@ def recopilar(raiz) -> dict:
         return estado
     estado["fase"] = "💾 Tareas"
     hechas = [t for t in tareas if t.estado == "completada"]
-    en_curso = [t for t in tareas if t.estado == "en curso"]
+    en_curso = [t for t in tareas if t.estado == EN_CURSO]
     estado["hechas"] = len(hechas)
     estado["total"] = len(tareas)
     estado["pendientes"] = len(tareas) - len(hechas)
