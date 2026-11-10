@@ -6,7 +6,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
-Sin cambios pendientes de publicar.
+### Cambiado
+
+- La CI ejecuta la suite en paralelo con `pytest-xdist -n 2`; `pytest-xdist`
+  pasa a ser dependencia de desarrollo documentada en `CONTRIBUTING.md`.
 
 ## [0.1.2] — 2026-11-10
 
