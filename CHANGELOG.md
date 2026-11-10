@@ -23,6 +23,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `ide/COMPATIBILIDAD.md` describía el MCP con tres herramientas de solo
+  lectura y citaba como evidencia `tests/test_mcp.py`, que exige las seis:
+  las tres de lectura y las tres operativas.
 - `docs/BRANCH_PROTECTION.md` atribuía la espera del CI a GitHub en general.
   La medición de 31 runs de `push` (3–4 s, salvo un commit empujado diez
   minutos después de crearse) frente a 20 de `pull_request` (4 s a 447 s)
