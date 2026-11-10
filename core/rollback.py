@@ -27,6 +27,18 @@ def firma(nota: str) -> str:
     return " ".join(primera.lower().split())[:120] or "(sin descripción)"
 
 
+def _copia_segura(raiz, rel: str) -> Path | None:
+    """Ruta destino validada: dentro del proyecto y sin symlink (§16)."""
+    destino = Path(raiz) / rel
+    base = Path(raiz).resolve()
+    resuelta = destino.resolve()
+    if resuelta != base and base not in resuelta.parents:
+        return None
+    if destino.is_symlink() or resuelta.is_symlink():
+        return None
+    return destino
+
+
 def _dir_tarea(raiz: Path, task_id: str) -> Path:
     ruta = Path(raiz) / ".specify" / SNAPSHOTS_DIR / task_id
     ruta.mkdir(parents=True, exist_ok=True)
@@ -83,7 +95,9 @@ def restaurar(raiz, task_id: str, numero: int | None = None) -> Path:
         encoding="utf-8").splitlines()
     for rel in permitidos:
         copia = carpeta / rel
-        destino_final = Path(raiz) / rel
+        destino_final = _copia_segura(raiz, rel)
+        if destino_final is None:
+            raise RollbackError(f"ruta insegura en snapshot: {rel}")
         if copia.is_file():
             destino_final.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(copia, destino_final)

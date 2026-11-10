@@ -1,9 +1,10 @@
 """RF-42 — Hooks de agente (§47).
 
 Ganchos propios del usuario/IDE ante eventos del ciclo de tarea:
-`tarea_abierta` (build pone una tarea en curso) y `tarea_cerrada`
-(build registra done/fail). Viven en `.specify/hooks/<evento>/` como
-archivos ejecutables; reciben SDD_EVENTO/PLAN/TAREA/RESULTADO/ROOT.
+`tarea_abierta` (build pone una tarea en curso), `tarea_cerrada`
+(build registra done/fail) y `sugerencia` (§40: una mejora se registra
+fuera del alcance de la tarea). Viven en `.specify/hooks/<evento>/` como
+archivos ejecutables; reciben SDD_EVENTO/PLAN/TAREA/RESULTADO/SUGERENCIA/ROOT.
 Un hook que falla se declara y se registra, nunca bloquea en silencio
 (§47: degradar funcionalmente).
 """
@@ -16,7 +17,7 @@ from pathlib import Path
 
 from state.store import SPECIFY_DIR
 
-EVENTOS = ("tarea_abierta", "tarea_cerrada")
+EVENTOS = ("tarea_abierta", "tarea_cerrada", "sugerencia")
 TIMEOUT_S = 60
 
 
@@ -50,7 +51,8 @@ def disparar(raiz, evento: str, entorno: dict) -> list:
                "SDD_ROOT": str(raiz),
                "SDD_PLAN": str(entorno.get("plan", "")),
                "SDD_TAREA": str(entorno.get("tarea", "")),
-               "SDD_RESULTADO": str(entorno.get("resultado", ""))}
+               "SDD_RESULTADO": str(entorno.get("resultado", "")),
+               "SDD_SUGERENCIA": str(entorno.get("sugerencia", ""))}
         try:
             corrido = subprocess.run(
                 [str(ruta)], cwd=str(raiz), env=env, capture_output=True,

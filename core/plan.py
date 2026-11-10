@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from core.clarify import raices
+from state import store
 
 IGNORAR_DIRS = {
     ".git", "__pycache__", ".specify", ".pytest_cache", "venv", ".venv",
@@ -38,10 +39,8 @@ def _es_test(ruta: Path) -> bool:
     )
 
 
-def investigar(raiz_proyecto: Path) -> dict:
-    """Lee el repositorio real: estructura, lenguajes, dependencias,
-    persistencia, pruebas y convenciones (§8.2)."""
-    raiz = Path(raiz_proyecto)
+def _archivos_considerados(raiz: Path) -> list[Path]:
+    """Archivos del repo que el análisis mira (mismas exclusiones §8.2)."""
     archivos: list[Path] = []
     for ruta in sorted(raiz.rglob("*")):
         if not ruta.is_file():
@@ -51,6 +50,77 @@ def investigar(raiz_proyecto: Path) -> dict:
         if ruta.suffix == ".pyc":
             continue
         archivos.append(ruta)
+    return archivos
+
+
+def _mapa_archivos(raiz: Path, archivos: list[Path]) -> dict[str, list[int]]:
+    """Huella barata por archivo (tamaño + mtime) para invalidar la caché."""
+    mapa: dict[str, list[int]] = {}
+    for ruta in archivos:
+        try:
+            estado = ruta.stat()
+        except OSError:
+            continue
+        mapa[str(ruta.relative_to(raiz))] = [estado.st_size, estado.st_mtime_ns]
+    return mapa
+
+
+def _huella(mapa: dict) -> str:
+    import hashlib  # noqa: PLC0415
+
+    datos = json.dumps(mapa, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(datos.encode("utf-8")).hexdigest()[:16]
+
+
+def _ruta_cache(raiz: Path) -> Path:
+    return raiz / store.SPECIFY_DIR / "cache" / "analisis.json"
+
+
+def _leer_cache(raiz: Path):
+    ruta = _ruta_cache(raiz)
+    if not ruta.exists():
+        return None
+    try:
+        datos = store.leer_json(ruta)
+    except store.StoreError:
+        return None  # caché corrupta: se ignora y se recalcula
+    if not isinstance(datos, dict) or "huella" not in datos or "hallazgos" not in datos:
+        return None
+    return datos
+
+
+def archivos_afectados(raiz_proyecto: Path) -> dict:
+    """Archivos cambiados/nuevos/eliminados respecto de la última caché."""
+    raiz = Path(raiz_proyecto)
+    actual = _mapa_archivos(raiz, _archivos_considerados(raiz))
+    previo = _leer_cache(raiz)
+    if previo is None:
+        return {"hay_cache": False, "cambiados": sorted(actual),
+                "eliminados": [], "huella": _huella(actual)}
+    antes = previo.get("archivos", {})
+    cambiados = sorted(k for k, v in actual.items() if antes.get(k) != v)
+    eliminados = sorted(set(antes) - set(actual))
+    return {"hay_cache": True, "cambiados": cambiados,
+            "eliminados": eliminados, "huella": _huella(actual),
+            "huella_previa": previo.get("huella")}
+
+
+def investigar(raiz_proyecto: Path, usar_cache: bool = True) -> dict:
+    """Lee el repositorio real: estructura, lenguajes, dependencias,
+    persistencia, pruebas y convenciones (§8.2).
+
+    La caché es opcional y solo se escribe si el proyecto ya tiene `.specify/`:
+    un análisis sin cambios se reutiliza; cualquier archivo modificado
+    (tamaño o mtime) invalida la huella y se recalcula.
+    """
+    raiz = Path(raiz_proyecto)
+    archivos = _archivos_considerados(raiz)
+    mapa = _mapa_archivos(raiz, archivos)
+    huella = _huella(mapa)
+    if usar_cache:
+        cache = _leer_cache(raiz)
+        if cache is not None and cache.get("huella") == huella:
+            return json.loads(json.dumps(cache["hallazgos"]))
 
     por_lenguaje: dict[str, int] = {}
     codigo: list[str] = []
@@ -133,7 +203,7 @@ def investigar(raiz_proyecto: Path) -> dict:
     if (raiz / "docs").is_dir():
         convenciones.append("documentación en docs/")
 
-    return {
+    hallazgos = {
         "es_greenfield": not codigo,
         "lenguajes": por_lenguaje,
         "total_archivos": len(archivos),
@@ -147,6 +217,15 @@ def investigar(raiz_proyecto: Path) -> dict:
         "carpetas": top_dirs,
         "convenciones": convenciones,
     }
+    if (raiz / store.SPECIFY_DIR).is_dir():
+        try:
+            ruta = _ruta_cache(raiz)
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+            store.escribir_json(ruta, {"huella": huella, "archivos": mapa,
+                                       "hallazgos": hallazgos})
+        except (store.StoreError, OSError):
+            pass  # la caché acelera el análisis, no es un requisito
+    return hallazgos
 
 
 def componentes_relacionados(spec, hallazgos: dict, tope: int = 10) -> list[str]:
@@ -431,3 +510,96 @@ def render_markdown(plan: Plan) -> str:
         "",
     ]
     return "\n".join(lineas)
+
+
+SUGERENCIA_ESTADOS = ("sugerida", "aprobada", "descartada")
+
+
+def _ahora() -> str:
+    from datetime import datetime, timezone  # noqa: PLC0415
+
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+@dataclass
+class Sugerencia:
+    """Mejora detectada durante el trabajo, fuera del alcance (§40)."""
+
+    id: str
+    plan_id: str
+    texto: str
+    origen: str = ""
+    tarea: str = ""
+    estado: str = "sugerida"
+    fecha: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id, "plan_id": self.plan_id, "texto": self.texto,
+            "origen": self.origen, "tarea": self.tarea,
+            "estado": self.estado, "fecha": self.fecha,
+        }
+
+    @classmethod
+    def from_dict(cls, datos: dict) -> "Sugerencia":
+        try:
+            return cls(
+                id=str(datos["id"]), plan_id=str(datos["plan_id"]),
+                texto=str(datos["texto"]),
+                origen=str(datos.get("origen", "")),
+                tarea=str(datos.get("tarea", "")),
+                estado=str(datos.get("estado", "sugerida")),
+                fecha=str(datos.get("fecha", "")),
+            )
+        except (KeyError, TypeError) as error:
+            raise PlanError(f"sugerencia corrupta: {error}") from error
+
+
+def ruta_sugerencias(raiz, plan_id: str) -> Path:
+    return Path(raiz) / store.SPECIFY_DIR / "sugerencias" / f"{plan_id}.json"
+
+
+def listar_sugerencias(raiz, plan_id: str) -> list[Sugerencia]:
+    ruta = ruta_sugerencias(raiz, plan_id)
+    if not ruta.exists():
+        return []
+    datos = store.leer_json(ruta)
+    if not isinstance(datos, list):
+        raise PlanError("el registro de sugerencias está corrupto")
+    return [Sugerencia.from_dict(d) for d in datos]
+
+
+def _guardar_sugerencias(raiz, plan_id: str,
+                         sugerencias: list[Sugerencia]) -> None:
+    ruta = ruta_sugerencias(raiz, plan_id)
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    store.escribir_json(ruta, [s.to_dict() for s in sugerencias])
+
+
+def registrar_sugerencia(raiz, plan_id: str, texto: str, origen: str = "",
+                         tarea: str = "") -> Sugerencia:
+    """Registra una mejora en su propio registro: no toca PLAN ni tareas."""
+    limpio = texto.strip()
+    if not limpio:
+        raise PlanError("la sugerencia necesita texto; no se registra vacía")
+    sugerencias = listar_sugerencias(raiz, plan_id)
+    sugerencia = Sugerencia(
+        id=f"SUG-{len(sugerencias) + 1:03d}", plan_id=plan_id, texto=limpio,
+        origen=origen.strip(), tarea=tarea.strip(), fecha=_ahora())
+    sugerencias.append(sugerencia)
+    _guardar_sugerencias(raiz, plan_id, sugerencias)
+    return sugerencia
+
+
+def decidir_sugerencia(raiz, plan_id: str, sug_id: str,
+                       estado: str) -> Sugerencia:
+    """Decisión humana explícita sobre una sugerencia (§40)."""
+    if estado not in ("aprobada", "descartada"):
+        raise PlanError("estado inválido: use «aprobada» o «descartada»")
+    sugerencias = listar_sugerencias(raiz, plan_id)
+    for sugerencia in sugerencias:
+        if sugerencia.id == sug_id:
+            sugerencia.estado = estado
+            _guardar_sugerencias(raiz, plan_id, sugerencias)
+            return sugerencia
+    raise PlanError(f"sugerencia inexistente: {sug_id}")

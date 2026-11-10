@@ -50,6 +50,25 @@ def inicializar_proyecto(raiz: Path) -> Path:
     return raiz
 
 
+def _fsync_dir(carpeta: Path) -> None:
+    """Sincroniza el directorio para que el renombrado sobreviva a un corte.
+
+    Sin este fsync un rename puede perderse aunque el archivo esté completo
+    (§13.5, §35). En plataformas sin fsync de directorio (p. ej. Windows)
+    se declara no disponible: la escritura atómica sigue siendo válida.
+    """
+    try:
+        fd = os.open(str(carpeta), os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
 def _escritura_atomica(destino: Path, contenido, texto: bool = False) -> None:
     destino.parent.mkdir(parents=True, exist_ok=True)
     fd, temporal = tempfile.mkstemp(
@@ -62,7 +81,10 @@ def _escritura_atomica(destino: Path, contenido, texto: bool = False) -> None:
             else:
                 json.dump(contenido, fh, ensure_ascii=False, indent=2)
                 fh.write("\n")
+            fh.flush()
+            os.fsync(fh.fileno())
         os.replace(temporal, destino)
+        _fsync_dir(destino.parent)
     except BaseException:
         try:
             os.unlink(temporal)

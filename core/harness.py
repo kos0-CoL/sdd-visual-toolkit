@@ -90,7 +90,12 @@ def detectar_runner(raiz) -> str:
 
 def correr(raiz, etiqueta: str, objetivos: list[str],
            timeout: int = 180) -> dict:
-    """Ejecuta archivos de test y devuelve el resultado visible §18.4."""
+    """Ejecuta los objetivos de una fase en UNA sola invocación (§18).
+
+    Antes se abría un proceso por archivo; con muchos tests eso dominaba
+    el tiempo total. El runner propio del repo sigue mandando (§51) y el
+    marcador FALLA se conserva para que el rojo no se oculte.
+    """
     inicio = time.monotonic()
     runner = detectar_runner(raiz)
     if runner in ("npm", "go", "cargo"):
@@ -101,32 +106,21 @@ def correr(raiz, etiqueta: str, objetivos: list[str],
         return {"fase": etiqueta, "total": 0, "pasadas": 0, "fallidas": 0,
                 "omitidas": 0, "duracion_s": 0.0, "ok": True,
                 "errores": "sin archivos para esta fase (no se inventa resultado)"}
-    ok_global, salidas, agregado = True, [], _parsear("")
-    for objetivo in objetivos:
-        comando = ([sys.executable, "-m", "pytest", "-q", objetivo]
-                   if runner == "pytest" else
-                   [sys.executable, "-m", "unittest", _a_dotted(objetivo)])
-        try:
-            proc = subprocess.run(
-                comando, cwd=str(raiz), capture_output=True, text=True,
-                timeout=timeout)
-        except subprocess.TimeoutExpired:
-            return {"fase": etiqueta, "total": 0, "pasadas": 0, "fallidas": 1,
-                    "omitidas": 0, "duracion_s": round(time.monotonic() - inicio, 3),
-                    "ok": False, "errores": f"{objetivo}: TIMEOUT ({timeout}s)"}
-        texto = (proc.stdout.strip() + "\n" + proc.stderr.strip()).strip()
-        parte = _parsear_pytest(texto) if runner == "pytest" else _parsear(texto)
-        for k in ("total", "pasadas", "fallidas", "omitidas"):
-            agregado[k] += parte[k]
-        agregado["duracion_s"] = round(agregado["duracion_s"] + parte["duracion_s"], 3)
-        if proc.returncode != 0:
-            ok_global = False
-            ultima = texto.splitlines()
-            salidas.append(f"{objetivo}: FALLA ({ultima[-1] if ultima else 'sin salida'})")
-    agregado.update({"fase": etiqueta, "ok": ok_global,
-                     "errores": "; ".join(salidas) or "—",
-                     "runner": runner})
-    return agregado
+    if runner == "pytest":
+        r = _invocar(raiz, [sys.executable, "-m", "pytest", "-q"] + objetivos,
+                     etiqueta, True, timeout)
+    else:
+        r = _invocar(raiz, [sys.executable, "-m", "unittest"] +
+                     [_a_dotted(o) for o in objetivos], etiqueta, False, timeout)
+    r["fase"] = etiqueta
+    r["runner"] = runner
+    if r.get("ok"):
+        r["errores"] = r.get("errores") or "—"
+    else:
+        r["errores"] = "FALLA (%d objetivo(s)): %s" % (
+            len(objetivos), r.get("errores") or "sin salida")
+    r["duracion_s"] = round(time.monotonic() - inicio, 3)
+    return r
 
 
 def _parsear_pytest(salida: str) -> dict:
@@ -266,6 +260,30 @@ def _correr_unittest(raiz, archivos: list[str], timeout: int = 180) -> dict:
 def _correr_pytest(raiz, archivos: list[str], timeout: int = 180) -> dict:
     return _invocar(raiz, [sys.executable, "-m", "pytest", "-q"] + archivos,
                     "regresión", True, timeout)
+
+
+def correr_archivos(raiz, archivos: list[str], fase: str = "unitarios",
+                    timeout: int = 180) -> dict:
+    """RF-19/RF-43: ejecuta los tests de una tarea con el runner detectado.
+
+    pytest/unittest para Python; una corrida de suite completa para
+    npm/go/cargo (§51: el repo manda). Sin archivos: resultado honesto
+    (no se inventa resultado)."""
+    runner = detectar_runner(raiz)
+    if runner in ("npm", "go", "cargo"):
+        return _correr_suite(raiz, fase, runner, timeout)
+    if not archivos:
+        return {"fase": fase, "total": 0, "pasadas": 0, "fallidas": 0,
+                "omitidas": 0, "duracion_s": 0.0, "ok": True,
+                "errores": "sin archivos para esta fase (no se inventa resultado)"}
+    if runner == "pytest":
+        r = _invocar(raiz, [sys.executable, "-m", "pytest", "-q"] + archivos,
+                    fase, True, timeout)
+    else:
+        r = _invocar(raiz, [sys.executable, "-m", "unittest"] +
+                    [_a_dotted(a) for a in archivos], fase, False, timeout)
+    r["fase"] = fase
+    return r
 
 
 FASES = ("unitarios", "integración", "regresión", "cobertura",

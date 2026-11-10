@@ -99,7 +99,9 @@ def evaluar(raiz, tarea, spec) -> dict:
                             + "::".join(partes[-2:]))
             return _r(r, conv)
     else:
-        correr = _correr_unittest
+        def correr(r, sels, _u=_correr_unittest):
+            conv = ["/".join(s.split(".")[:-2]) + ".py" for s in sels]
+            return _u(r, conv)
     detalles = []
     estados = []
     total = pasadas = fallidas = omitidas = 0

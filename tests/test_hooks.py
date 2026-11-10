@@ -17,8 +17,10 @@ from cli.commands import hooks as cmd_hooks  # noqa: E402
 from cli.commands import plan as cmd_plan  # noqa: E402
 from cli.commands import specify as cmd_specify  # noqa: E402
 from cli.commands import tasks as cmd_tasks  # noqa: E402
+from core.build import sugerir  # noqa: E402
 from core.hooks import EVENTOS, disparar, listar  # noqa: E402
 from core.journal import historial  # noqa: E402
+from core.tasks import Tarea  # noqa: E402
 from state import store  # noqa: E402
 
 KIOSCO = "Quiero un dashboard para gestionar un kiosco. Debe registrar ventas."
@@ -152,6 +154,38 @@ class TestHooksCLI(unittest.TestCase):
                             for e in eventos))
         self.assertTrue(any("tarea_cerrada/cierra.sh: ok" in e.get("nota", "")
                             for e in eventos))
+
+
+class TestHookSugerencia(unittest.TestCase):
+    """§40: la sugerencia se registra aparte y el hook no bloquea."""
+
+    def test_sugerencia_avisa_al_hook_sin_tocar_alcance(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            store.inicializar_proyecto(raiz)
+            _gancho(raiz, "sugerencia", "sug.sh",
+                    'echo "$SDD_SUGERENCIA $SDD_TAREA" >> "$SDD_ROOT/sug.log"')
+            tarea = Tarea(id="TASK-001", descripcion="D", objetivo="O",
+                          archivos=["src/x.py"], criterio="C")
+            r = sugerir(tarea, raiz, "PLAN-001", "Mejorar caché")
+            self.assertTrue(r["alcance_intacto"])
+            self.assertEqual(r["sugerencia"]["id"], "SUG-001")
+            self.assertEqual(tarea.archivos, ["src/x.py"])
+            self.assertEqual(tarea.criterio, "C")
+            self.assertIn("SUG-001 TASK-001",
+                          (raiz / "sug.log").read_text(encoding="utf-8"))
+            self.assertTrue(r["hooks"][0]["ok"])
+
+    def test_hook_sugerencia_roto_se_declara(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            store.inicializar_proyecto(raiz)
+            _gancho(raiz, "sugerencia", "roto.sh", "exit 4")
+            tarea = Tarea(id="TASK-001", descripcion="D", objetivo="O")
+            r = sugerir(tarea, raiz, "PLAN-001", "Mejora")
+            self.assertFalse(r["hooks"][0]["ok"])
+            self.assertEqual(r["hooks"][0]["codigo"], 4)
+            self.assertEqual(r["sugerencia"]["id"], "SUG-001")
 
 
 if __name__ == "__main__":

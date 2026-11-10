@@ -90,6 +90,23 @@ class TestMaquina(unittest.TestCase):
             self.assertFalse(evento["pruebas_ok"])
             self.assertEqual(t.estado, "fallida")
 
+    def test_ejecutar_pruebas_solo_declara_sin_pruebas(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            t = _tarea("TASK-001", archivos=["src/a.py"])
+            self.assertEqual(ejecutar_pruebas(t, Path(tmp))[0], "sin_pruebas")
+            self.assertIn("sin pruebas ejecutables", ejecutar_pruebas(t, Path(tmp))[1])
+
+    def test_done_sin_pruebas_no_cierra(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            (raiz / "src").mkdir()
+            (raiz / "src" / "x.py").write_text("X = 1\n", encoding="utf-8")
+            t = _tarea("TASK-001", archivos=["src/x.py"])
+            t.estado = "en_curso"
+            with self.assertRaises(BuildError):
+                registrar_done(t, [t], raiz)
+            self.assertEqual(t.estado, "en_curso")
+
     def test_done_exige_archivos_objetivo(self):
         with tempfile.TemporaryDirectory() as tmp:
             t = _tarea("TASK-001", archivos=["src/no_existe.py"])

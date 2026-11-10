@@ -85,6 +85,17 @@ class TestRollback(unittest.TestCase):
     def test_firma_vacia_no_rompe(self):
         self.assertEqual(firma(""), "(sin descripción)")
 
+    def test_restaurar_rechaza_rutas_fuera_del_proyecto(self):
+        tomar(self.root, _tarea())
+        (self.root / "src" / "a.py").write_text("ROTO = 1\n", encoding="utf-8")
+        snapshots = self.root / ".specify" / "snapshots" / "TASK-001"
+        numero = sorted(p for p in snapshots.iterdir()
+                        if p.is_dir() and p.name.isdigit())
+        (numero[-1] / "archivos.txt").write_text("../outside.txt\n",
+                                                  encoding="utf-8")
+        with self.assertRaises(RollbackError):
+            restaurar(self.root, "TASK-001")
+
 
 if __name__ == "__main__":
     unittest.main()

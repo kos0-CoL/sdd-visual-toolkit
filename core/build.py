@@ -7,8 +7,6 @@ archivos objetivo y pruebas ejecutables, y registra el resultado.
 
 from __future__ import annotations
 
-import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -56,24 +54,23 @@ def archivos_faltantes(tarea, raiz: Path) -> list[str]:
     return [a for a in tarea.archivos if not (Path(raiz) / a).exists()]
 
 
-def ejecutar_pruebas(tarea, raiz: Path, timeout: int = 120) -> tuple[bool, str]:
-    """Corre los archivos de prueba existentes de la tarea. Si no hay
-    ninguno ejecutable, lo informa en vez de inventar un resultado."""
-    objetivos = [a for a in tarea.archivos
-                 if a.startswith("tests/") and a.endswith(".py")
-                 and (Path(raiz) / a).exists()]
-    if not objetivos:
-        return True, "sin pruebas ejecutables todavía (ningún archivo tests/ existe)"
-    ok_global, salidas = True, []
-    for objetivo in objetivos:
-        proc = subprocess.run(
-            [sys.executable, "-m", "unittest", _a_dotted(objetivo)],
-            cwd=str(raiz), capture_output=True, text=True, timeout=timeout)
-        ok_global = ok_global and proc.returncode == 0
-        ultimo = (proc.stderr.strip() or proc.stdout.strip()).splitlines()
-        salidas.append(f"{objetivo}: {'OK' if proc.returncode == 0 else 'FALLA'} "
-                       f"({ultimo[-1] if ultimo else 'sin salida'})")
-    return ok_global, "; ".join(salidas)
+ESTADOS_PRUEBAS = ("pasadas", "fallidas", "sin_pruebas")
+
+
+def ejecutar_pruebas(tarea, raiz: Path, timeout: int = 120) -> tuple[str, str]:
+    """Corre los tests de la tarea con el runner detectado (§19/RF-43) y
+    devuelve (estado, salida) con estado en {“pasadas”, “fallidas”,
+    “sin_pruebas”}. Nunca se inventa un resultado verde sin ejecutar."""
+    archivos = [a for a in tarea.archivos
+                if a.startswith("tests/") and a.endswith(".py")
+                and (Path(raiz) / a).exists()]
+    if not archivos:
+        return "sin_pruebas", "sin pruebas ejecutables todavía (ningún archivo tests/ existe)"
+    from core.harness import correr_archivos  # noqa: PLC0415
+    r = correr_archivos(raiz, archivos, fase="unitarios", timeout=timeout)
+    if r.get("ok") and (r.get("fallidas") or 0) == 0:
+        return "pasadas", r.get("errores") or "pruebas OK"
+    return "fallidas", r.get("errores") or "pruebas en rojo"
 
 
 def registrar_done(tarea, tareas: list, raiz: Path, nota: str = "",
@@ -89,12 +86,19 @@ def registrar_done(tarea, tareas: list, raiz: Path, nota: str = "",
     faltan = archivos_faltantes(tarea, raiz)
     if faltan:
         raise BuildError(f"archivos objetivo inexistentes: {', '.join(faltan)}")
-    ok, salida = ejecutar_pruebas(tarea, raiz)
+    estado, salida = ejecutar_pruebas(tarea, raiz)
     tarea.intentos += 1
+    if estado == "sin_pruebas":
+        # RF-09/§11: sin evidencia ejecutable no se cierra la tarea.
+        raise BuildError(
+            f"{tarea.id}: NOT_VERIFIED — sin pruebas ejecutables para los "
+            f"archivos autorizados; escriba al menos un test por criterio de "
+            f"aceptación antes de cerrar (§11).")
     from core.harness import hashes_tests  # noqa: PLC0415
     evento = {
         "fecha": _ahora(), "tarea": tarea.id, "evento": "completada",
-        "pruebas_ok": ok, "pruebas": salida, "nota": nota,
+        "estado_pruebas": estado, "pruebas_ok": estado == "pasadas",
+        "pruebas": salida, "nota": nota,
         "hashes_tests": hashes_tests(raiz, tarea.archivos),
     }
     if evidencia is not None:
@@ -103,7 +107,7 @@ def registrar_done(tarea, tareas: list, raiz: Path, nota: str = "",
         # RF-28: qué tests cambiaron durante la tarea (auditable).
         evento["tests_modificados"] = vigilancia.get("modificados", [])
         evento["tests_sospechosos"] = vigilancia.get("sospechosos", [])
-    if not ok:
+    if not evento["pruebas_ok"]:
         tarea.estado = FALLIDA
         evento["evento"] = "fallida"
         return evento
@@ -118,6 +122,36 @@ def registrar_fail(tarea, nota: str) -> dict:
     tarea.estado = FALLIDA
     return {"fecha": _ahora(), "tarea": tarea.id, "evento": "fallida",
             "pruebas_ok": False, "pruebas": "", "nota": nota}
+
+
+def sugerir(tarea, raiz: Path, plan_id: str, texto: str,
+            origen: str = "") -> dict:
+    """Registra una mejora detectada sin incorporarla al alcance (§40).
+
+    La sugerencia vive en `.specify/sugerencias/<PLAN>.json`; los archivos,
+    dependencias y criterio de la tarea no cambian. El evento `sugerencia`
+    se anuncia a los hooks del IDE sin bloquear la tarea.
+    """
+    from core.hooks import disparar  # noqa: PLC0415
+    from core.plan import registrar_sugerencia  # noqa: PLC0415
+
+    alcance = {"archivos": list(tarea.archivos),
+               "dependencias": list(tarea.dependencias),
+               "criterio": tarea.criterio}
+    sugerencia = registrar_sugerencia(raiz, plan_id, texto,
+                                      origen=origen, tarea=tarea.id)
+    despues = {"archivos": list(tarea.archivos),
+               "dependencias": list(tarea.dependencias),
+               "criterio": tarea.criterio}
+    if despues != alcance:
+        raise BuildError(
+            "una sugerencia no puede modificar el alcance de la tarea (§40)")
+    hooks = disparar(raiz, "sugerencia",
+                     {"plan": plan_id, "tarea": tarea.id,
+                      "resultado": sugerencia.estado,
+                      "sugerencia": sugerencia.id})
+    return {"sugerencia": sugerencia.to_dict(),
+            "alcance_intacto": True, "hooks": hooks}
 
 
 def tarjeta_pin(tarea, spec) -> str:

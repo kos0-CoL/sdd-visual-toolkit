@@ -18,6 +18,7 @@ MEMORY_DIR = "memory"
 STATE_FILE = "current_task.json"
 HISTORY_FILE = "execution_history.jsonl"
 STATE_BACKUP = "current_task.json.bak"
+COMPACTAR_POR_DEFECTO = 200
 
 CLAVES_ESTADO = {
     "plan_id", "spec_id", "fase", "total_tareas", "ultimo_exito_indice",
@@ -118,6 +119,75 @@ def historial(raiz, plan_id: str | None = None, ultimos: int = 0) -> list[dict]:
     if plan_id is not None:
         eventos = [e for e in eventos if e.get("plan") == plan_id]
     return eventos[-ultimos:] if ultimos > 0 else eventos
+
+
+def _fsync_dir(carpeta: Path) -> None:
+    """Sincroniza el directorio del journal tras el renombrado atómico."""
+    try:
+        fd = os.open(str(carpeta), os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(fd)
+    except OSError:
+        pass
+    finally:
+        os.close(fd)
+
+
+def _reescribir_atomico(ruta: Path, texto: str) -> None:
+    """Reescribe el historial completo o nada: nunca deja JSONL a medias."""
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(ruta.parent), prefix=".historial-",
+                               suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(texto)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, ruta)
+        _fsync_dir(ruta.parent)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
+def compactar(raiz, plan_id: str | None = None,
+              conservar: int = COMPACTAR_POR_DEFECTO) -> dict:
+    """Compacta el JSONL conservando los últimos N eventos por plan (§13).
+
+    Los eventos recientes son la memoria operativa; el historial completo
+    crecía sin límite y degradaba la consulta. Con `plan_id` solo se compacta
+    ese plan; los demás quedan intactos. La reescritura es atómica: un corte
+    deja el historial anterior completo, no uno truncado.
+    """
+    if conservar < 0:
+        raise JournalError("conservar debe ser >= 0")
+    ruta = _memoria(Path(raiz)) / HISTORY_FILE
+    eventos = historial(raiz)
+    if conservar == 0 and plan_id is None:
+        conservados = []
+    else:
+        indices: dict[str, list[int]] = {}
+        for posicion, evento in enumerate(eventos):
+            indices.setdefault(str(evento.get("plan")), []).append(posicion)
+        mantener: set[int] = set()
+        for plan, posiciones in indices.items():
+            if plan_id is not None and plan != plan_id:
+                mantener.update(posiciones)
+            else:
+                mantener.update(posiciones[-conservar:] if conservar else [])
+        conservados = [e for i, e in enumerate(eventos) if i in mantener]
+    descartados = len(eventos) - len(conservados)
+    if descartados:
+        texto = "".join(json.dumps(e, ensure_ascii=False) + "\n"
+                        for e in conservados)
+        _reescribir_atomico(ruta, texto)
+    return {"antes": len(eventos), "despues": len(conservados),
+            "descartados": descartados}
 
 
 def checkpoint(raiz, plan_id: str, spec_id: str, tarea, proxima_id: str | None,

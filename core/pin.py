@@ -144,6 +144,16 @@ def verificar_cambios(tarea, baseline: dict, raiz: Path) -> list[Desviacion]:
                     "B", rel,
                     f"firma cambiada en «{nombre}»: {viejas[nombre]} → {firma}; "
                     "verifique compatibilidad con llamadores (§12.B)"))
+        if actual["sha"] != anterior["sha"] and not es_prueba:
+            # Cambio de cuerpo interno sin cambio de firma pública: la
+            # desviación queda como B (técnica, con justificación) hasta
+            # corroborarse con evidencia de comportamiento (§12.B).
+            if not any(d.archivo == rel for d in desviaciones):
+                desviaciones.append(Desviacion(
+                    "B", rel,
+                    f"cambio de cuerpo interno en «{rel}» sin cambio de firma "
+                    f"pública (hash {str(anterior.get('sha', ''))[:8]} → "
+                    f"{str(actual.get('sha', ''))[:8]}): verifique comportamiento (§12.B)"))
 
     # Archivos fuera de los autorizados: se compara la foto amplia de la
     # línea base contra el árbol actual. Incluye archivos NUEVOS (no están

@@ -1,8 +1,9 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-235%20passed-green)
+![Tests](https://img.shields.io/badge/tests-259%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 Orquestador del **Desarrollo Guiado por Especificaciones (SDD)**: convierta
 una idea en SPEC, plan, tareas, código verificado y evidencia trazable —
@@ -67,7 +68,7 @@ cd sdd-visual-toolkit
 # 2. (Opcional pero recomendado) entorno virtual
 python3 -m venv .venv && source .venv/bin/activate
 
-# 3. Verificar que todo funciona (235 tests, ~10 s)
+# 3. Verificar que todo funciona (259 tests, ~10 s)
 python3 -m pytest tests/ -q
 
 # 4. Probar la CLI
@@ -184,10 +185,12 @@ $ toolkit cierre TASK-003
   — paleta `SDD: …`, vista lateral de fases y tareas, barra de estado.
   Sin dependencias ni build. Ver `ide/COMPATIBILIDAD.md` para la matriz
   por entorno (Antigravity: pendiente de verificación en su entorno real).
-- **MCP:** `python3 mcp/server.py` expone `exportar_estado`, `siguiente` y
-  `tablero` por stdio para Claude Code y otros clientes.
-- **Hooks:** scripts ejecutables en `.specify/hooks/tarea_abierta/` y
-  `tarea_cerrada/` (env `SDD_EVENTO/PLAN/TAREA/RESULTADO/ROOT`).
+- **MCP:** `python3 mcp/server.py` expone por stdio las herramientas de
+  lectura `exportar_estado`, `siguiente` y `tablero`, y las operativas
+  `asignar_tarea`, `registrar_resultado` y `marcar_completada`.
+- **Hooks:** scripts ejecutables en `.specify/hooks/<evento>/` para
+  `tarea_abierta`, `tarea_cerrada` y `sugerencia`
+  (env `SDD_EVENTO/PLAN/TAREA/RESULTADO/SUGERENCIA/ROOT`).
 
 ## Testing adaptativo
 
@@ -202,7 +205,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (235 tests, uno o más por RF)
+tests/      Suite pytest (259 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (fuente de las RF)
@@ -213,3 +216,11 @@ docs/       SPEC-v0.1.md (fuente de las RF)
 - ✅ §44 completo (30/30) + RF-08 a RF-43 verificadas con tests.
 - ⏳ Pendiente en entorno real: prueba manual en Antigravity y VS Code.
 - La fuente de verdad es `docs/SPEC-v0.1.md`; cada RF cita su sección.
+
+## Contribuir
+
+- Guía: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md).
+- Proceso de release: [`docs/RELEASES.md`](docs/RELEASES.md).
+- Integración continua: `.github/workflows/ci.yml` (Python 3.11–3.14).
+- Licencia: MIT (ver [`LICENSE`](LICENSE)).

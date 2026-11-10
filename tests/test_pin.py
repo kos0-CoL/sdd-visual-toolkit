@@ -80,6 +80,24 @@ class TestPin(unittest.TestCase):
         finally:
             tmp.cleanup()
 
+    def test_cambio_de_cuerpo_sin_firma_es_B(self):
+        tmp = tempfile.TemporaryDirectory()
+        try:
+            raiz = Path(tmp.name)
+            (raiz / "src").mkdir()
+            (raiz / "src" / "a.py").write_text(
+                "def f():\n    return 1\n", encoding="utf-8")
+            tarea = _tarea()
+            base = tomar_baseline(tarea, raiz)
+            base["__arbol__"] = foto_arbol(raiz)
+            (raiz / "src" / "a.py").write_text(
+                "def f():\n    return 2\n", encoding="utf-8")
+            desvs = verificar_cambios(tarea, base, raiz)
+            self.assertTrue(any(d.clase == "B" and "cambio de cuerpo interno" in d.detalle
+                                for d in desvs))
+        finally:
+            tmp.cleanup()
+
     def test_firma_cambiada_es_B(self):
         tmp = _proyecto()
         try:

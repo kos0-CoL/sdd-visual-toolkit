@@ -38,6 +38,7 @@ def despachar(args) -> int:
             print("   (sin hooks)")
     if not hay:
         print("Agregue un script ejecutable en `.specify/hooks/<evento>/`;")
-        print("recibe SDD_EVENTO, SDD_PLAN, SDD_TAREA, SDD_RESULTADO, SDD_ROOT.")
+        print("recibe SDD_EVENTO, SDD_PLAN, SDD_TAREA, SDD_RESULTADO, "
+              "SDD_SUGERENCIA, SDD_ROOT.")
         print("Un hook que falla se declara y se registra, no bloquea (§47).")
     return 0

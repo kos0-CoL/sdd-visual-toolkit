@@ -96,6 +96,28 @@ class TestHarness(unittest.TestCase):
         self.assertIn("tests/test_x.py", h)
         self.assertNotIn("tests/no_existe.py", h)
 
+    def test_una_sola_invocacion_por_fase(self):
+        from core import harness as mod  # noqa: PLC0415
+
+        (self.root / "tests" / "test_x.py").write_text(VERDE, encoding="utf-8")
+        (self.root / "tests" / "test_y.py").write_text(VERDE, encoding="utf-8")
+        llamadas = []
+        original = mod._invocar
+
+        def espia(*args, **kwargs):
+            llamadas.append(args[1])
+            return original(*args, **kwargs)
+
+        mod._invocar = espia
+        try:
+            r = mod.correr(self.root, "unitarios",
+                           ["tests/test_x.py", "tests/test_y.py"])
+        finally:
+            mod._invocar = original
+        self.assertEqual(len(llamadas), 1)
+        self.assertEqual(r["total"], 2)
+        self.assertTrue(r["ok"])
+
 
 if __name__ == "__main__":
     unittest.main()

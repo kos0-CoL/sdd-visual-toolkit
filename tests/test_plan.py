@@ -13,7 +13,15 @@ from cli.commands import clarify as cmd_clarify  # noqa: E402
 from cli.commands import enrich as cmd_enrich  # noqa: E402
 from cli.commands import plan as cmd_plan  # noqa: E402
 from cli.commands import specify as cmd_specify  # noqa: E402
-from core.plan import derivar_orden, investigar  # noqa: E402
+from core.plan import (  # noqa: E402
+    PlanError,
+    archivos_afectados,
+    decidir_sugerencia,
+    derivar_orden,
+    investigar,
+    listar_sugerencias,
+    registrar_sugerencia,
+)
 from state import store  # noqa: E402
 
 KIOSCO = "Quiero un dashboard para gestionar un kiosco. Debe registrar ventas."
@@ -132,6 +140,88 @@ class TestCLIPlan(unittest.TestCase):
         paso_pend = next(t for t in titulos if "pendientes" in t.lower())
         self.assertIn("REQ-002", [r for p in derivar_orden(spec)
                                    if p.titulo == paso_pend for r in p.refs])
+
+
+class TestSugerencias(unittest.TestCase):
+    """RF-07/§40: una mejora no entra al alcance actual por su cuenta."""
+
+    def test_registra_fuera_del_plan_y_de_las_tareas(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            store.inicializar_proyecto(raiz)
+            sug = registrar_sugerencia(raiz, "PLAN-001", "  Usar caché  ",
+                                       origen="agente-x", tarea="TASK-001")
+            self.assertEqual(sug.id, "SUG-001")
+            self.assertEqual(sug.estado, "sugerida")
+            self.assertEqual(sug.texto, "Usar caché")
+            self.assertEqual(listar_sugerencias(raiz, "PLAN-001"), [sug])
+            # No se crea plan ni tareas: la sugerencia vive aparte.
+            self.assertFalse((raiz / ".specify" / "planes").exists())
+            self.assertFalse((raiz / ".specify" / "tareas.json").exists())
+            segunda = registrar_sugerencia(raiz, "PLAN-001", "Otra")
+            self.assertEqual(segunda.id, "SUG-002")
+
+    def test_sugerencia_vacia_se_rechaza(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            store.inicializar_proyecto(raiz)
+            with self.assertRaises(PlanError):
+                registrar_sugerencia(raiz, "PLAN-001", "   ")
+
+    def test_decision_humana_explicita(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            store.inicializar_proyecto(raiz)
+            sug = registrar_sugerencia(raiz, "PLAN-001", "Mejora")
+            with self.assertRaises(PlanError):
+                decidir_sugerencia(raiz, "PLAN-001", sug.id, "auto")
+            self.assertEqual(sug.estado, "sugerida")
+            aprobada = decidir_sugerencia(raiz, "PLAN-001", sug.id, "aprobada")
+            self.assertEqual(aprobada.estado, "aprobada")
+            self.assertEqual(listar_sugerencias(raiz, "PLAN-001")[0].estado,
+                             "aprobada")
+            with self.assertRaises(PlanError):
+                decidir_sugerencia(raiz, "PLAN-001", "SUG-999", "descartada")
+
+
+class TestCacheAnalisis(unittest.TestCase):
+    """§8.2/§4: análisis incremental sin repetir trabajo innecesario."""
+
+    def test_cache_reutiliza_sin_cambios_e_invalida_al_cambiar(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            store.inicializar_proyecto(raiz)
+            (raiz / "app").mkdir()
+            fuente = raiz / "app" / "caja.py"
+            fuente.write_text("X = 1\n", encoding="utf-8")
+            primero = investigar(raiz)
+            self.assertFalse(primero["es_greenfield"])
+            cache = raiz / ".specify" / "cache" / "analisis.json"
+            self.assertTrue(cache.exists())
+            self.assertEqual(investigar(raiz), primero)  # se reutiliza
+            fuente.write_text("X = 1\nY = 2\n", encoding="utf-8")
+            afectados = archivos_afectados(raiz)
+            self.assertTrue(afectados["hay_cache"])
+            self.assertIn("app/caja.py", afectados["cambiados"])
+            investigar(raiz)  # recalcula y refresca la caché
+            self.assertEqual(archivos_afectados(raiz)["cambiados"], [])
+
+    def test_sin_specify_no_escribe_cache(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            (raiz / "a.py").write_text("X = 1\n", encoding="utf-8")
+            hall = investigar(raiz)
+            self.assertFalse(hall["es_greenfield"])
+            self.assertFalse((raiz / ".specify").exists())
+            self.assertFalse(archivos_afectados(raiz)["hay_cache"])
+
+    def test_usar_cache_false_recalcula(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            store.inicializar_proyecto(raiz)
+            (raiz / "a.py").write_text("X = 1\n", encoding="utf-8")
+            investigar(raiz)
+            self.assertEqual(investigar(raiz, usar_cache=False), investigar(raiz))
 
 
 if __name__ == "__main__":

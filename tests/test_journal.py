@@ -13,6 +13,7 @@ from core.journal import (  # noqa: E402
     JournalError,
     actualizar_estado,
     checkpoint,
+    compactar,
     estado_inicial,
     historial,
     leer_estado,
@@ -74,6 +75,37 @@ class TestJournal(unittest.TestCase):
         texto = resumen(self.root, "PLAN-001")
         self.assertIn("1 completada(s)", texto)
         self.assertIn("TASK-001", texto)
+
+    def test_compactar_conserva_ultimos_por_plan(self):
+        for i in range(5):
+            registrar(self.root, "PLAN-001",
+                      {"tarea": "T%03d" % i, "evento": "en_curso"})
+        registrar(self.root, "PLAN-002", {"tarea": "T100", "evento": "en_curso"})
+        r = compactar(self.root, conservar=2)
+        self.assertEqual((r["antes"], r["despues"], r["descartados"]),
+                         (6, 3, 3))
+        self.assertEqual([e["tarea"] for e in historial(self.root)],
+                         ["T003", "T004", "T100"])
+
+    def test_compactar_un_plan_deja_otros_intactos(self):
+        registrar(self.root, "PLAN-001", {"tarea": "T001", "evento": "en_curso"})
+        registrar(self.root, "PLAN-002", {"tarea": "T100", "evento": "en_curso"})
+        r = compactar(self.root, plan_id="PLAN-002", conservar=0)
+        self.assertEqual(r["descartados"], 1)
+        self.assertEqual([e["plan"] for e in historial(self.root)], ["PLAN-001"])
+
+    def test_compactar_sin_exceso_no_reescribe(self):
+        registrar(self.root, "PLAN-001", {"tarea": "T001", "evento": "en_curso"})
+        ruta = self.root / ".specify" / "memory" / "execution_history.jsonl"
+        antes = ruta.read_bytes()
+        r = compactar(self.root, conservar=50)
+        self.assertEqual(r["descartados"], 0)
+        self.assertEqual(ruta.read_bytes(), antes)
+        self.assertEqual(list(ruta.parent.glob(".historial-*")), [])
+
+    def test_compactar_conservar_negativo_falla(self):
+        with self.assertRaises(JournalError):
+            compactar(self.root, conservar=-1)
 
 
 if __name__ == "__main__":
