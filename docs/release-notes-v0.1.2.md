@@ -25,12 +25,27 @@ formato de `.specify/`: es compatible con proyectos creados con 0.1.0 y 0.1.1.
   con la primera entrada del CHANGELOG, y el badge de tests del README con lo
   que recolecta pytest.
 
+## Cambiado
+
+- **CI más rápida donde se podía medir.** La suite corre en paralelo con
+  `pytest-xdist -n 2`: 16,1 s → 10,0 s por job (medido en tres ejecuciones) y
+  −15 % de cómputo por run. El reloj total del run no baja, porque el límite
+  pasó a ser el aprovisionamiento del runner.
+- **Protección de `main` con ruleset** en lugar de la protección clásica:
+  todo cambio entra por pull request, sin exención para administradores,
+  y la configuración queda versionada y consultable.
+
 ## Corregido
 
 - El servidor MCP informaba `0.1.0` después de publicar la 0.1.1: CLI y MCP
   comparten ahora una sola fuente de versión, así que no pueden desfasarse.
 - El badge de tests del README anunciaba 259 pruebas cuando la suite tenía
   268.
+- **Las instrucciones del README no funcionaban en un entorno limpio**: el
+  paso de verificación ejecutaba `pytest` sin instalarlo. Ahora hay un paso
+  explícito de dependencias de desarrollo.
+- El ejemplo de sesión mostraba un formato de salida que ya no existe y el
+  rango de RF omitía las primeras; ambos quedaron corregidos y verificados.
 
 ## Instalación
 
