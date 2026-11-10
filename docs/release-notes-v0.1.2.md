@@ -39,8 +39,8 @@ formato de `.specify/`: es compatible con proyectos creados con 0.1.0 y 0.1.1.
 
 - El servidor MCP informaba `0.1.0` después de publicar la 0.1.1: CLI y MCP
   comparten ahora una sola fuente de versión, así que no pueden desfasarse.
-- El badge de tests del README anunciaba 259 pruebas cuando la suite tenía
-  268.
+- El badge de tests del README anunciaba 259 pruebas frente a una suite
+  mayor.
 - **Las instrucciones del README no funcionaban en un entorno limpio**: el
   paso de verificación ejecutaba `pytest` sin instalarlo. Ahora hay un paso
   explícito de dependencias de desarrollo.
