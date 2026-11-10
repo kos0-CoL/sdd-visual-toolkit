@@ -68,8 +68,8 @@ cd sdd-visual-toolkit
 # 2. (Opcional pero recomendado) entorno virtual
 python3 -m venv .venv && source .venv/bin/activate
 
-# 3. Dependencias de desarrollo (las únicas: pytest y pytest-xdist)
-python3 -m pip install pytest pytest-xdist
+# 3. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
+python3 -m pip install -r requirements-dev.txt
 
 # 4. Verificar que todo funciona (269 tests, ~12 s; ~6 s con -n 2)
 python3 -m pytest tests/ -q

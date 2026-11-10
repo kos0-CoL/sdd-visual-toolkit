@@ -1,0 +1,4 @@
+# Dependencias de desarrollo (el paquete en sí no tiene ninguna).
+# La CI y CONTRIBUTING.md instalan desde este archivo.
+pytest
+pytest-xdist
