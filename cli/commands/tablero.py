@@ -103,6 +103,8 @@ def recopilar(raiz) -> dict:
             "—" if ult.get("cobertura_pct") is None
             else "%s%%" % ult.get("cobertura_pct"),
             ult.get("tarea", "?"))
+        estado["pruebas_ok"] = bool(ult.get("pruebas_ok"))
+        estado["pruebas_tarea"] = ult.get("tarea")
         if not ult.get("pruebas_ok"):
             estado["proxima"] = "test %s" % ult.get("tarea")
     else:

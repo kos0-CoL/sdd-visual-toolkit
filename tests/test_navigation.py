@@ -63,6 +63,32 @@ class TestSugerir(unittest.TestCase):
                        "tarea_actual": "TASK-002"})
         self.assertEqual(nav["recomendada"]["comando"], "traza SPEC-001")
 
+    def test_pruebas_en_verde_cierra_la_tarea(self):
+        nav = sugerir({"spec_id": "SPEC-001", "plan_id": "PLAN-001",
+                       "fase": "🧪 Pruebas", "pruebas_ok": True,
+                       "pruebas_tarea": "TASK-007",
+                       "tarea_actual": "TASK-007"})
+        self.assertEqual(nav["recomendada"]["comando"],
+                         "build PLAN-001 --done TASK-007")
+        texto = render(nav)
+        self.assertIn("[ build PLAN-001 --done TASK-007 ]", texto)
+        self.assertNotIn("rojo", texto)
+
+    def test_pruebas_en_verde_sin_tarea_en_curso_avanza_el_plan(self):
+        nav = sugerir({"spec_id": "SPEC-001", "plan_id": "PLAN-001",
+                       "fase": "🧪 Pruebas", "pruebas_ok": True,
+                       "pruebas_tarea": "TASK-001", "tarea_actual": None})
+        self.assertEqual(nav["recomendada"]["comando"], "build PLAN-001")
+        self.assertNotIn("rojo", render(nav))
+
+    def test_pruebas_en_rojo_manda_repetir_el_test(self):
+        nav = sugerir({"spec_id": "SPEC-001", "plan_id": "PLAN-001",
+                       "fase": "🧪 Pruebas", "pruebas_ok": False,
+                       "pruebas_tarea": "TASK-002",
+                       "proxima": "test TASK-002"})
+        self.assertEqual(nav["recomendada"]["comando"], "test TASK-002")
+        self.assertIn("rojo", nav["nota"])
+
     def test_render_mantiene_estado(self):
         nav = sugerir({"spec_id": "SPEC-001", "fase": "💾 Tareas",
                        "proxima": "build PLAN-001"})
