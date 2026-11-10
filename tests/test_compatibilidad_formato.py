@@ -67,7 +67,8 @@ class TestEstadoDe010(unittest.TestCase):
     def test_leer_no_reescribe_el_estado(self):
         antes = huella(self.raiz)
         for comando in (["tablero"], ["status"], ["export"], ["siguiente"],
-                        ["history", "TASK-001"]):
+                        ["history", "TASK-001"], ["validate", "TASK-001"],
+                        ["rollback", "--list", "TASK-001"]):
             codigo, salida = ejecutar(self.raiz, *comando)
             self.assertEqual(codigo, 0, "%s: %s" % (comando, salida))
         self.assertEqual(huella(self.raiz), antes,
@@ -82,6 +83,96 @@ class TestEstadoDe010(unittest.TestCase):
         codigo, salida = ejecutar(self.raiz, "tablero")
         self.assertEqual(codigo, 0, salida)
         self.assertIn("SPEC-001", salida)
+
+
+class TestPinYSnapshotsDe010(unittest.TestCase):
+    """`validate` y `rollback` sobre la línea base y los snapshots de 0.1.0.
+
+    El fixture trae el pin del build y dos instantáneas de la tarea tal como
+    los escribió 0.1.0. Los archivos del proyecto no están, así que el
+    estado previo se materializa restaurando el snapshot 0.
+    """
+
+    def setUp(self):
+        self._temporal = tempfile.TemporaryDirectory()
+        self.raiz = Path(self._temporal.name) / "proyecto"
+        shutil.copytree(FIXTURE, self.raiz)
+
+    def tearDown(self):
+        self._temporal.cleanup()
+
+    def restaurar(self, *extra: str) -> tuple[int, str]:
+        return ejecutar(self.raiz, "rollback", "--restore", "TASK-001",
+                        *extra)
+
+    def archivo(self, rel: str) -> str:
+        return (self.raiz / rel).read_text(encoding="utf-8")
+
+    def test_validate_lee_la_linea_base_antigua_sin_rehacerla(self):
+        pin = self.raiz / ".specify" / "pines" / "TASK-001.json"
+        antes = sha256(pin.read_bytes()).hexdigest()
+        codigo, salida = ejecutar(self.raiz, "validate", "TASK-001")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("VALIDADO", salida)
+        self.assertNotIn("sin línea base previa", salida)
+        self.assertEqual(sha256(pin.read_bytes()).hexdigest(), antes,
+                         "validate rehizo la línea base de 0.1.0")
+
+    def test_rollback_lista_los_snapshots_antiguos(self):
+        codigo, salida = ejecutar(self.raiz, "rollback", "--list", "TASK-001")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("snapshot TASK-001/0", salida)
+        self.assertIn("snapshot TASK-001/1", salida)
+
+    def test_rollback_restaura_el_ultimo_snapshot(self):
+        codigo, salida = self.restaurar()
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("desde snapshot 1", salida)
+        self.assertIn("def descuento", self.archivo("src/productos.py"))
+
+    def test_restaurar_el_snapshot_previo_devuelve_el_stub(self):
+        self.restaurar("--n", "1")
+        codigo, salida = self.restaurar("--n", "0")
+        self.assertEqual(codigo, 0, salida)
+        texto = self.archivo("src/productos.py")
+        self.assertNotIn("descuento", texto)
+        self.assertIn("NotImplementedError", texto)
+
+    def test_validate_ve_el_cambio_del_intento_fallido(self):
+        self.restaurar("--n", "1")
+        codigo, salida = ejecutar(self.raiz, "validate", "TASK-001")
+        self.assertEqual(codigo, 1, salida)
+        self.assertIn("OBSERVADO", salida)
+        self.assertIn("[pin-B] src/productos.py", salida)
+        self.assertNotIn("sin línea base previa", salida)
+
+    def test_restaurar_y_validar_deja_el_veredicto_limpio(self):
+        self.restaurar("--n", "1")
+        self.restaurar("--n", "0")
+        codigo, salida = ejecutar(self.raiz, "validate", "TASK-001")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("VALIDADO", salida)
+
+    def test_rollback_no_toca_lo_ajeno(self):
+        ajeno = self.raiz / "specs" / "SPEC-001.json"
+        antes = sha256(ajeno.read_bytes()).hexdigest()
+        self.restaurar("--n", "1")
+        self.assertEqual(sha256(ajeno.read_bytes()).hexdigest(), antes,
+                         "el rollback tocó un archivo fuera de la tarea")
+
+    def test_rollback_anota_el_evento_en_el_historial(self):
+        self.restaurar("--n", "0")
+        historial = self.archivo(".specify/memory/execution_history.jsonl")
+        ultima = json.loads(historial.strip().splitlines()[-1])
+        self.assertEqual(ultima["evento"], "rollback")
+        self.assertEqual(ultima["tarea"], "TASK-001")
+        self.assertEqual(ultima["plan"], "PLAN-001")
+
+    def test_snapshot_inexistente_no_inventa_estado(self):
+        codigo, salida = self.restaurar("--n", "7")
+        self.assertEqual(codigo, 1, salida)
+        self.assertIn("snapshot inexistente", salida)
+        self.assertFalse((self.raiz / "src" / "productos.py").exists())
 
 
 if __name__ == "__main__":
