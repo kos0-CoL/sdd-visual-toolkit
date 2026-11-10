@@ -14,6 +14,11 @@ creados con 0.1.0 a 0.1.2.
 
 ### Añadido
 
+- `scripts/verificar_release.py --previo` comprueba antes de crear el tag
+  lo que se revisaba a mano y tarde: tag libre en local y en `origin`, árbol
+  limpio, `HEAD` en `origin/main`, versión y CHANGELOG en el árbol,
+  `[No publicado]` vacía, enlaces del pie a la versión nueva, notas con
+  enlaces al tag futuro y versión posterior a la última etiquetada.
 - `tests/test_compatibilidad_formato.py` abre con la CLI actual un estado
   real creado por 0.1.0 (fixture sin regenerar, con su procedencia
   documentada) y comprueba que se lee, que leer no lo reescribe y que

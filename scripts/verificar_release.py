@@ -11,9 +11,15 @@ Comprueba en un solo comando, para una versión dada:
 4. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
    apunta al tag y que la ruta existe en esa ref.
 
+Con `--previo` comprueba lo que se puede saber **antes** de crear el tag
+(tag libre, árbol limpio, `HEAD` en `origin/main`, versión y CHANGELOG en el
+árbol, `[No publicado]` vacía, notas con enlaces al tag futuro y versión
+posterior a la última etiquetada).
+
 Uso:
 
     python3 scripts/verificar_release.py [VERSION]
+    python3 scripts/verificar_release.py --previo [VERSION]
 
 Sin argumentos usa la versión de `pyproject.toml`. Sale con 0 si todo pasa
 y con 1 listando los fallos. No modifica nada.
@@ -37,6 +43,7 @@ _BLOB = re.compile(
 _VERSION_TOML = re.compile(r'^version = "([^"]+)"', re.MULTILINE)
 _VERSION_CHANGELOG = re.compile(r"^## \[([^\]]+)\] — \d{4}-\d{2}-\d{2}$",
                                 re.MULTILINE)
+_TAG_VERSION = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 
 
 @dataclass(frozen=True)
@@ -75,6 +82,133 @@ def _tag_remoto(correr_comando: Callable[[list[str]], Salida],
                 tag: str) -> Salida:
     return correr_comando(["git", "ls-remote", "--tags", "origin",
                            f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}"])
+
+
+def _vinetas_sin_publicar(changelog: str) -> list[str]:
+    """Viñetas que siguen dentro de `[No publicado]`."""
+    partes = changelog.split("## [No publicado]", 1)
+    if len(partes) < 2:
+        return []
+    resto = partes[1]
+    siguiente = re.search(r"^## \[", resto, re.MULTILINE)
+    bloque = resto[:siguiente.start()] if siguiente else resto
+    return re.findall(r"^- ", bloque, re.MULTILINE)
+
+
+def _tupla(version: str) -> tuple[int, ...]:
+    return tuple(int(parte) for parte in version.split("."))
+
+
+def verificar_previo(version: str,
+                     correr_comando: Callable[[list[str]], Salida] = correr,
+                     raiz: Path = RAIZ,
+                     ) -> list[tuple[bool, str]]:
+    """Comprobaciones posibles antes de crear el tag `vX.Y.Z`."""
+    tag = f"v{version}"
+    resultados: list[tuple[bool, str]] = []
+
+    def anotar(correcto: bool, mensaje: str) -> bool:
+        resultados.append((correcto, mensaje))
+        return correcto
+
+    local = correr_comando(["git", "rev-parse", "--verify", "--quiet",
+                            f"refs/tags/{tag}"])
+    if local.codigo == 0:
+        anotar(False, f"el tag {tag} ya existe en local: es inmutable, "
+                      "use otra versión")
+        return resultados
+    remoto = correr_comando(["git", "ls-remote", "--tags", "origin",
+                             f"refs/tags/{tag}"])
+    if remoto.codigo == 0 and remoto.stdout.strip():
+        anotar(False, f"el tag {tag} ya existe en origin: es inmutable, "
+                      "use otra versión")
+        return resultados
+    anotar(True, f"tag {tag} libre en local y en origin")
+
+    estado = correr_comando(["git", "status", "--porcelain"])
+    anotar(not estado.stdout.strip(),
+           "árbol limpio" if not estado.stdout.strip()
+           else "hay cambios sin confirmar: el tag apuntaría a otro contenido")
+
+    rama = correr_comando(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+    cabeza = correr_comando(["git", "rev-parse", "HEAD"]).stdout.strip()
+    publicado = correr_comando(["git", "rev-parse", "origin/main"])
+    nombre_rama = rama.stdout.strip()
+    if nombre_rama != "main":
+        anotar(False, f"la rama actual es {nombre_rama or 'desconocida'}, "
+                      "no main: el tag debe caer sobre main")
+    elif not cabeza or cabeza != publicado.stdout.strip():
+        anotar(False, "HEAD no coincide con origin/main: empuje antes de "
+                      "etiquetar")
+    else:
+        anotar(True, "HEAD en main y sincronizado con origin")
+
+    try:
+        datos = tomllib.loads(
+            (raiz / "pyproject.toml").read_text(encoding="utf-8"))
+        en_arbol = str(datos["project"]["version"])
+    except (OSError, KeyError, tomllib.TOMLDecodeError) as error:
+        anotar(False, f"no se pudo leer la versión de pyproject.toml: {error}")
+        return resultados
+    anotar(en_arbol == version,
+           f"pyproject.toml declara {version}" if en_arbol == version
+           else f"pyproject.toml declara {en_arbol}, no {version}")
+
+    try:
+        changelog = (raiz / "CHANGELOG.md").read_text(encoding="utf-8")
+    except OSError as error:
+        anotar(False, f"no se pudo leer CHANGELOG.md: {error}")
+        return resultados
+    publicadas = _VERSION_CHANGELOG.findall(changelog)
+    anotar(bool(publicadas) and publicadas[0] == version,
+           f"primera versión con fecha del CHANGELOG: "
+           f"{publicadas[0] if publicadas else 'ninguna'}")
+
+    sin_publicar = _vinetas_sin_publicar(changelog)
+    anotar(not sin_publicar,
+           "`[No publicado]` quedó vacía" if not sin_publicar
+           else f"`[No publicado]` conserva {len(sin_publicar)} viñeta(s): "
+                "muévalas a la sección nueva")
+
+    anotar(f"compare/{tag}...HEAD" in changelog
+           and f"releases/tag/{tag}" in changelog,
+           f"enlaces del pie apuntan a {tag}"
+           if f"compare/{tag}...HEAD" in changelog
+           and f"releases/tag/{tag}" in changelog
+           else f"los enlaces del pie no apuntan a {tag}")
+
+    notas_ruta = raiz / "docs" / f"release-notes-{tag}.md"
+    try:
+        notas = notas_ruta.read_text(encoding="utf-8")
+    except OSError:
+        anotar(False, f"falta docs/release-notes-{tag}.md")
+        return resultados
+    enlaces = _enlaces(notas)
+    if not enlaces:
+        anotar(False, f"docs/release-notes-{tag}.md no enlaza "
+                      "ficheros del repo")
+        return resultados
+    for _repositorio, ref, ruta in enlaces:
+        if ref != tag:
+            anotar(False, f"{ruta} apunta a {ref}, no a {tag}")
+        elif not (raiz / ruta).is_file():
+            anotar(False, f"{ruta} no existe en el árbol")
+        else:
+            anotar(True, f"{ruta} existe y apunta a {tag}")
+
+    etiquetas = correr_comando(["git", "tag", "--list", "v*"]).stdout.split()
+    previas = [(m.groups(), m.group(0))
+               for m in (_TAG_VERSION.match(e) for e in etiquetas) if m]
+    if not previas:
+        anotar(True, "no hay versiones etiquetadas todavía")
+    else:
+        grupos, ultima = max(previas, key=lambda par: _tupla(".".join(
+            par[0])))
+        anotar(_tupla(version) > _tupla(".".join(grupos)),
+               f"{version} es posterior a {ultima}" if _tupla(version) >
+               _tupla(".".join(grupos))
+               else f"{version} no es posterior a {ultima}")
+    return resultados
 
 
 def verificar(version: str,
@@ -170,19 +304,30 @@ def main(argumentos: list[str] | None = None) -> int:
     if args and args[0] in {"-h", "--help"}:
         print(__doc__.strip())
         return 0
+    previo = "--previo" in args
+    args = [arg for arg in args if arg != "--previo"]
     version = args[0].removeprefix("v") if args else version_local()
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         print(f"⛔ versión no válida: {version!r} (se espera X.Y.Z)")
         return 1
-    print(f"Verificando la release v{version}…")
+    if previo:
+        print(f"Verificando antes de etiquetar v{version}…")
+        resultados = verificar_previo(version)
+    else:
+        print(f"Verificando la release v{version}…")
+        resultados = verificar(version)
     fallos = 0
-    for correcto, mensaje in verificar(version):
+    for correcto, mensaje in resultados:
         print(f"{'✅' if correcto else '⛔'} {mensaje}")
         fallos += 0 if correcto else 1
     if fallos:
         print(f"\n⛔ {fallos} comprobación(es) fallida(s)")
         return 1
-    print(f"\n✅ v{version} verificada: tag, release y enlaces")
+    if previo:
+        print(f"\n✅ {version} lista para etiquetar: "
+              f"git tag -a v{version}")
+    else:
+        print(f"\n✅ v{version} verificada: tag, release y enlaces")
     return 0
 
 
