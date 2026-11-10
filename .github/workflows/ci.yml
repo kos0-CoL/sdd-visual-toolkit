@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Permite arrancar los checks sobre una rama sin abrir otro PR ni esperar
+  # a que GitHub cree el run de `pull_request` (ver docs/BRANCH_PROTECTION.md).
+  workflow_dispatch:
 
 permissions:
   contents: read
