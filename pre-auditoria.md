@@ -1,5 +1,10 @@
 # Pre-auditoría: SDD Visual Toolkit
 
+> **Alcance del documento.** Inspección estática hecha el 2026-11-10, antes de
+> la remediación. Sus cifras, su estado de madurez y su diagnóstico describen
+> el repositorio de entonces, no el actual: lo que hoy hay se documenta en
+> `README.md`, `CHANGELOG.md` y `docs/REMEDIACION.md`.
+
 Análisis de SDD Visual Toolkit.
 
 Voy a evaluarlo como un producto de ingeniería, no solamente como un repositorio que tiene muchas funcionalidades o una buena presentación.
@@ -429,7 +434,7 @@ Esto indica que estamos ante un proyecto muy reciente.
 
 No significa que el código sea malo. Significa que todavía no tiene evidencia de uso prolongado, compatibilidad en distintos entornos ni madurez comunitaria.
 
-Tampoco encontré una configuración de GitHub Actions en el árbol consultado. Por lo tanto, no hay evidencia de una integración continua que ejecute automáticamente esos tests ante cada modificación.
+Tampoco encontré una configuración de GitHub Actions en el árbol consultado. Por lo tanto, en esa instantánea no había evidencia de una integración continua que ejecutase automáticamente esos tests ante cada modificación.
 
 ### Mi valoración técnica
 

@@ -1,7 +1,12 @@
 # Plan de Remediación — SDD Visual Toolkit
 
-> Derivado de `pre-auditoria.md` (§1–§8) y de la revisión de código en curso
-> (`core/`, `cli/`, `state/`, `mcp/`, `ide/`).
+> **Alcance del documento.** Registro del plan ejecutado y cerrado el
+> 2026-11-10 en la 0.1.0. Los conteos de pruebas de cada etapa (`238` a `259`
+> passed) son los de su momento; el estado vigente está en `README.md` y
+> `CHANGELOG.md`.
+>
+> Derivado de `pre-auditoria.md` (§1–§8) y de la revisión de código hecha
+> entonces (`core/`, `cli/`, `state/`, `mcp/`, `ide/`).
 
 ## 1. Alcance y metodología
 
@@ -165,7 +170,7 @@ GitHub Actions, sin licencia reconocida, sin releases).
 2. `LICENSE` — MIT (titular `kos0-CoL`, año 2026); `pyproject.toml`
    declara `license = { text = "MIT" }`.
 3. `CHANGELOG.md` — Keep a Changelog + SemVer, con `0.1.0` consolidada
-   (etapas E0–E6) y la sección `No publicado` vacía.
+   (etapas E0–E6) y la sección `No publicado` reabierta y vacía.
 4. `CONTRIBUTING.md` — entorno, suite, reglas de diseño (solo stdlib,
    no inventar resultados, humano implementa/motor verifica), flujo de PR
    y licencia de las contribuciones.
