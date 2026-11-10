@@ -65,6 +65,29 @@ Parámetros del ruleset:
   «Expected — Waiting for status to be reported». Falla de forma ruidosa, no
   silenciosa, pero hay que actualizar la regla en el mismo cambio.
 
+## Cuando el CI tarda en arrancar
+
+GitHub crea el run de `pull_request` con retraso variable: en diez PR
+seguidos de este repositorio (2026-11-10) fue de **4 s a 447 s**, y ningún
+evento se perdió — los runs aparecieron tarde, no dejaron de crearse. No es
+configuración del repo: hay un solo workflow, sin filtros de rutas.
+
+La tentación es cerrar y reabrir el PR. No lo haga: eso emite un segundo
+evento, crea un run duplicado (el doble de jobs) y el PR queda `BLOCKED`
+hasta que terminan los dos, porque el ruleset exige los checks y hay dos
+juegos en curso.
+
+Espere con un sondeo acotado, o arranque el workflow a mano sobre la rama:
+
+```bash
+gh workflow run CI --ref <rama>
+gh pr checks <n> --watch --interval 10
+```
+
+El run manual reporta los mismos nombres de check sobre el mismo commit, así
+que satisface el ruleset. Antes de fusionar, `mergeStateStatus` debe ser
+`CLEAN`: los cinco checks verdes de un run no bastan si hay otro en curso.
+
 ## Riesgo asumido
 
 - **Sin revisiones obligatorias**: con una sola cuenta, exigirlas bloquearía

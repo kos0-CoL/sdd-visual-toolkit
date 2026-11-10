@@ -12,6 +12,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   tag anotado existe en el remoto y apunta al commit con la versión, que la
   release no quedó en borrador y que los enlaces de las notas resuelven en
   la ref del tag.
+- El workflow de CI acepta `workflow_dispatch`, para arrancar los checks
+  sobre una rama cuando GitHub tarda en crear el run del PR, sin duplicar
+  runs cerrando y reabriendo.
 - `scripts/verificar_release.py` hace esas comprobaciones en un solo
   comando: tag anotado local y remoto, versión en `pyproject.toml` y
   CHANGELOG dentro del tag, release publicada y enlaces de las notas
