@@ -53,9 +53,11 @@ si una prueba comparte estado con otra, se verá ahí.
 
 GitHub puede tardar varios minutos en crear el run del pull request. No
 cierre y reabra el PR: eso emite un segundo evento, duplica los jobs y deja
-el merge bloqueado hasta que terminan ambos runs. Arránquelo a mano:
+el merge bloqueado hasta que terminan ambos runs. Compruebe si el run ya
+existe y solo si no hay ninguno arránquelo a mano:
 
 ```bash
+gh run list --commit "$(git rev-parse HEAD)" --limit 1
 gh workflow run CI --ref <rama>
 gh pr checks <n> --watch --interval 10
 ```
