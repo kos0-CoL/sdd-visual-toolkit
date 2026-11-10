@@ -8,11 +8,16 @@ que vuelva a romperse.
 
 from __future__ import annotations
 
+import contextlib
 import fnmatch
 import importlib
+import io
 import tomllib
 import unittest
 from pathlib import Path
+
+from cli.main import main
+from core.version import version
 
 RAIZ = Path(__file__).resolve().parent.parent
 
@@ -65,6 +70,27 @@ class TestEmpaquetado(unittest.TestCase):
         self.assertTrue(find.get("namespaces") is True)
         self.assertFalse((RAIZ / "core" / "__init__.py").exists(),
                          "si se agregan __init__.py, revise esta configuración")
+
+
+class TestVersion(unittest.TestCase):
+    def setUp(self):
+        self.version_pyproject = _config()["project"]["version"]
+
+    def test_version_sale_de_pyproject(self):
+        self.assertEqual(version(), self.version_pyproject)
+
+    def test_cli_expone_la_version(self):
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            with self.assertRaises(SystemExit) as error:
+                main(["--version"])
+        self.assertEqual(error.exception.code, 0)
+        self.assertEqual(salida.getvalue().strip(),
+                         f"toolkit {self.version_pyproject}")
+
+    def test_mcp_usa_la_misma_version(self):
+        servidor = importlib.import_module("mcp.server")
+        self.assertEqual(servidor.VERSION, version())
 
 
 
