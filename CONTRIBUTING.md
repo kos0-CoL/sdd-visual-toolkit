@@ -67,3 +67,4 @@ este repositorio (ver `LICENSE`).
 - Remediación: `docs/REMEDIACION.md`
 - Cambios: `CHANGELOG.md`
 - Releases: `docs/RELEASES.md`
+- Seguridad: `SECURITY.md`
