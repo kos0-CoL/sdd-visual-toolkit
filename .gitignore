@@ -3,3 +3,8 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+
+# Artefactos de empaquetado
+*.egg-info/
+build/
+dist/
