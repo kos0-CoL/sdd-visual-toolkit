@@ -6,20 +6,7 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
-### Corregido
-
-- `README.md`: las instrucciones ejecutaban `pytest` sin instalarlo (un
-  entorno limpio fallaba en ese paso), decían 259 pruebas con 268, el ejemplo
-  de sesión mostraba un formato de salida que ya no existe y el rango de RF
-  omitía las primeras.
-
-### Cambiado
-
-- La CI ejecuta la suite en paralelo con `pytest-xdist -n 2`; `pytest-xdist`
-  pasa a ser dependencia de desarrollo documentada en `CONTRIBUTING.md`.
-- La protección de `main` usa un ruleset de repositorio en vez de la
-  protección clásica: todo cambio debe entrar por pull request, sin exención
-  para administradores. Detalles en `docs/BRANCH_PROTECTION.md`.
+Sin cambios pendientes de publicar.
 
 ## [0.1.2] — 2026-11-10
 
@@ -38,10 +25,23 @@ formato de `.specify/`.
 - Pruebas que mantienen alineadas la versión de `pyproject.toml` con la
   primera entrada del CHANGELOG y el badge de tests del README con la suite.
 
+### Cambiado
+
+- La CI ejecuta la suite en paralelo con `pytest-xdist -n 2` (16,1 s → 10,0 s
+  por job en la medición); `pytest-xdist` queda como dependencia de
+  desarrollo en `CONTRIBUTING.md`.
+- La protección de `main` usa un ruleset de repositorio en vez de la
+  protección clásica: todo cambio debe entrar por pull request, sin exención
+  para administradores. Detalles en `docs/BRANCH_PROTECTION.md`.
+
 ### Corregido
 
 - El servidor MCP informaba `0.1.0` después de publicar la 0.1.1.
 - El badge de tests del README anunciaba 259 pruebas con 268 en la suite.
+- `README.md`: las instrucciones ejecutaban `pytest` sin instalarlo (un
+  entorno limpio fallaba en ese paso), decían 259 pruebas con 268, el ejemplo
+  de sesión mostraba un formato de salida que ya no existe y el rango de RF
+  omitía las primeras.
 
 ## [0.1.1] — 2026-11-10
 
