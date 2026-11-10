@@ -28,10 +28,10 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Instalar pytest
-        run: python -m pip install --upgrade pip pytest
+        run: python -m pip install --upgrade pip pytest pytest-xdist
 
       - name: Ejecutar la suite
-        run: python -m pytest tests/ -q
+        run: python -m pytest tests/ -q -n 2
 
   install:
     name: instalación editable
