@@ -1,13 +1,19 @@
-# Rama protegida `main`
+# Protección de `main` y de los tags de versión
 
 La protección vive en la configuración del repositorio en GitHub, no en el
 código: este archivo la describe para que no dependa de la memoria de una
 persona. **GitHub no lee este archivo**; si algo cambia acá, hay que
 aplicarlo en el repositorio.
 
-Desde el 2026-11-10 se usa un **ruleset de repositorio** (id `26952531`,
-«main protegida») en lugar de la protección clásica de rama, que quedó
-eliminada.
+Hay dos rulesets activos:
+
+| Ruleset | Id | Alcance |
+|---|---|---|
+| «main protegida» | `26952531` | la rama por defecto |
+| «tags de versión inmutables» | `26955481` | `refs/tags/v*` |
+
+Desde el 2026-11-10 la rama usa un ruleset en lugar de la protección clásica,
+que quedó eliminada.
 
 ## Reglas activas
 
@@ -69,6 +75,29 @@ Parámetros del ruleset:
   puede no haber sido probado exactamente como quedará. Aceptable con una
   persona fusionando de a un PR; con varios PR en paralelo conviene activarlo.
 
+## Tags de versión
+
+Los tags `v*` son inmutables (`deletion`, `update`, `non_fast_forward`, sin
+`bypass_actors`). Antes de aplicar la regla se comprobó que un tag se podía
+mover sin dejar rastro; hoy eso falla. Comportamiento verificado el
+2026-11-10:
+
+| Acción | Resultado |
+|---|---|
+| Mover `v0.1.0` a otro commit | `push declined due to repository rule violations` |
+| Borrar `v0.1.1` | `push declined due to repository rule violations` |
+| Crear un tag nuevo `v0.0.1-prueba` | Permitido (y luego eliminado) |
+
+Consecuencias prácticas:
+
+- **Publicar una versión no cambia**: crear y empujar el tag sigue funcionando;
+  sólo se bloquea moverlo o borrarlo después.
+- **Un tag equivocado queda fijo.** Para corregirlo hay que desactivar el
+  ruleset (`PUT` con `"enforcement": "disabled"`), borrar el tag y volver a
+  activarlo. Es el precio de que un release no pueda cambiar bajo los pies.
+- **El patrón es `refs/tags/v*`**: un tag con otro nombre (por ejemplo
+  `prueba-tmp`) no está cubierto y se puede borrar normalmente.
+
 ## Replicar el ruleset
 
 ```bash
@@ -116,15 +145,41 @@ gh api -X POST repos/kos0-CoL/sdd-visual-toolkit/rulesets --input - <<'JSON'
 JSON
 ```
 
+## Replicar el ruleset de tags
+
+```bash
+gh api -X POST repos/kos0-CoL/sdd-visual-toolkit/rulesets --input - <<'JSON'
+{
+  "name": "tags de versión inmutables",
+  "target": "tag",
+  "enforcement": "active",
+  "conditions": {"ref_name": {"include": ["refs/tags/v*"], "exclude": []}},
+  "rules": [
+    {"type": "deletion"},
+    {"type": "update"},
+    {"type": "non_fast_forward"}
+  ],
+  "bypass_actors": []
+}
+JSON
+```
+
 ## Comprobar el estado actual
 
 ```bash
 gh api repos/kos0-CoL/sdd-visual-toolkit/rulesets \
-  --jq '.[] | {name, enforcement, target}'
+  --jq '.[] | {name, target, enforcement}'
+
+gh api repos/kos0-CoL/sdd-visual-toolkit/rulesets/26955481 \
+  --jq '{name, target, enforcement, reglas: [.rules[].type]}'
 
 gh api repos/kos0-CoL/sdd-visual-toolkit/rules/branches/main \
   --jq '.[] | {type, params: (.parameters // {})}'
+
+git ls-remote --tags origin
 ```
 
-Para desactivarlo sin borrarlo: `PATCH /rulesets/26952531` con
-`{"enforcement": "disabled"}`.
+Para desactivar un ruleset sin borrarlo, `PUT /rulesets/<id>` con el cuerpo
+completo y `"enforcement": "disabled"`. `PATCH` sobre ese endpoint devuelve
+`404` aunque el ruleset exista: es una limitación de la API, no un error de
+permisos.

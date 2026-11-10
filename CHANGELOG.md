@@ -6,7 +6,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
-Sin cambios pendientes de publicar.
+### Añadido
+
+- Los tags `v*` son inmutables: un ruleset impide moverlos o borrarlos una
+  vez publicados. Los releases nuevos se siguen creando igual; detalles en
+  `docs/BRANCH_PROTECTION.md`.
 
 ## [0.1.2] — 2026-11-10
 
