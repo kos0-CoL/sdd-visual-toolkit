@@ -67,10 +67,16 @@ Parámetros del ruleset:
 
 ## Cuando el CI tarda en arrancar
 
-GitHub crea el run de `pull_request` con retraso variable: en diez PR
+GitHub crea el run de `pull_request` con retraso variable: en veinte PR
 seguidos de este repositorio (2026-11-10) fue de **4 s a 447 s**, y ningún
 evento se perdió — los runs aparecieron tarde, no dejaron de crearse. No es
 configuración del repo: hay un solo workflow, sin filtros de rutas.
+
+Tampoco es la cola de runners: los 31 runs de `push` a `main` del mismo
+workflow arrancaron en 3–4 s —salvo uno de la primera hora, a 138 s, cuyo
+commit local precede al push en diez minutos—, incluidas las franjas en que
+un PR esperaba minutos. La demora está en cómo GitHub crea el run de
+`pull_request`, que es justo el paso que el respaldo manual saltea.
 
 La tentación es cerrar y reabrir el PR. No lo haga: eso emite un segundo
 evento, crea un run duplicado (el doble de jobs) y el PR queda `BLOCKED`
@@ -86,8 +92,8 @@ gh run list --commit "$(git rev-parse HEAD)" --limit 1
 
 Si no imprime nada, el run todavía no se creó y puede arrancarlo a mano; si
 imprime una línea —aunque siga en `queued`—, ya está en camino: espérelo. La
-latencia es del lado de GitHub y el run acaba llegando (en el PR #24 tardó
-370 s).
+latencia es del evento `pull_request` y el run acaba llegando (en el PR #24
+tardó 370 s).
 
 La comprobación y el disparo no son atómicos: si el run automático nace entre
 ambos, quedan dos con el mismo efecto benigno descrito al final (al PR #26 le
