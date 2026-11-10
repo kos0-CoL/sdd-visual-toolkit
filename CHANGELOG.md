@@ -23,6 +23,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `pre-auditoria.md` y `docs/REMEDIACION.md` se leían como el estado actual:
+  ninguno estaba fechado y el segundo decía «revisión en curso». Ahora abren
+  con una nota de alcance que los sitúa en el 2026-11-10 y remite al estado
+  vigente, y la frase sobre la falta de CI pasa al tiempo de entonces.
 - `docs/RELEASES.md` pedía el CHANGELOG «sin dejar `No publicado`», lo que
   se lee como borrar la sección; ahora dice que las viñetas pasan a la
   sección nueva y que `[No publicado]` queda arriba, vacía.
