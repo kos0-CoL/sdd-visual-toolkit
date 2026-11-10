@@ -31,6 +31,25 @@ las notas.
 siguiente, como pide Keep a Changelog. `scripts/verificar_release.py` busca
 la primera sección **con fecha**, así que la vacía no lo confunde.
 
+## Verificar antes de etiquetar
+
+El mismo script comprueba, sobre el árbol y los tags, todo lo que se puede
+saber antes de crear el tag:
+
+```bash
+python3 scripts/verificar_release.py --previo 0.1.3
+```
+
+Revisa que el tag esté libre en local y en `origin` (los tags son
+inmutables), que el árbol esté limpio, que `HEAD` sea `origin/main`, que
+`pyproject.toml` y la primera sección con fecha del CHANGELOG coincidan con
+la versión, que `[No publicado]` quede vacía, que los enlaces del pie del
+CHANGELOG apunten a la versión nueva, que las notas existan con sus enlaces
+al tag y que la versión sea posterior a la última etiquetada.
+
+Este es el momento de corregir: después de `git push origin vX.Y.Z` ya no
+se puede, porque los tags `v*` son inmutables.
+
 ## Publicar
 
 El tag debe apuntar al commit que ya contiene el CHANGELOG y la versión de
@@ -48,7 +67,8 @@ verde y los artefactos corresponden al tag.
 ## Verificar tras publicar
 
 Crear el tag no termina la release. El script del repo lo comprueba todo de
-una vez, sin instalar nada y sin modificar nada:
+una vez, sin instalar nada y sin modificar nada (sin `--previo`, que es el
+modo de antes de etiquetar):
 
 ```bash
 python3 scripts/verificar_release.py          # versión de pyproject.toml
