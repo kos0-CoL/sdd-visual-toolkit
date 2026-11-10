@@ -10,6 +10,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 - La CI ejecuta la suite en paralelo con `pytest-xdist -n 2`; `pytest-xdist`
   pasa a ser dependencia de desarrollo documentada en `CONTRIBUTING.md`.
+- La protección de `main` usa un ruleset de repositorio en vez de la
+  protección clásica: todo cambio debe entrar por pull request, sin exención
+  para administradores. Detalles en `docs/BRANCH_PROTECTION.md`.
 
 ## [0.1.2] — 2026-11-10
 
