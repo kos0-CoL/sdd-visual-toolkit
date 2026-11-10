@@ -25,10 +25,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
-          cache-dependency-path: pyproject.toml
+          cache-dependency-path: requirements-dev.txt
 
-      - name: Instalar pytest
-        run: python -m pip install --upgrade pip pytest pytest-xdist
+      - name: Instalar dependencias de desarrollo
+        run: python -m pip install --upgrade pip -r requirements-dev.txt
 
       - name: Ejecutar la suite
         run: python -m pytest tests/ -q -n 2

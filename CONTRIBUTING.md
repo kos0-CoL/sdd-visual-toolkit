@@ -8,7 +8,7 @@ una suite que se ejecuta en segundos.
 
 - Python >= 3.11
 - `pytest` para la suite y `pytest-xdist` para ejecutarla en paralelo
-  (únicas dependencias de desarrollo)
+  (únicas dependencias de desarrollo, declaradas en `requirements-dev.txt`)
 
 ## Preparar el entorno
 
@@ -17,7 +17,7 @@ git clone https://github.com/kos0-CoL/sdd-visual-toolkit.git
 cd sdd-visual-toolkit
 python3 -m venv .venv
 source .venv/bin/activate
-python3 -m pip install --upgrade pip pytest pytest-xdist
+python3 -m pip install --upgrade pip -r requirements-dev.txt
 ```
 
 ## Ejecutar las pruebas

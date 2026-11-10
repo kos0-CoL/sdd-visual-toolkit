@@ -12,6 +12,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   vez publicados. Los releases nuevos se siguen creando igual; detalles en
   `docs/BRANCH_PROTECTION.md`.
 
+### Cambiado
+
+- Las dependencias de desarrollo (`pytest`, `pytest-xdist`) se declaran en
+  `requirements-dev.txt`; la CI y `CONTRIBUTING.md` instalan desde ahí en vez
+  de repetir la lista, y la caché de pip usa esa clave.
+
 ### Corregido
 
 - El tablero buscaba el estado `"en curso"`, pero `build` marca `en_curso`: la
