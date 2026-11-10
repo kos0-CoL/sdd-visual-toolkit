@@ -1,0 +1,222 @@
+{
+  "plan_id": "PLAN-001",
+  "spec_id": "SPEC-001",
+  "version": "1.0.0",
+  "status": "validado",
+  "hallazgos": {
+    "es_greenfield": true,
+    "lenguajes": {},
+    "total_archivos": 0,
+    "codigo": [],
+    "pruebas": [],
+    "datos": [],
+    "dependencias": [],
+    "manifiestos": [],
+    "modulos_internos": [],
+    "imports_externos": [],
+    "carpetas": [],
+    "convenciones": []
+  },
+  "relacionados": [],
+  "modificables": [],
+  "intactos": [],
+  "creables": [
+    "Estructura completa según §6–§8 de la SPEC"
+  ],
+  "reutilizables": [],
+  "arquitectura": "Proyecto vacío: propuesta mínima derivada de la SPEC — módulos por entidad de §6 (5), capa de reglas de §7 y CLI/API según §8. Sin arquitectura previa que respetar.",
+  "dependencias_plan": [],
+  "orden": [
+    {
+      "id": "P01",
+      "titulo": "Modelar entidades de §6",
+      "refs": [
+        "§6:Productos",
+        "§6:Inventario",
+        "§6:Ventas",
+        "§6:Movimientos de stock",
+        "§6:Caja"
+      ],
+      "detalle": "Estructuras de datos antes que comportamiento."
+    },
+    {
+      "id": "P02",
+      "titulo": "Implementar reglas de negocio de §7",
+      "refs": [
+        "§7"
+      ],
+      "detalle": "Las reglas condicionan los funcionales."
+    },
+    {
+      "id": "P03",
+      "titulo": "Implementar REQ-001: [ENR-001/ENT-1] Productos",
+      "refs": [
+        "REQ-001"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P04",
+      "titulo": "Implementar REQ-002: [ENR-001/ENT-2] Inventario",
+      "refs": [
+        "REQ-002"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P05",
+      "titulo": "Implementar REQ-003: [ENR-001/ENT-3] Ventas",
+      "refs": [
+        "REQ-003"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P06",
+      "titulo": "Implementar REQ-004: [ENR-001/ENT-4] Movimientos de stock",
+      "refs": [
+        "REQ-004"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P07",
+      "titulo": "Implementar REQ-005: [ENR-001/ENT-5] Caja",
+      "refs": [
+        "REQ-005"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P08",
+      "titulo": "Implementar REQ-006: [ENR-001/FUN-1] Visualización de productos",
+      "refs": [
+        "REQ-006"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P09",
+      "titulo": "Implementar REQ-007: [ENR-001/FUN-2] Consulta de existencias",
+      "refs": [
+        "REQ-007"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P10",
+      "titulo": "Implementar REQ-008: [ENR-001/FUN-3] Registro de ventas",
+      "refs": [
+        "REQ-008"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P11",
+      "titulo": "Implementar REQ-009: [ENR-001/FUN-4] Actualización de inventario",
+      "refs": [
+        "REQ-009"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P12",
+      "titulo": "Implementar REQ-010: [ENR-001/FUN-5] Búsqueda de productos",
+      "refs": [
+        "REQ-010"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P13",
+      "titulo": "Implementar REQ-011: [ENR-001/MEJ-1] Alertas de stock mínimo",
+      "refs": [
+        "REQ-011"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P14",
+      "titulo": "Implementar REQ-012: [ENR-001/MEJ-2] Lectura de códigos de barras",
+      "refs": [
+        "REQ-012"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P15",
+      "titulo": "Implementar REQ-013: [ENR-001/MEJ-3] Cierre de caja",
+      "refs": [
+        "REQ-013"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P16",
+      "titulo": "Implementar REQ-014: [ENR-001/MEJ-4] Reportes de ventas",
+      "refs": [
+        "REQ-014"
+      ],
+      "detalle": ""
+    },
+    {
+      "id": "P17",
+      "titulo": "Integrar persistencia y componentes",
+      "refs": [
+        "§9",
+        "§10"
+      ],
+      "detalle": "Conectar según fronteras de código; interfaces existentes intactas."
+    },
+    {
+      "id": "P18",
+      "titulo": "Escribir pruebas de §12 y ejecutar suite",
+      "refs": [
+        "CP-001",
+        "CP-002",
+        "CP-003",
+        "CP-004",
+        "CP-005",
+        "CP-006",
+        "CP-007",
+        "CP-008",
+        "CP-009",
+        "CP-010",
+        "CP-011",
+        "CP-012",
+        "CP-013",
+        "CP-014"
+      ],
+      "detalle": "Un caso por criterio antes de dar por terminado."
+    }
+  ],
+  "integracion": "Arranque desde cero siguiendo el orden de implementación.",
+  "riesgos": [
+    "Sin riesgos detectados con la evidencia actual."
+  ],
+  "compatibilidad": "N/A (greenfield).",
+  "impacto": "Sin impacto: no hay código existente que romper.",
+  "pruebas_estrategia": "Crear suite mínima desde cero: un caso por criterio de aceptación de §12.",
+  "validacion": [
+    "CRI-001 (REQ-001): Verificar: [ENR-001/ENT-1] Productos",
+    "CRI-002 (REQ-002): Verificar: [ENR-001/ENT-2] Inventario",
+    "CRI-003 (REQ-003): Verificar: [ENR-001/ENT-3] Ventas",
+    "CRI-004 (REQ-004): Verificar: [ENR-001/ENT-4] Movimientos de stock",
+    "CRI-005 (REQ-005): Verificar: [ENR-001/ENT-5] Caja",
+    "CRI-006 (REQ-006): Verificar: [ENR-001/FUN-1] Visualización de productos",
+    "CRI-007 (REQ-007): Verificar: [ENR-001/FUN-2] Consulta de existencias",
+    "CRI-008 (REQ-008): Verificar: [ENR-001/FUN-3] Registro de ventas",
+    "CRI-009 (REQ-009): Verificar: [ENR-001/FUN-4] Actualización de inventario",
+    "CRI-010 (REQ-010): Verificar: [ENR-001/FUN-5] Búsqueda de productos",
+    "CRI-011 (REQ-011): Verificar: [ENR-001/MEJ-1] Alertas de stock mínimo",
+    "CRI-012 (REQ-012): Verificar: [ENR-001/MEJ-2] Lectura de códigos de barras",
+    "CRI-013 (REQ-013): Verificar: [ENR-001/MEJ-3] Cierre de caja",
+    "CRI-014 (REQ-014): Verificar: [ENR-001/MEJ-4] Reportes de ventas"
+  ],
+  "alternativas": [
+    "SUGERENCIA (no aprobada): si la persistencia crece, evaluar SQLite frente a JSON plano. Decidir con datos reales de volumen.",
+    "SUGERENCIA (no aprobada): exponer API además de CLI solo si un funcional futuro lo exige; hoy no hay evidencia que lo pida."
+  ],
+  "created_at": "2026-11-10T22:21:48+00:00",
+  "updated_at": "2026-11-10T22:21:48+00:00"
+}

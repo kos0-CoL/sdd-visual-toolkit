@@ -1,0 +1,472 @@
+{
+  "plan_id": "PLAN-001",
+  "spec_id": "SPEC-001",
+  "tareas": [
+    {
+      "id": "TASK-001",
+      "descripcion": "Modelar entidades de §6",
+      "objetivo": "Modelar entidades de §6. Estructuras de datos antes que comportamiento.",
+      "archivos": [
+        "src/productos.py",
+        "tests/test_productos.py"
+      ],
+      "dependencias": [],
+      "precondiciones": [
+        "PLAN-001 validado (Quality Gate 2)"
+      ],
+      "resultado": "«Modelar entidades de §6» funcionando y verificado según su criterio.",
+      "criterio": "Criterio de §6:Productos: completar «Modelar entidades de §6» según su sección SPEC",
+      "pruebas": [
+        "CP-TASK-001 (crear con la implementación)"
+      ],
+      "estado": "completada",
+      "intentos": 1,
+      "refs": [
+        "§6:Productos",
+        "§6:Inventario",
+        "§6:Ventas",
+        "§6:Movimientos de stock",
+        "§6:Caja"
+      ]
+    },
+    {
+      "id": "TASK-002",
+      "descripcion": "Implementar reglas de negocio de §7",
+      "objetivo": "Implementar reglas de negocio de §7. Las reglas condicionan los funcionales.",
+      "archivos": [
+        "src/sec7.py",
+        "tests/test_sec7.py"
+      ],
+      "dependencias": [
+        "TASK-001"
+      ],
+      "precondiciones": [
+        "TASK-001 completada y verificada"
+      ],
+      "resultado": "«Implementar reglas de negocio de §7» funcionando y verificado según su criterio.",
+      "criterio": "Criterio de §7: completar «Implementar reglas de negocio de §7» según su sección SPEC",
+      "pruebas": [
+        "CP-TASK-002 (crear con la implementación)"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "§7"
+      ]
+    },
+    {
+      "id": "TASK-003",
+      "descripcion": "Implementar REQ-001: [ENR-001/ENT-1] Productos",
+      "objetivo": "Implementar REQ-001: [ENR-001/ENT-1] Productos.",
+      "archivos": [
+        "src/req_001.py",
+        "tests/test_req_001.py"
+      ],
+      "dependencias": [
+        "TASK-002"
+      ],
+      "precondiciones": [
+        "TASK-002 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-001: [ENR-001/ENT-1] Productos» funcionando y verificado según su criterio.",
+      "criterio": "CRI-001: Verificar: [ENR-001/ENT-1] Productos",
+      "pruebas": [
+        "CP-001"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-001"
+      ]
+    },
+    {
+      "id": "TASK-004",
+      "descripcion": "Implementar REQ-002: [ENR-001/ENT-2] Inventario",
+      "objetivo": "Implementar REQ-002: [ENR-001/ENT-2] Inventario.",
+      "archivos": [
+        "src/req_002.py",
+        "tests/test_req_002.py"
+      ],
+      "dependencias": [
+        "TASK-003"
+      ],
+      "precondiciones": [
+        "TASK-003 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-002: [ENR-001/ENT-2] Inventario» funcionando y verificado según su criterio.",
+      "criterio": "CRI-002: Verificar: [ENR-001/ENT-2] Inventario",
+      "pruebas": [
+        "CP-002"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-002"
+      ]
+    },
+    {
+      "id": "TASK-005",
+      "descripcion": "Implementar REQ-003: [ENR-001/ENT-3] Ventas",
+      "objetivo": "Implementar REQ-003: [ENR-001/ENT-3] Ventas.",
+      "archivos": [
+        "src/req_003.py",
+        "tests/test_req_003.py"
+      ],
+      "dependencias": [
+        "TASK-004"
+      ],
+      "precondiciones": [
+        "TASK-004 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-003: [ENR-001/ENT-3] Ventas» funcionando y verificado según su criterio.",
+      "criterio": "CRI-003: Verificar: [ENR-001/ENT-3] Ventas",
+      "pruebas": [
+        "CP-003"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-003"
+      ]
+    },
+    {
+      "id": "TASK-006",
+      "descripcion": "Implementar REQ-004: [ENR-001/ENT-4] Movimientos de stock",
+      "objetivo": "Implementar REQ-004: [ENR-001/ENT-4] Movimientos de stock.",
+      "archivos": [
+        "src/req_004.py",
+        "tests/test_req_004.py"
+      ],
+      "dependencias": [
+        "TASK-005"
+      ],
+      "precondiciones": [
+        "TASK-005 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-004: [ENR-001/ENT-4] Movimientos de stock» funcionando y verificado según su criterio.",
+      "criterio": "CRI-004: Verificar: [ENR-001/ENT-4] Movimientos de stock",
+      "pruebas": [
+        "CP-004"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-004"
+      ]
+    },
+    {
+      "id": "TASK-007",
+      "descripcion": "Implementar REQ-005: [ENR-001/ENT-5] Caja",
+      "objetivo": "Implementar REQ-005: [ENR-001/ENT-5] Caja.",
+      "archivos": [
+        "src/req_005.py",
+        "tests/test_req_005.py"
+      ],
+      "dependencias": [
+        "TASK-006"
+      ],
+      "precondiciones": [
+        "TASK-006 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-005: [ENR-001/ENT-5] Caja» funcionando y verificado según su criterio.",
+      "criterio": "CRI-005: Verificar: [ENR-001/ENT-5] Caja",
+      "pruebas": [
+        "CP-005"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-005"
+      ]
+    },
+    {
+      "id": "TASK-008",
+      "descripcion": "Implementar REQ-006: [ENR-001/FUN-1] Visualización de productos",
+      "objetivo": "Implementar REQ-006: [ENR-001/FUN-1] Visualización de productos.",
+      "archivos": [
+        "src/req_006.py",
+        "tests/test_req_006.py"
+      ],
+      "dependencias": [
+        "TASK-007"
+      ],
+      "precondiciones": [
+        "TASK-007 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-006: [ENR-001/FUN-1] Visualización de productos» funcionando y verificado según su criterio.",
+      "criterio": "CRI-006: Verificar: [ENR-001/FUN-1] Visualización de productos",
+      "pruebas": [
+        "CP-006"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-006"
+      ]
+    },
+    {
+      "id": "TASK-009",
+      "descripcion": "Implementar REQ-007: [ENR-001/FUN-2] Consulta de existencias",
+      "objetivo": "Implementar REQ-007: [ENR-001/FUN-2] Consulta de existencias.",
+      "archivos": [
+        "src/req_007.py",
+        "tests/test_req_007.py"
+      ],
+      "dependencias": [
+        "TASK-008"
+      ],
+      "precondiciones": [
+        "TASK-008 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-007: [ENR-001/FUN-2] Consulta de existencias» funcionando y verificado según su criterio.",
+      "criterio": "CRI-007: Verificar: [ENR-001/FUN-2] Consulta de existencias",
+      "pruebas": [
+        "CP-007"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-007"
+      ]
+    },
+    {
+      "id": "TASK-010",
+      "descripcion": "Implementar REQ-008: [ENR-001/FUN-3] Registro de ventas",
+      "objetivo": "Implementar REQ-008: [ENR-001/FUN-3] Registro de ventas.",
+      "archivos": [
+        "src/req_008.py",
+        "tests/test_req_008.py"
+      ],
+      "dependencias": [
+        "TASK-009"
+      ],
+      "precondiciones": [
+        "TASK-009 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-008: [ENR-001/FUN-3] Registro de ventas» funcionando y verificado según su criterio.",
+      "criterio": "CRI-008: Verificar: [ENR-001/FUN-3] Registro de ventas",
+      "pruebas": [
+        "CP-008"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-008"
+      ]
+    },
+    {
+      "id": "TASK-011",
+      "descripcion": "Implementar REQ-009: [ENR-001/FUN-4] Actualización de inventario",
+      "objetivo": "Implementar REQ-009: [ENR-001/FUN-4] Actualización de inventario.",
+      "archivos": [
+        "src/req_009.py",
+        "tests/test_req_009.py"
+      ],
+      "dependencias": [
+        "TASK-010"
+      ],
+      "precondiciones": [
+        "TASK-010 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-009: [ENR-001/FUN-4] Actualización de inventario» funcionando y verificado según su criterio.",
+      "criterio": "CRI-009: Verificar: [ENR-001/FUN-4] Actualización de inventario",
+      "pruebas": [
+        "CP-009"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-009"
+      ]
+    },
+    {
+      "id": "TASK-012",
+      "descripcion": "Implementar REQ-010: [ENR-001/FUN-5] Búsqueda de productos",
+      "objetivo": "Implementar REQ-010: [ENR-001/FUN-5] Búsqueda de productos.",
+      "archivos": [
+        "src/req_010.py",
+        "tests/test_req_010.py"
+      ],
+      "dependencias": [
+        "TASK-011"
+      ],
+      "precondiciones": [
+        "TASK-011 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-010: [ENR-001/FUN-5] Búsqueda de productos» funcionando y verificado según su criterio.",
+      "criterio": "CRI-010: Verificar: [ENR-001/FUN-5] Búsqueda de productos",
+      "pruebas": [
+        "CP-010"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-010"
+      ]
+    },
+    {
+      "id": "TASK-013",
+      "descripcion": "Implementar REQ-011: [ENR-001/MEJ-1] Alertas de stock mínimo",
+      "objetivo": "Implementar REQ-011: [ENR-001/MEJ-1] Alertas de stock mínimo.",
+      "archivos": [
+        "src/req_011.py",
+        "tests/test_req_011.py"
+      ],
+      "dependencias": [
+        "TASK-012"
+      ],
+      "precondiciones": [
+        "TASK-012 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-011: [ENR-001/MEJ-1] Alertas de stock mínimo» funcionando y verificado según su criterio.",
+      "criterio": "CRI-011: Verificar: [ENR-001/MEJ-1] Alertas de stock mínimo",
+      "pruebas": [
+        "CP-011"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-011"
+      ]
+    },
+    {
+      "id": "TASK-014",
+      "descripcion": "Implementar REQ-012: [ENR-001/MEJ-2] Lectura de códigos de barras",
+      "objetivo": "Implementar REQ-012: [ENR-001/MEJ-2] Lectura de códigos de barras.",
+      "archivos": [
+        "src/req_012.py",
+        "tests/test_req_012.py"
+      ],
+      "dependencias": [
+        "TASK-013"
+      ],
+      "precondiciones": [
+        "TASK-013 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-012: [ENR-001/MEJ-2] Lectura de códigos de barras» funcionando y verificado según su criterio.",
+      "criterio": "CRI-012: Verificar: [ENR-001/MEJ-2] Lectura de códigos de barras",
+      "pruebas": [
+        "CP-012"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-012"
+      ]
+    },
+    {
+      "id": "TASK-015",
+      "descripcion": "Implementar REQ-013: [ENR-001/MEJ-3] Cierre de caja",
+      "objetivo": "Implementar REQ-013: [ENR-001/MEJ-3] Cierre de caja.",
+      "archivos": [
+        "src/req_013.py",
+        "tests/test_req_013.py"
+      ],
+      "dependencias": [
+        "TASK-014"
+      ],
+      "precondiciones": [
+        "TASK-014 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-013: [ENR-001/MEJ-3] Cierre de caja» funcionando y verificado según su criterio.",
+      "criterio": "CRI-013: Verificar: [ENR-001/MEJ-3] Cierre de caja",
+      "pruebas": [
+        "CP-013"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-013"
+      ]
+    },
+    {
+      "id": "TASK-016",
+      "descripcion": "Implementar REQ-014: [ENR-001/MEJ-4] Reportes de ventas",
+      "objetivo": "Implementar REQ-014: [ENR-001/MEJ-4] Reportes de ventas.",
+      "archivos": [
+        "src/req_014.py",
+        "tests/test_req_014.py"
+      ],
+      "dependencias": [
+        "TASK-015"
+      ],
+      "precondiciones": [
+        "TASK-015 completada y verificada"
+      ],
+      "resultado": "«Implementar REQ-014: [ENR-001/MEJ-4] Reportes de ventas» funcionando y verificado según su criterio.",
+      "criterio": "CRI-014: Verificar: [ENR-001/MEJ-4] Reportes de ventas",
+      "pruebas": [
+        "CP-014"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "REQ-014"
+      ]
+    },
+    {
+      "id": "TASK-017",
+      "descripcion": "Integrar persistencia y componentes",
+      "objetivo": "Integrar persistencia y componentes. Conectar según fronteras de código; interfaces existentes intactas.",
+      "archivos": [
+        "src/sec9.py",
+        "tests/test_sec9.py"
+      ],
+      "dependencias": [
+        "TASK-016"
+      ],
+      "precondiciones": [
+        "TASK-016 completada y verificada"
+      ],
+      "resultado": "«Integrar persistencia y componentes» funcionando y verificado según su criterio.",
+      "criterio": "Criterio de §9: completar «Integrar persistencia y componentes» según su sección SPEC",
+      "pruebas": [
+        "CP-TASK-017 (crear con la implementación)"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "§9",
+        "§10"
+      ]
+    },
+    {
+      "id": "TASK-018",
+      "descripcion": "Escribir pruebas de §12 y ejecutar suite",
+      "objetivo": "Escribir pruebas de §12 y ejecutar suite. Un caso por criterio antes de dar por terminado.",
+      "archivos": [
+        "src/cp_001.py",
+        "tests/test_cp_001.py"
+      ],
+      "dependencias": [
+        "TASK-017"
+      ],
+      "precondiciones": [
+        "TASK-017 completada y verificada"
+      ],
+      "resultado": "«Escribir pruebas de §12 y ejecutar suite» funcionando y verificado según su criterio.",
+      "criterio": "Criterio de CP-001: completar «Escribir pruebas de §12 y ejecutar suite» según su sección SPEC",
+      "pruebas": [
+        "CP-TASK-018 (crear con la implementación)"
+      ],
+      "estado": "pendiente",
+      "intentos": 0,
+      "refs": [
+        "CP-001",
+        "CP-002",
+        "CP-003",
+        "CP-004",
+        "CP-005",
+        "CP-006",
+        "CP-007",
+        "CP-008",
+        "CP-009",
+        "CP-010",
+        "CP-011",
+        "CP-012",
+        "CP-013",
+        "CP-014"
+      ]
+    }
+  ]
+}
