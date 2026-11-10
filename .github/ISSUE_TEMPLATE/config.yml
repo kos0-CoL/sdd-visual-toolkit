@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Guía de contribución
+    url: https://github.com/kos0-CoL/sdd-visual-toolkit/blob/main/CONTRIBUTING.md
+    about: Requisitos, suite de pruebas y flujo de pull requests.
+  - name: Especificación del producto
+    url: https://github.com/kos0-CoL/sdd-visual-toolkit/blob/main/docs/SPEC-v0.1.md
+    about: Fuente de verdad de los requerimientos funcionales.
