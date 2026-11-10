@@ -9,7 +9,9 @@ Comprueba en un solo comando, para una versión dada:
    entrada con fecha del CHANGELOG;
 3. que la release de GitHub no quedó en borrador ni marcada como previa;
 4. que el cuerpo de la release es el de `docs/release-notes-vX.Y.Z.md` —sin
-   contar espacios ni saltos finales— y no un texto autogenerado;
+   contar espacios ni saltos finales— y no un texto autogenerado (para los
+   tags de `NOTAS_DEL_ARBOL` ese archivo se lee del árbol: su tag conserva
+   notas que la página rompe y no se puede corregir);
 5. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
    apunta al tag y que la ruta existe en esa ref.
 
@@ -46,6 +48,12 @@ _VERSION_TOML = re.compile(r'^version = "([^"]+)"', re.MULTILINE)
 _VERSION_CHANGELOG = re.compile(r"^## \[([^\]]+)\] — \d{4}-\d{2}-\d{2}$",
                                 re.MULTILINE)
 _TAG_VERSION = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+
+# Tags cuyas notas no se pueden leer tal cual: en 0.1.0 se escribieron con
+# enlaces relativos, GitHub los resolvió contra la raíz del repo y quedaron en
+# 404. El tag es inmutable y las notas del árbol ya se corrigieron, así que esa
+# versión se compara con el árbol y no con la copia del tag.
+NOTAS_DEL_ARBOL = {"v0.1.0"}
 
 
 @dataclass(frozen=True)
@@ -89,6 +97,15 @@ def _tag_remoto(correr_comando: Callable[[list[str]], Salida],
                 tag: str) -> Salida:
     return correr_comando(["git", "ls-remote", "--tags", "origin",
                            f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}"])
+
+
+def _notas_del_arbol(tag: str, raiz: Path) -> Salida:
+    """Notas de la release leídas del árbol, para los tags legado."""
+    ruta = raiz / "docs" / f"release-notes-{tag}.md"
+    try:
+        return Salida(0, ruta.read_text(encoding="utf-8"))
+    except OSError as error:
+        return Salida(1, stderr=str(error))
 
 
 def _vinetas_sin_publicar(changelog: str) -> list[str]:
@@ -220,6 +237,7 @@ def verificar_previo(version: str,
 
 def verificar(version: str,
               correr_comando: Callable[[list[str]], Salida] = correr,
+              raiz: Path = RAIZ,
               ) -> list[tuple[bool, str]]:
     """Ejecuta las comprobaciones y devuelve pares (correcto, mensaje)."""
     tag = f"v{version}"
@@ -287,9 +305,15 @@ def verificar(version: str,
                    else f"release {tag} sin publicar (borrador={borrador}, "
                         f"previa={previa})")
 
-    notas = correr_comando(["git", "show", f"{tag}:docs/release-notes-{tag}.md"])
+    if tag in NOTAS_DEL_ARBOL:
+        notas = _notas_del_arbol(tag, raiz)
+        origen = "el árbol"
+    else:
+        notas = correr_comando(["git", "show",
+                                f"{tag}:docs/release-notes-{tag}.md"])
+        origen = tag
     if notas.codigo != 0:
-        anotar(False, f"falta docs/release-notes-{tag}.md en {tag}")
+        anotar(False, f"falta docs/release-notes-{tag}.md en {origen}")
         return resultados
     mismo_cuerpo = (cuerpo is not None
                     and _normalizar(cuerpo) == _normalizar(notas.stdout))

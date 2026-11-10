@@ -76,10 +76,10 @@ python3 cli/main.py siguiente
 
 ## Enlaces
 
-- Changelog completo: [`CHANGELOG.md`](../CHANGELOG.md)
-- Contribución: [`CONTRIBUTING.md`](../CONTRIBUTING.md)
-- Proceso de release: [`docs/RELEASES.md`](RELEASES.md)
-- SPEC de producto: [`docs/SPEC-v0.1.md`](SPEC-v0.1.md)
+- Changelog completo: [`CHANGELOG.md`](https://github.com/kos0-CoL/sdd-visual-toolkit/blob/v0.1.0/CHANGELOG.md)
+- Contribución: [`CONTRIBUTING.md`](https://github.com/kos0-CoL/sdd-visual-toolkit/blob/v0.1.0/CONTRIBUTING.md)
+- Proceso de release: [`docs/RELEASES.md`](https://github.com/kos0-CoL/sdd-visual-toolkit/blob/v0.1.0/docs/RELEASES.md)
+- SPEC de producto: [`docs/SPEC-v0.1.md`](https://github.com/kos0-CoL/sdd-visual-toolkit/blob/v0.1.0/docs/SPEC-v0.1.md)
 
 **Full Changelog**: https://github.com/kos0-CoL/sdd-visual-toolkit/commits/v0.1.0
 
