@@ -77,7 +77,21 @@ evento, crea un run duplicado (el doble de jobs) y el PR queda `BLOCKED`
 hasta que terminan los dos, porque el ruleset exige los checks y hay dos
 juegos en curso.
 
-Espere con un sondeo acotado, o arranque el workflow a mano sobre la rama:
+El disparo manual es un respaldo, no un reflejo: compruebe primero si el run
+ya existe para ese commit.
+
+```bash
+gh run list --commit "$(git rev-parse HEAD)" --limit 1
+```
+
+Si no imprime nada, el run todavía no se creó y puede arrancarlo a mano; si
+imprime una línea —aunque siga en `queued`—, ya está en camino: espérelo. La
+latencia es del lado de GitHub y el run acaba llegando (en el PR #24 tardó
+370 s).
+
+La comprobación y el disparo no son atómicos: si el run automático nace entre
+ambos, quedan dos con el mismo efecto benigno descrito al final (al PR #26 le
+pasó, con 7 s de intervalo).
 
 ```bash
 gh workflow run CI --ref <rama>
@@ -87,6 +101,9 @@ gh pr checks <n> --watch --interval 10
 El run manual reporta los mismos nombres de check sobre el mismo commit, así
 que satisface el ruleset. Antes de fusionar, `mergeStateStatus` debe ser
 `CLEAN`: los cinco checks verdes de un run no bastan si hay otro en curso.
+Lanzarlo cuando ya había un run duplica los jobs (le pasó al PR #25, que
+creó el suyo en 8 s: ambos terminaron en verde y el merge siguió `CLEAN`,
+pero se ejecutó el doble de trabajo sin necesidad).
 
 ## Riesgo asumido
 
