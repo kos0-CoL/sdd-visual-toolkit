@@ -12,6 +12,7 @@ import contextlib
 import fnmatch
 import importlib
 import io
+import re
 import tomllib
 import unittest
 from pathlib import Path
@@ -91,6 +92,16 @@ class TestVersion(unittest.TestCase):
     def test_mcp_usa_la_misma_version(self):
         servidor = importlib.import_module("mcp.server")
         self.assertEqual(servidor.VERSION, version())
+
+    def test_version_coincide_con_el_changelog(self):
+        texto = (RAIZ / "CHANGELOG.md").read_text(encoding="utf-8")
+        publicadas = re.findall(r"^## \[([^\]]+)\] — \d{4}-\d{2}-\d{2}$",
+                                texto, re.MULTILINE)
+        self.assertTrue(publicadas, "el CHANGELOG no tiene versiones publicadas")
+        self.assertEqual(publicadas[0], self.version_pyproject,
+                         "la versión de pyproject.toml y la primera del "
+                         "CHANGELOG deben coincidir; actualice ambas al "
+                         "preparar una versión")
 
 
 
