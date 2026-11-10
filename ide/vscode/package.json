@@ -1,0 +1,81 @@
+{
+  "name": "sdd-visual-toolkit",
+  "displayName": "SDD Visual Toolkit",
+  "description": "Fases, tareas, pruebas e historial del SDD Visual Toolkit dentro del IDE. Lee el mismo estado central que la CLI (toolkit export).",
+  "version": "0.1.0",
+  "publisher": "sdd-toolkit",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "SDD Visual Toolkit",
+      "properties": {
+        "sddToolkit.python": {
+          "type": "string",
+          "default": "python3",
+          "description": "Intérprete para ejecutar la CLI del toolkit."
+        },
+        "sddToolkit.cliPath": {
+          "type": "string",
+          "default": "cli/main.py",
+          "description": "Ruta a cli/main.py relativa a la carpeta del proyecto."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sdd-explorer",
+          "title": "SDD",
+          "icon": "$(graph)"
+        }
+      ]
+    },
+    "views": {
+      "sdd-explorer": [
+        {
+          "id": "sddFases",
+          "name": "Fases y tareas"
+        }
+      ]
+    },
+    "commands": [
+      {"command": "sdd.init", "title": "SDD: Inicializar proyecto"},
+      {"command": "sdd.status", "title": "SDD: Estado + siguiente"},
+      {"command": "sdd.tablero", "title": "SDD: Ver tablero"},
+      {"command": "sdd.arbol", "title": "SDD: Ver árbol de estados"},
+      {"command": "sdd.siguiente", "title": "SDD: Qué sigue (píldoras)"},
+      {"command": "sdd.cierre", "title": "SDD: Mensaje final de fase"},
+      {"command": "sdd.enrich", "title": "SDD: Enriquecer idea"},
+      {"command": "sdd.specify", "title": "SDD: Generar / ver SPEC"},
+      {"command": "sdd.clarify", "title": "SDD: Aclarar SPEC"},
+      {"command": "sdd.investigar", "title": "SDD: Investigar repositorio"},
+      {"command": "sdd.plan", "title": "SDD: Generar / ver plan"},
+      {"command": "sdd.tasks", "title": "SDD: Desglosar / ver tareas"},
+      {"command": "sdd.analyze", "title": "SDD: Análisis de consistencia"},
+      {"command": "sdd.build", "title": "SDD: Implementar (build)"},
+      {"command": "sdd.test", "title": "SDD: Correr pruebas"},
+      {"command": "sdd.validate", "title": "SDD: Validar cambios"},
+      {"command": "sdd.pin", "title": "SDD: Spec pinning"},
+      {"command": "sdd.journal", "title": "SDD: Ver memoria (journal)"},
+      {"command": "sdd.recover", "title": "SDD: Recuperar sesión"},
+      {"command": "sdd.checkpoint", "title": "SDD: Ver checkpoints"},
+      {"command": "sdd.context", "title": "SDD: Ver contexto por modos"},
+      {"command": "sdd.flush", "title": "SDD: Renovar contexto (flush)"},
+      {"command": "sdd.rollback", "title": "SDD: Snapshots (rollback)"},
+      {"command": "sdd.ast", "title": "SDD: Chequeo estructural (AST)"},
+      {"command": "sdd.reporte", "title": "SDD: Reporte de pruebas"},
+      {"command": "sdd.traza", "title": "SDD: Trazabilidad SPEC→evidencia"},
+      {"command": "sdd.historia", "title": "SDD: Historial de tarea"},
+      {"command": "sdd.restricciones", "title": "SDD: Panel de restricciones"},
+      {"command": "sdd.diff", "title": "SDD: Visual AST diff"},
+      {"command": "sdd.export", "title": "SDD: Foto JSON (export)"},
+      {"command": "sdd.actualizar", "title": "SDD: Actualizar vista lateral"}
+    ]
+  }
+}
