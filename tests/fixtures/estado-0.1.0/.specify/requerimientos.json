@@ -1,0 +1,212 @@
+[
+  {
+    "id": "REQ-001",
+    "texto": "[ENR-001/ENT-1] Productos",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-002",
+    "texto": "[ENR-001/ENT-2] Inventario",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-003",
+    "texto": "[ENR-001/ENT-3] Ventas",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-004",
+    "texto": "[ENR-001/ENT-4] Movimientos de stock",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-005",
+    "texto": "[ENR-001/ENT-5] Caja",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-006",
+    "texto": "[ENR-001/FUN-1] Visualización de productos",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-007",
+    "texto": "[ENR-001/FUN-2] Consulta de existencias",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-008",
+    "texto": "[ENR-001/FUN-3] Registro de ventas",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-009",
+    "texto": "[ENR-001/FUN-4] Actualización de inventario",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-010",
+    "texto": "[ENR-001/FUN-5] Búsqueda de productos",
+    "procedencia": "inferido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-011",
+    "texto": "[ENR-001/MEJ-1] Alertas de stock mínimo",
+    "procedencia": "sugerido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-012",
+    "texto": "[ENR-001/MEJ-2] Lectura de códigos de barras",
+    "procedencia": "sugerido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-013",
+    "texto": "[ENR-001/MEJ-3] Cierre de caja",
+    "procedencia": "sugerido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-014",
+    "texto": "[ENR-001/MEJ-4] Reportes de ventas",
+    "procedencia": "sugerido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-015",
+    "texto": "[ENR-001/EXC-1] Gestión de franquicias",
+    "procedencia": "excluido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-016",
+    "texto": "[ENR-001/EXC-2] Múltiples sucursales",
+    "procedencia": "excluido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-017",
+    "texto": "[ENR-001/EXC-3] Integración con pasarelas de pago",
+    "procedencia": "excluido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-018",
+    "texto": "[ENR-001/EXC-4] Sistemas de crédito para clientes",
+    "procedencia": "excluido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-019",
+    "texto": "[ENR-001/FAL-1] Stack tecnológico sin definir (pendiente de aclaración)",
+    "procedencia": "desconocido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-020",
+    "texto": "[ENR-001/FAL-2] ¿quiénes usarán el sistema? (roles y permisos)",
+    "procedencia": "desconocido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  },
+  {
+    "id": "REQ-021",
+    "texto": "[ENR-001/FAL-3] ¿dónde se guardan los datos hoy? (archivo, planilla, base de datos)",
+    "procedencia": "desconocido",
+    "estado": "pendiente",
+    "creado_en": "2026-11-10T22:21:45+00:00",
+    "actualizado_en": "2026-11-10T22:21:45+00:00",
+    "spec_id": "SPEC-001",
+    "origen": "ENR-001"
+  }
+]

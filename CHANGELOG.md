@@ -14,6 +14,11 @@ creados con 0.1.0 a 0.1.2.
 
 ### Añadido
 
+- `tests/test_compatibilidad_formato.py` abre con la CLI actual un estado
+  real creado por 0.1.0 (fixture sin regenerar, con su procedencia
+  documentada) y comprueba que se lee, que leer no lo reescribe y que
+  escribir conserva lo anterior. Así el CI avisa si el formato deja de ser
+  compatible, sin depender del juicio de quien publica.
 - `docs/RELEASES.md` incluye el paso posterior a publicar: comprobar que el
   tag anotado existe en el remoto y apunta al commit con la versión, que la
   release no quedó en borrador y que los enlaces de las notas resuelven en

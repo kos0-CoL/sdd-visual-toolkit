@@ -1,0 +1,298 @@
+{
+  "spec_id": "SPEC-001",
+  "titulo": "Kiosco",
+  "version": "1.0.0",
+  "status": "approved",
+  "enr_origen": "ENR-001",
+  "contexto": "Dominio: comercio. Idea original: «Quiero un dashboard para gestionar un kiosco».",
+  "problema": "Se necesita: Un dashboard para gestionar un kiosco.",
+  "funcionales": [
+    [
+      "REQ-001",
+      "[ENR-001/ENT-1] Productos",
+      "aceptado"
+    ],
+    [
+      "REQ-002",
+      "[ENR-001/ENT-2] Inventario",
+      "aceptado"
+    ],
+    [
+      "REQ-003",
+      "[ENR-001/ENT-3] Ventas",
+      "aceptado"
+    ],
+    [
+      "REQ-004",
+      "[ENR-001/ENT-4] Movimientos de stock",
+      "aceptado"
+    ],
+    [
+      "REQ-005",
+      "[ENR-001/ENT-5] Caja",
+      "aceptado"
+    ],
+    [
+      "REQ-006",
+      "[ENR-001/FUN-1] Visualización de productos",
+      "aceptado"
+    ],
+    [
+      "REQ-007",
+      "[ENR-001/FUN-2] Consulta de existencias",
+      "aceptado"
+    ],
+    [
+      "REQ-008",
+      "[ENR-001/FUN-3] Registro de ventas",
+      "aceptado"
+    ],
+    [
+      "REQ-009",
+      "[ENR-001/FUN-4] Actualización de inventario",
+      "aceptado"
+    ],
+    [
+      "REQ-010",
+      "[ENR-001/FUN-5] Búsqueda de productos",
+      "aceptado"
+    ],
+    [
+      "REQ-011",
+      "[ENR-001/MEJ-1] Alertas de stock mínimo",
+      "aceptado"
+    ],
+    [
+      "REQ-012",
+      "[ENR-001/MEJ-2] Lectura de códigos de barras",
+      "aceptado"
+    ],
+    [
+      "REQ-013",
+      "[ENR-001/MEJ-3] Cierre de caja",
+      "aceptado"
+    ],
+    [
+      "REQ-014",
+      "[ENR-001/MEJ-4] Reportes de ventas",
+      "aceptado"
+    ]
+  ],
+  "no_funcionales": [
+    "Sí, confirmado (CLA-004)"
+  ],
+  "entidades": [
+    "Productos (datos: nombre, precio, stock)",
+    "Inventario (datos: nombre, precio, stock)",
+    "Ventas (datos: nombre, precio, stock)",
+    "Movimientos de stock (datos: nombre, precio, stock)",
+    "Caja (datos: nombre, precio, stock)"
+  ],
+  "reglas": [
+    "Sí, confirmado (CLA-005)"
+  ],
+  "comportamientos": [
+    "El sistema debe: [ENR-001/ENT-1] Productos",
+    "El sistema debe: [ENR-001/ENT-2] Inventario",
+    "El sistema debe: [ENR-001/ENT-3] Ventas",
+    "El sistema debe: [ENR-001/ENT-4] Movimientos de stock",
+    "El sistema debe: [ENR-001/ENT-5] Caja",
+    "El sistema debe: [ENR-001/FUN-1] Visualización de productos",
+    "El sistema debe: [ENR-001/FUN-2] Consulta de existencias",
+    "El sistema debe: [ENR-001/FUN-3] Registro de ventas",
+    "El sistema debe: [ENR-001/FUN-4] Actualización de inventario",
+    "El sistema debe: [ENR-001/FUN-5] Búsqueda de productos",
+    "El sistema debe: [ENR-001/MEJ-1] Alertas de stock mínimo",
+    "El sistema debe: [ENR-001/MEJ-2] Lectura de códigos de barras",
+    "El sistema debe: [ENR-001/MEJ-3] Cierre de caja",
+    "El sistema debe: [ENR-001/MEJ-4] Reportes de ventas"
+  ],
+  "restricciones": [
+    "Sin restricciones declaradas"
+  ],
+  "dependencias": [
+    "Sí, confirmado (CLA-006)"
+  ],
+  "criterios": [
+    {
+      "id": "CRI-001",
+      "texto": "Verificar: [ENR-001/ENT-1] Productos",
+      "req_id": "REQ-001"
+    },
+    {
+      "id": "CRI-002",
+      "texto": "Verificar: [ENR-001/ENT-2] Inventario",
+      "req_id": "REQ-002"
+    },
+    {
+      "id": "CRI-003",
+      "texto": "Verificar: [ENR-001/ENT-3] Ventas",
+      "req_id": "REQ-003"
+    },
+    {
+      "id": "CRI-004",
+      "texto": "Verificar: [ENR-001/ENT-4] Movimientos de stock",
+      "req_id": "REQ-004"
+    },
+    {
+      "id": "CRI-005",
+      "texto": "Verificar: [ENR-001/ENT-5] Caja",
+      "req_id": "REQ-005"
+    },
+    {
+      "id": "CRI-006",
+      "texto": "Verificar: [ENR-001/FUN-1] Visualización de productos",
+      "req_id": "REQ-006"
+    },
+    {
+      "id": "CRI-007",
+      "texto": "Verificar: [ENR-001/FUN-2] Consulta de existencias",
+      "req_id": "REQ-007"
+    },
+    {
+      "id": "CRI-008",
+      "texto": "Verificar: [ENR-001/FUN-3] Registro de ventas",
+      "req_id": "REQ-008"
+    },
+    {
+      "id": "CRI-009",
+      "texto": "Verificar: [ENR-001/FUN-4] Actualización de inventario",
+      "req_id": "REQ-009"
+    },
+    {
+      "id": "CRI-010",
+      "texto": "Verificar: [ENR-001/FUN-5] Búsqueda de productos",
+      "req_id": "REQ-010"
+    },
+    {
+      "id": "CRI-011",
+      "texto": "Verificar: [ENR-001/MEJ-1] Alertas de stock mínimo",
+      "req_id": "REQ-011"
+    },
+    {
+      "id": "CRI-012",
+      "texto": "Verificar: [ENR-001/MEJ-2] Lectura de códigos de barras",
+      "req_id": "REQ-012"
+    },
+    {
+      "id": "CRI-013",
+      "texto": "Verificar: [ENR-001/MEJ-3] Cierre de caja",
+      "req_id": "REQ-013"
+    },
+    {
+      "id": "CRI-014",
+      "texto": "Verificar: [ENR-001/MEJ-4] Reportes de ventas",
+      "req_id": "REQ-014"
+    }
+  ],
+  "casos": [
+    {
+      "id": "CP-001",
+      "texto": "Ejecutar el flujo de REQ-001 y comprobar:  [ENR-001/ENT-1] Productos",
+      "criterio_id": "CRI-001"
+    },
+    {
+      "id": "CP-002",
+      "texto": "Ejecutar el flujo de REQ-002 y comprobar:  [ENR-001/ENT-2] Inventario",
+      "criterio_id": "CRI-002"
+    },
+    {
+      "id": "CP-003",
+      "texto": "Ejecutar el flujo de REQ-003 y comprobar:  [ENR-001/ENT-3] Ventas",
+      "criterio_id": "CRI-003"
+    },
+    {
+      "id": "CP-004",
+      "texto": "Ejecutar el flujo de REQ-004 y comprobar:  [ENR-001/ENT-4] Movimientos de stock",
+      "criterio_id": "CRI-004"
+    },
+    {
+      "id": "CP-005",
+      "texto": "Ejecutar el flujo de REQ-005 y comprobar:  [ENR-001/ENT-5] Caja",
+      "criterio_id": "CRI-005"
+    },
+    {
+      "id": "CP-006",
+      "texto": "Ejecutar el flujo de REQ-006 y comprobar:  [ENR-001/FUN-1] Visualización de productos",
+      "criterio_id": "CRI-006"
+    },
+    {
+      "id": "CP-007",
+      "texto": "Ejecutar el flujo de REQ-007 y comprobar:  [ENR-001/FUN-2] Consulta de existencias",
+      "criterio_id": "CRI-007"
+    },
+    {
+      "id": "CP-008",
+      "texto": "Ejecutar el flujo de REQ-008 y comprobar:  [ENR-001/FUN-3] Registro de ventas",
+      "criterio_id": "CRI-008"
+    },
+    {
+      "id": "CP-009",
+      "texto": "Ejecutar el flujo de REQ-009 y comprobar:  [ENR-001/FUN-4] Actualización de inventario",
+      "criterio_id": "CRI-009"
+    },
+    {
+      "id": "CP-010",
+      "texto": "Ejecutar el flujo de REQ-010 y comprobar:  [ENR-001/FUN-5] Búsqueda de productos",
+      "criterio_id": "CRI-010"
+    },
+    {
+      "id": "CP-011",
+      "texto": "Ejecutar el flujo de REQ-011 y comprobar:  [ENR-001/MEJ-1] Alertas de stock mínimo",
+      "criterio_id": "CRI-011"
+    },
+    {
+      "id": "CP-012",
+      "texto": "Ejecutar el flujo de REQ-012 y comprobar:  [ENR-001/MEJ-2] Lectura de códigos de barras",
+      "criterio_id": "CRI-012"
+    },
+    {
+      "id": "CP-013",
+      "texto": "Ejecutar el flujo de REQ-013 y comprobar:  [ENR-001/MEJ-3] Cierre de caja",
+      "criterio_id": "CRI-013"
+    },
+    {
+      "id": "CP-014",
+      "texto": "Ejecutar el flujo de REQ-014 y comprobar:  [ENR-001/MEJ-4] Reportes de ventas",
+      "criterio_id": "CRI-014"
+    }
+  ],
+  "fuera_alcance": [
+    "Gestión de franquicias",
+    "Múltiples sucursales",
+    "Integración con pasarelas de pago",
+    "Sistemas de crédito para clientes"
+  ],
+  "supuestos": [
+    "✓ Aclarado (CLA-001): Stack tecnológico sin definir (pendiente de aclaración) → Sí, confirmado",
+    "✓ Aclarado (CLA-002): ¿quiénes usarán el sistema? (roles y permisos) → Sí, confirmado",
+    "✓ Aclarado (CLA-003): ¿dónde se guardan los datos hoy? (archivo, planilla, base de datos) → Sí, confirmado"
+  ],
+  "referencias": [
+    "ENR-001",
+    "REQ-001",
+    "REQ-002",
+    "REQ-003",
+    "REQ-004",
+    "REQ-005",
+    "REQ-006",
+    "REQ-007",
+    "REQ-008",
+    "REQ-009",
+    "REQ-010",
+    "REQ-011",
+    "REQ-012",
+    "REQ-013",
+    "REQ-014",
+    "REQ-015",
+    "REQ-016",
+    "REQ-017",
+    "REQ-018",
+    "REQ-019",
+    "REQ-020",
+    "REQ-021"
+  ],
+  "created_at": "2026-11-10T22:21:45+00:00",
+  "updated_at": "2026-11-10T22:21:45+00:00",
+  "approved_at": "2026-11-10T22:21:45+00:00"
+}

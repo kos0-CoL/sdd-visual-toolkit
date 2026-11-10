@@ -1,0 +1,11 @@
+{
+  "PLAN-001": {
+    "plan_id": "PLAN-001",
+    "spec_id": "SPEC-001",
+    "archivo": ".specify/planes/PLAN-001.md",
+    "version": "1.0.0",
+    "status": "validado",
+    "created_at": "2026-11-10T22:21:48+00:00",
+    "updated_at": "2026-11-10T22:21:48+00:00"
+  }
+}
