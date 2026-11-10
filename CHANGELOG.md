@@ -6,6 +6,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Corregido
+
+- `README.md`: las instrucciones ejecutaban `pytest` sin instalarlo (un
+  entorno limpio fallaba en ese paso), decían 259 pruebas con 268, el ejemplo
+  de sesión mostraba un formato de salida que ya no existe y el rango de RF
+  omitía las primeras.
+
 ### Cambiado
 
 - La CI ejecuta la suite en paralelo con `pytest-xdist -n 2`; `pytest-xdist`

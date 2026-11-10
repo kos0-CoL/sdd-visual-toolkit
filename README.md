@@ -58,7 +58,7 @@ extensión de VS Code, cualquier cliente MCP y sus propios hooks
 
 ## Instalación paso a paso
 
-Requisitos: **Python ≥ 3.11**, Git. Cero dependencias externas.
+Requisitos: **Python ≥ 3.11**, Git. Cero dependencias en tiempo de ejecución.
 
 ```bash
 # 1. Clonar
@@ -68,11 +68,15 @@ cd sdd-visual-toolkit
 # 2. (Opcional pero recomendado) entorno virtual
 python3 -m venv .venv && source .venv/bin/activate
 
-# 3. Verificar que todo funciona (259 tests, ~10 s)
+# 3. Dependencias de desarrollo (las únicas: pytest y pytest-xdist)
+python3 -m pip install pytest pytest-xdist
+
+# 4. Verificar que todo funciona (268 tests, ~12 s; ~6 s con -n 2)
 python3 -m pytest tests/ -q
 
-# 4. Probar la CLI
+# 5. Probar la CLI
 python3 cli/main.py --help
+python3 cli/main.py --version
 ```
 
 > **Sin instalación:** el proyecto se ejecuta desde su raíz con
@@ -154,27 +158,33 @@ Detalles útiles:
 - `toolkit instrucciones` imprime el contexto del agente; con `--guardar`
   lo persiste en `.specify/INSTRUCCIONES.md` para cargarlo en su IDE.
 - `toolkit hooks` — ganchos propios en `.specify/hooks/<evento>/`
-  (`tarea_abierta`, `tarea_cerrada`); reciben `SDD_PLAN/SDD_TAREA/…`.
+  (`tarea_abierta`, `tarea_cerrada`, `sugerencia`); reciben
+  `SDD_EVENTO/PLAN/TAREA/RESULTADO/SUGERENCIA/ROOT`.
+- `toolkit --version` imprime la versión (sin `--root` ni subcomando).
 - `toolkit export` — foto JSON del estado para IDEs, scripts y MCP.
 - Todos los comandos aceptan `--root RUTA` para operar fuera del cwd.
 
 ## Ejemplo de sesión
 
+Salida real de un proyecto de ejemplo, justo después de `tasks` (las
+píldoras restantes se omiten):
+
 ```text
 $ toolkit status
-📊 Tablero mi-kiosco — fase: ⚡ Implementación.
-Progreso: 3/18. Tarea actual: TASK-004. Pruebas: verde (12).
-Próxima: build PLAN-001.
+📊 Tablero «mi-kiosco» — SPEC-001 [approved].
+Fase actual: 💾 Tareas.
+Progreso: [····················] 0/18.
+Tarea actual: ninguna en curso.
+Última completada: ninguna todavía.
+Pendientes: 18.
+Pruebas: sin corridas.
+Errores: ninguno registrado.
+Próxima acción: build PLAN-001
 
-$ toolkit cierre TASK-003
-🟢 CIERRE: TASK-003 (PLAN-001).
-1. Resumen: TASK-003 completada; pruebas: 4 pasadas.
-2. Archivos generados o modificados (2): src/ventas.py, tests/test_ventas.py
-3. Validaciones: 2026-01-02 TASK-003: ✅ verdes
-4. Problemas pendientes: ninguno registrado.
-5. Estado persistido: checkpoint .specify/checkpoints/TASK-003.json + journal.
-6. Siguiente paso recomendado: test TASK-004
-7. Controles: [ test TASK-004 ]  [ traza SPEC-001 ]  [ tablero ]
+🧭 Navegación — fase actual: 💾 Tareas.
+Recomendada: [ build PLAN-001 ]
+[ build PLAN-001 ] ★ Empezar implementación
+[ analyze PLAN-001 ] Revisar consistencia
 ```
 
 ---
@@ -205,15 +215,16 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (259 tests, uno o más por RF)
+tests/      Suite pytest (268 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
-docs/       SPEC-v0.1.md (fuente de las RF)
+docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)
 ```
 
 ## Estado del proyecto
 
-- ✅ §44 completo (30/30) + RF-08 a RF-43 verificadas con tests.
+- ✅ §44 completo (30/30) y las RF definidas en el código (RF-01 a RF-43;
+  no existe RF-20) verificadas con tests.
 - ⏳ Pendiente en entorno real: prueba manual en Antigravity y VS Code.
 - La fuente de verdad es `docs/SPEC-v0.1.md`; cada RF cita su sección.
 
@@ -223,5 +234,6 @@ docs/       SPEC-v0.1.md (fuente de las RF)
 - Código de conducta: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 - Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md).
 - Proceso de release: [`docs/RELEASES.md`](docs/RELEASES.md).
+- Rama protegida: [`docs/BRANCH_PROTECTION.md`](docs/BRANCH_PROTECTION.md).
 - Integración continua: `.github/workflows/ci.yml` (Python 3.11–3.14).
 - Licencia: MIT (ver [`LICENSE`](LICENSE)).
