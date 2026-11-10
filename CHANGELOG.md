@@ -23,6 +23,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `docs/RELEASES.md` pedía el CHANGELOG «sin dejar `No publicado`», lo que
+  se lee como borrar la sección; ahora dice que las viñetas pasan a la
+  sección nueva y que `[No publicado]` queda arriba, vacía.
 - `CONTRIBUTING.md` seguía recomendando `--upgrade pip` al preparar el
   entorno, cuando el README y la CI no lo hacen y las notas de 0.1.2
   registran haberlo retirado por coste (4,0 s → 2,0 s de mediana por job).

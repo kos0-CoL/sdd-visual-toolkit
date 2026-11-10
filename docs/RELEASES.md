@@ -16,7 +16,8 @@ las notas.
 
 1. `python3 -m pytest tests/ -q` en verde.
 2. CI en verde en todas las versiones soportadas.
-3. `CHANGELOG.md` con la versión y su fecha (sin dejar `No publicado`).
+3. `CHANGELOG.md` con la versión publicada y su fecha: las viñetas pasan de
+   `[No publicado]` a la sección nueva.
 4. `version` de `pyproject.toml` actualizada.
 5. Smoke test de la CLI:
 
@@ -25,6 +26,10 @@ las notas.
    ```
 
 6. Revisar que no se versionen secretos ni el `.specify/` de un proyecto real.
+
+`[No publicado]` no se borra: se deja arriba y vacía, lista para el ciclo
+siguiente, como pide Keep a Changelog. `scripts/verificar_release.py` busca
+la primera sección **con fecha**, así que la vacía no lo confunde.
 
 ## Publicar
 
