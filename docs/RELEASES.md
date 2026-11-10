@@ -15,54 +15,66 @@ las notas.
 ## Checklist antes de etiquetar
 
 1. `python3 -m pytest tests/ -q` en verde.
-2. CI en verde en todas las versiones soportadas.
-3. `CHANGELOG.md` con la versión publicada y su fecha: las viñetas pasan de
+2. CI en verde en todas las versiones soportadas, sobre el commit que se va
+   a etiquetar.
+3. `version` de `pyproject.toml` actualizada.
+4. `CHANGELOG.md` con la versión publicada y su fecha: las viñetas pasan de
    `[No publicado]` a la sección nueva.
-4. `version` de `pyproject.toml` actualizada.
-5. Smoke test de la CLI:
+5. `docs/release-notes-vX.Y.Z.md` escrito, con sus enlaces apuntando ya al
+   tag `vX.Y.Z`.
+6. Smoke test de la CLI:
 
    ```bash
    python3 cli/main.py --help
    ```
 
-6. Revisar que no se versionen secretos ni el `.specify/` de un proyecto real.
+7. Revisar que no se versionen secretos ni el `.specify/` de un proyecto real.
+8. Mergeado en `main`, con el árbol limpio y al día:
 
-`[No publicado]` no se borra: se deja arriba y vacía, lista para el ciclo
-siguiente, como pide Keep a Changelog. `scripts/verificar_release.py` busca
-la primera sección **con fecha**, así que la vacía no lo confunde.
+   ```bash
+   git status --short      # sin salida
+   git pull --ff-only
+   ```
 
-## Verificar antes de etiquetar
+9. La comprobación previa, que es la puerta del proceso:
 
-El mismo script comprueba, sobre el árbol y los tags, todo lo que se puede
-saber antes de crear el tag:
+   ```bash
+   python3 scripts/verificar_release.py --previo X.Y.Z   # sin la "v"
+   ```
 
-```bash
-python3 scripts/verificar_release.py --previo 0.1.3
-```
+   Revisa que el tag esté libre en local y en `origin` (son inmutables), que
+   el árbol esté limpio, que `HEAD` sea `origin/main`, que `pyproject.toml` y
+   la primera sección con fecha del CHANGELOG coincidan con la versión, que
+   `[No publicado]` quede vacía, que los enlaces del pie del CHANGELOG
+   apunten a la versión nueva, que las notas existan con enlaces al tag y que
+   la versión sea posterior a la última etiquetada.
 
-Revisa que el tag esté libre en local y en `origin` (los tags son
-inmutables), que el árbol esté limpio, que `HEAD` sea `origin/main`, que
-`pyproject.toml` y la primera sección con fecha del CHANGELOG coincidan con
-la versión, que `[No publicado]` quede vacía, que los enlaces del pie del
-CHANGELOG apunten a la versión nueva, que las notas existan con sus enlaces
-al tag y que la versión sea posterior a la última etiquetada.
+   Este es el momento de corregir: después de `git push origin vX.Y.Z` ya no
+   se puede, porque los tags `v*` son inmutables.
 
-Este es el momento de corregir: después de `git push origin vX.Y.Z` ya no
-se puede, porque los tags `v*` son inmutables.
+Las notas se escriben **antes** de etiquetar, no después: el paso 9 las
+comprueba y la release publica ese mismo archivo tal cual. `[No publicado]`
+no se borra: se deja arriba y vacía, lista para el ciclo siguiente, como pide
+Keep a Changelog. `scripts/verificar_release.py` busca la primera sección
+**con fecha**, así que la vacía no lo confunde.
 
 ## Publicar
 
-El tag debe apuntar al commit que ya contiene el CHANGELOG y la versión de
-`pyproject.toml`; nunca a un árbol con cambios sin confirmar.
+El tag debe apuntar al commit que ya contiene el CHANGELOG, la versión de
+`pyproject.toml` y las notas; nunca a un árbol con cambios sin confirmar.
 
 ```bash
-git tag -a v0.1.0 -m "v0.1.0 — primera versión funcional"
-git push origin v0.1.0
+git tag -a vX.Y.Z -m "vX.Y.Z — resumen de la versión"
+git push origin vX.Y.Z
+gh release create vX.Y.Z --title "vX.Y.Z" --verify-tag \
+  --notes-file docs/release-notes-vX.Y.Z.md
 ```
 
-Luego cree la release en GitHub con las notas del CHANGELOG (borrador en
-`docs/release-notes-vX.Y.Z.md`). Una release solo se anuncia cuando CI está
-verde y los artefactos corresponden al tag.
+`--notes-file` no es opcional: sin él GitHub autogenera un «What's Changed»,
+las notas del repo no se publican y la verificación posterior lo marca como
+fallo. `--verify-tag` impide que `gh` cree el tag por su cuenta si no se
+empujó: la release cuelga del tag ya verificado. Una release solo se anuncia
+cuando CI está verde y los artefactos corresponden al tag.
 
 ## Verificar tras publicar
 

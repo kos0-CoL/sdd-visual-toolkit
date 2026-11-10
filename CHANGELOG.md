@@ -27,6 +27,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   señala el `gh release edit --notes-file` para arreglarlo. Aplicado hacia
   atrás, **v0.1.0 queda marcada**: su cuerpo tiene enlaces absolutos y el
   archivo del tag, relativos.
+- `docs/RELEASES.md` describía el orden al revés: las notas aparecían después
+  del tag, la release se creaba sin `--notes-file` —GitHub autogenera el
+  «What's Changed»— y el modo `--previo` quedaba fuera del checklist, así que
+  se podía etiquetar sin haberlo ejecutado. Ahora las notas se escriben antes
+  de etiquetar, el último paso del checklist es
+  `verificar_release.py --previo X.Y.Z` y la release se crea con
+  `--verify-tag` y `--notes-file`.
 
 ## [0.1.3] — 2026-11-10
 
