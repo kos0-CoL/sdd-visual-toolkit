@@ -144,10 +144,39 @@ def sugerir(estado: dict) -> dict:
                 "nota": "Implementación en curso: pruebe antes de cerrar."}
 
     if fase.startswith("🧪"):
-        destino = tarea or "TASK-001"
+        destino = estado.get("pruebas_tarea") or tarea or "TASK-001"
         proxima = str(estado.get("proxima") or "")
         if proxima.startswith("test "):
             destino = proxima.split("test ", 1)[1].strip().split()[0]
+        plan = plan_id or "PLAN-001"
+        if estado.get("pruebas_ok"):
+            # La última corrida fue verde: no hay nada roto que repetir. Si la
+            # tarea sigue en curso, se cierra; si ya se cerró, avanza el plan.
+            if tarea:
+                recomendada = _pildora("Cerrar la tarea",
+                                       "build %s --done %s" % (plan, tarea),
+                                       rec=True)
+                nota = "Pruebas en verde: cierre la tarea para avanzar."
+            else:
+                recomendada = _pildora("Seguir con la próxima tarea",
+                                       "build %s" % plan, rec=True)
+                nota = ("Pruebas en verde y sin tarea en curso: "
+                        "el plan puede avanzar.")
+            # Sin tarea en curso, «volver a build» repetiría la recomendada.
+            vuelta = (_pildora("Volver a build",
+                               "build %s" % plan_id if plan_id else "tablero")
+                      if tarea else
+                      _pildora("Ver tareas",
+                               "tasks --list %s" % plan if plan_id else "arbol"))
+            pills = [
+                recomendada,
+                _pildora("Ver reporte", "reporte %s" % destino),
+                _pildora("Ver diff", "diff %s" % destino),
+                vuelta,
+            ]
+            return {"fase": fase, "recomendada": pills[0], "pills": pills,
+                    "bloqueos": [], "requiere_aprobacion": False,
+                    "nota": nota}
         pills = [
             _pildora("Repetir pruebas en rojo", "test %s" % destino,
                      rec=True),

@@ -29,6 +29,10 @@ creados con 0.1.0 a 0.1.2.
 
 ### Corregido
 
+- `status` y `siguiente` avisaban «Pruebas con rojo: corrija y repita el
+  test» aunque la última corrida estuviera en verde: `core/navigation.py`
+  no consultaba el resultado. Ahora recomienda cerrar la tarea en curso o
+  seguir con la próxima, y solo habla de rojo cuando lo hay.
 - `pre-auditoria.md` y `docs/REMEDIACION.md` se leían como el estado actual:
   ninguno estaba fechado y el segundo decía «revisión en curso». Ahora abren
   con una nota de alcance que los sitúa en el 2026-11-10 y remite al estado
