@@ -27,9 +27,10 @@ from core import navigation as mod_nav  # noqa: E402
 from core import export as mod_export  # noqa: E402
 from core.tasks import TasksError  # noqa: E402
 from state import store  # noqa: E402
+from core.version import version as version_herramienta  # noqa: E402
 
 NOMBRE = "sdd-visual-toolkit"
-VERSION = "0.1.0"
+VERSION = version_herramienta()
 
 HERRAMIENTAS_OPERATIVAS = ("asignar_tarea", "registrar_resultado",
                            "marcar_completada")

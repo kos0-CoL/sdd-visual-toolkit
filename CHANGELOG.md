@@ -6,7 +6,15 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
-Sin cambios pendientes de publicar.
+### Añadido
+
+- `toolkit --version` imprime la versión, tomada de `pyproject.toml` en el
+  árbol de fuentes y de los metadatos del paquete en una instalación normal.
+  El servidor MCP declara esa misma versión en lugar de una constante.
+
+### Corregido
+
+- El servidor MCP informaba `0.1.0` después de publicar la 0.1.1.
 
 ## [0.1.1] — 2026-11-10
 

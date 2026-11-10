@@ -47,6 +47,7 @@ from core.requirements import (  # noqa: E402
     RequerimientoError,
 )
 from state import store  # noqa: E402
+from core.version import version as version_herramienta  # noqa: E402
 
 
 def _raiz(args) -> Path:
@@ -143,6 +144,8 @@ def cmd_req_set(args) -> int:
 
 def construir_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="toolkit", description="SDD Visual Toolkit")
+    parser.add_argument("--version", action="version",
+                        version=f"%(prog)s {version_herramienta()}")
     parser.add_argument("--root", default=None, help="ruta del proyecto")
     sub = parser.add_subparsers(dest="comando", required=True)
 
