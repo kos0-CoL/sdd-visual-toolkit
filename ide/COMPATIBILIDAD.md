@@ -10,6 +10,6 @@ La compatibilidad se comprueba individualmente; no se asume.
 | Otros basados en VS Code | ✅ compatible por diseño | Idem. Pendiente: prueba manual en cada uno. |
 | Antigravity | ⚠️ pendiente de verificación | §29: debe usarse lo que ese entorno ofrezca de verdad. Verificar antes de afirmar: paleta de comandos, vistas propias, terminal integrada y lectura del workspace. Hasta entonces, usar la CLI (RF-36) o el servidor MCP. |
 | Solo terminal / CLI | ✅ soportado | RF-36: la CLI es completa sin IDE. |
-| Vía MCP (Claude Code, etc.) | ✅ soportado | `mcp/server.py`: `exportar_estado`, `siguiente`, `tablero` por stdio, sin dependencias. Verificado en `tests/test_mcp.py`. |
+| Vía MCP (Claude Code, etc.) | ✅ soportado | `mcp/server.py`: seis herramientas por stdio, sin dependencias — de lectura (`exportar_estado`, `siguiente`, `tablero`) y operativas (`asignar_tarea`, `registrar_resultado`, `marcar_completada`). Verificado en `tests/test_mcp.py`. |
 
 Regla (§47): donde falte capacidad, se degrada a CLI + `export`, nunca se inventa estado.
