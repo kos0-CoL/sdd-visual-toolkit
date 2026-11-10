@@ -28,7 +28,7 @@ jobs:
           cache-dependency-path: requirements-dev.txt
 
       - name: Instalar dependencias de desarrollo
-        run: python -m pip install --upgrade pip -r requirements-dev.txt
+        run: python -m pip install -r requirements-dev.txt
 
       - name: Ejecutar la suite
         run: python -m pytest tests/ -q -n 2
