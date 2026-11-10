@@ -18,16 +18,36 @@ el cierre de `TASK-001`.
 - `specs/SPEC-001.json`: la SPEC aprobada.
 - `.specify/memory/execution_history.jsonl`: el historial, que es lo que lleva
   el tablero a la fase 🧪.
-- `.specify/pines/TASK-001.json`: pin de la tarea cerrada.
+- `.specify/pines/TASK-001.json`: la línea base del pin —hash, símbolos
+  públicos, imports y foto del árbol— tal como la escribió 0.1.0 al empezar
+  `TASK-001`.
+- `.specify/snapshots/TASK-001/0` y `/1`: dos instantáneas de la tarea
+  (`archivos.txt` más la copia de sus archivos), la del estado previo a
+  implementarla y la de un intento fallido.
 
 ## Qué se dejó fuera, y por qué
 
 `clarifications.json`, `enriquecimientos.json`, `informes.json`, `cache/`,
-`checkpoints/`, `snapshots/` y los `.md` gemelos. No hacen falta para leer el
-estado y sumaban más de la mitad del peso. La consecuencia: `validate` sale
-con «sin línea base previa», porque los archivos de la tarea no están. Si una
-prueba futura necesita ese camino, hay que regenerar el fixture completo con
-`v0.1.0` y recortarlo otra vez.
+`checkpoints/` y los `.md` gemelos. Tampoco están `src/` ni `tests/` del
+proyecto, que sumaban la mayor parte del peso: se materializan restaurando un
+snapshot, y por eso `rollback --restore TASK-001` funciona sobre el fixture
+recién copiado.
+
+Sin esos archivos `validate` no tiene qué comparar, pero conserva la línea
+base y no la rehace. Con el snapshot 0 restaurado —el estado exacto que
+fotografió la línea base— la validación sale limpia; con el 1, que añadía
+`Caja.descuento`, avisa de un cambio de cuerpo en `src/productos.py`. Ese es
+el comportamiento de 0.1.0 y lo que la prueba comprueba.
+
+## Cómo se generaron el pin y los snapshots
+
+No salen del ciclo original: aquel proyecto se creó en un temporal y no se
+conservó su código. Se generaron con el código del tag `v0.1.0` en un
+worktree limpio, llamando a sus propias funciones —`pin.asegurar_baseline`
+y `rollback.tomar`— sobre un `src/productos.py` mínimo, con las entidades de
+§6 (productos, ventas, movimientos y caja) y los cuerpos sin implementar.
+Lo que importa es el formato, que es el de 0.1.0; el contenido de ese archivo
+no es el del proyecto original, que se perdió.
 
 No se regenera en CI a propósito: si lo generara la versión actual dejaría de
 probar compatibilidad, que es justo lo que se quiere vigilar.

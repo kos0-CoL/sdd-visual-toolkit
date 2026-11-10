@@ -1,6 +1,27 @@
 {
   "baseline": {
-    "__arbol__": {}
+    "src/productos.py": {
+      "sha": "95a274b18192cf7e5dc01cd8205e1f2ffcc3c22751213613aca4ef2e3595a812",
+      "publicas": {
+        "Producto": " (clase)",
+        "LineaVenta": " (clase)",
+        "Venta": " (clase)",
+        "Movimiento": " (clase)",
+        "Caja": " (clase)"
+      },
+      "imports": {
+        "annotations": "from __future__ import annotations",
+        "dataclass": "from dataclasses import dataclass",
+        "field": "from dataclasses import field"
+      },
+      "globales": {},
+      "retornos": {}
+    },
+    "__arbol__": {
+      "src/productos.py": {
+        "sha": "95a274b18192cf7e5dc01cd8205e1f2ffcc3c22751213613aca4ef2e3595a812"
+      }
+    }
   },
   "desviaciones": []
 }
