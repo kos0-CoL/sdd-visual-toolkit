@@ -39,6 +39,12 @@ creados con 0.1.0 a 0.1.2.
 
 ### Corregido
 
+- `verificar_release.py` daba por buena una release cuyo cuerpo no era el de
+  `docs/release-notes-vX.Y.Z.md`: solo miraba que las notas existieran en el
+  tag. Ahora compara el cuerpo publicado —sin espacios ni saltos finales— y
+  señala el `gh release edit --notes-file` para arreglarlo. Aplicado hacia
+  atrás, **v0.1.0 queda marcada**: su cuerpo tiene enlaces absolutos y el
+  archivo del tag, relativos.
 - `status` y `siguiente` avisaban «Pruebas con rojo: corrija y repita el
   test» aunque la última corrida estuviera en verde: `core/navigation.py`
   no consultaba el resultado. Ahora recomienda cerrar la tarea en curso o

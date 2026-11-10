@@ -14,8 +14,6 @@ from scripts import verificar_release as vr
 
 TAG = "v0.1.2"
 SLUG = "kos0-CoL/sdd-visual-toolkit"
-RELEASE = json.dumps({"tagName": TAG, "isDraft": False,
-                      "isPrerelease": False})
 
 
 def _salida(codigo: int = 0, stdout: str = "", stderr: str = "") -> vr.Salida:
@@ -25,6 +23,10 @@ def _salida(codigo: int = 0, stdout: str = "", stderr: str = "") -> vr.Salida:
 def _notas(ref: str = TAG) -> str:
     return ("# Notas\n\n"
             f"- [Changelog](https://github.com/{SLUG}/blob/{ref}/CHANGELOG.md)\n")
+
+
+RELEASE = json.dumps({"tagName": TAG, "isDraft": False,
+                      "isPrerelease": False, "body": _notas()})
 
 
 def _respuestas() -> dict[tuple[str, ...], vr.Salida]:
@@ -43,7 +45,7 @@ def _respuestas() -> dict[tuple[str, ...], vr.Salida]:
             _salida(stdout="## [No publicado]\n\nSin cambios.\n\n"
                            "## [0.1.2] — 2026-11-10\n"),
         ("gh", "release", "view", TAG, "--json",
-         "tagName,isDraft,isPrerelease"): _salida(stdout=RELEASE),
+         "tagName,isDraft,isPrerelease,body"): _salida(stdout=RELEASE),
         ("git", "show", f"{TAG}:docs/release-notes-{TAG}.md"):
             _salida(stdout=_notas()),
         ("gh", "api", f"repos/{SLUG}/contents/CHANGELOG.md?ref={TAG}",
@@ -67,7 +69,7 @@ class TestVerificarRelease(unittest.TestCase):
     def test_todo_correcto(self):
         resultados = self.verificar()
         self.assertEqual([mensaje for ok, mensaje in resultados if not ok], [])
-        self.assertEqual(len(resultados), 6)
+        self.assertEqual(len(resultados), 7)
 
     def test_sin_tag_local_se_detiene(self):
         resultados = self.verificar({
@@ -109,19 +111,41 @@ class TestVerificarRelease(unittest.TestCase):
     def test_release_en_borrador(self):
         resultados = self.verificar({
             ("gh", "release", "view", TAG, "--json",
-             "tagName,isDraft,isPrerelease"):
+             "tagName,isDraft,isPrerelease,body"):
                 _salida(stdout=json.dumps({"tagName": TAG, "isDraft": True,
-                                           "isPrerelease": False}))})
+                                           "isPrerelease": False,
+                                           "body": _notas()}))})
         self.assertFalse(resultados[4][0])
         self.assertIn("sin publicar", resultados[4][1])
 
     def test_release_inexistente(self):
         resultados = self.verificar({
             ("gh", "release", "view", TAG, "--json",
-             "tagName,isDraft,isPrerelease"):
+             "tagName,isDraft,isPrerelease,body"):
                 _salida(1, stderr="release not found")})
         self.assertFalse(resultados[4][0])
         self.assertIn("release not found", resultados[4][1])
+
+    def test_cuerpo_autogenerado_por_github(self):
+        resultados = self.verificar({
+            ("gh", "release", "view", TAG, "--json",
+             "tagName,isDraft,isPrerelease,body"):
+                _salida(stdout=json.dumps({
+                    "tagName": TAG, "isDraft": False, "isPrerelease": False,
+                    "body": "## What's Changed\n* algo por @alguien\n"}))})
+        fallos = [m for ok, m in resultados if not ok]
+        self.assertEqual(len(fallos), 1)
+        self.assertIn("no coincide con docs/release-notes", fallos[0])
+        self.assertIn("gh release edit", fallos[0])
+
+    def test_cuerpo_con_salto_final_cuenta_como_igual(self):
+        resultados = self.verificar({
+            ("gh", "release", "view", TAG, "--json",
+             "tagName,isDraft,isPrerelease,body"):
+                _salida(stdout=json.dumps({
+                    "tagName": TAG, "isDraft": False, "isPrerelease": False,
+                    "body": _notas() + "\n"}))})
+        self.assertEqual([m for ok, m in resultados if not ok], [])
 
     def test_enlace_a_otra_ref(self):
         resultados = self.verificar({

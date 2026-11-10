@@ -82,15 +82,19 @@ Revisa, para `vX.Y.Z`:
 2. que ese tag contiene la versión en `pyproject.toml` y como primera
    entrada con fecha del CHANGELOG;
 3. que la release no quedó en borrador ni marcada como previa;
-4. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
+4. que el cuerpo publicado es el de `docs/release-notes-vX.Y.Z.md`, sin
+   contar espacios ni saltos finales: si se creó sin `--notes-file`, GitHub
+   autogenera un «What's Changed» y las notas del repo no se leen;
+5. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
    apunta al tag —no a `main`, que sigue avanzando— y que la ruta existe en
    esa ref.
 
 Sale con 0 si todo pasa y con 1 listando los fallos. Si la release quedó
-como borrador, publíquela con `gh release edit vX.Y.Z --draft=false`. Un
-`404` en un enlace es un enlace roto: corrija las notas y actualícelas con
-`gh release edit vX.Y.Z --notes-file docs/release-notes-vX.Y.Z.md`. El tag
-no se toca, porque los tags `v*` son inmutables.
+como borrador, publíquela con `gh release edit vX.Y.Z --draft=false`. Si el
+cuerpo no coincide, actualícelo con `gh release edit vX.Y.Z --notes-file
+docs/release-notes-vX.Y.Z.md`. Un `404` en un enlace es un enlace roto:
+corrija las notas y actualícelas igual. El tag no se toca, porque los tags
+`v*` son inmutables.
 
 ## Comunidad
 

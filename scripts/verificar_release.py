@@ -8,7 +8,9 @@ Comprueba en un solo comando, para una versión dada:
 2. que ese tag contiene la versión en `pyproject.toml` y como primera
    entrada con fecha del CHANGELOG;
 3. que la release de GitHub no quedó en borrador ni marcada como previa;
-4. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
+4. que el cuerpo de la release es el de `docs/release-notes-vX.Y.Z.md` —sin
+   contar espacios ni saltos finales— y no un texto autogenerado;
+5. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
    apunta al tag y que la ruta existe en esa ref.
 
 Con `--previo` comprueba lo que se puede saber **antes** de crear el tag
@@ -70,6 +72,11 @@ def version_local() -> str:
     """Versión declarada en `pyproject.toml`."""
     datos = tomllib.loads((RAIZ / "pyproject.toml").read_text(encoding="utf-8"))
     return str(datos["project"]["version"])
+
+
+def _normalizar(texto: str) -> list[str]:
+    """Líneas sin espacios finales, para comparar cuerpos de release."""
+    return [linea.rstrip() for linea in texto.strip().splitlines()]
 
 
 def _enlaces(notas: str) -> list[tuple[str, str, str]]:
@@ -260,8 +267,9 @@ def verificar(version: str,
            f"primera versión con fecha del CHANGELOG en {tag}: "
            f"{publicadas[0] if publicadas else 'ninguna'}")
 
+    cuerpo = None
     release = correr_comando(["gh", "release", "view", tag, "--json",
-                              "tagName,isDraft,isPrerelease"])
+                              "tagName,isDraft,isPrerelease,body"])
     if release.codigo != 0:
         anotar(False, f"no se pudo leer la release {tag}: "
                       f"{release.stderr or release.stdout}")
@@ -272,6 +280,7 @@ def verificar(version: str,
             anotar(False, f"gh devolvió datos ilegibles para la release {tag}")
         else:
             borrador, previa = datos.get("isDraft"), datos.get("isPrerelease")
+            cuerpo = datos.get("body")
             anotar(not borrador and not previa,
                    f"release {tag} publicada"
                    if not borrador and not previa
@@ -282,6 +291,16 @@ def verificar(version: str,
     if notas.codigo != 0:
         anotar(False, f"falta docs/release-notes-{tag}.md en {tag}")
         return resultados
+    mismo_cuerpo = (cuerpo is not None
+                    and _normalizar(cuerpo) == _normalizar(notas.stdout))
+    anotar(mismo_cuerpo,
+           f"el cuerpo de {tag} es el de "
+           f"docs/release-notes-{tag}.md" if mismo_cuerpo
+           else f"el cuerpo de {tag} no coincide con "
+                f"docs/release-notes-{tag}.md: actualícelo con "
+                f"`gh release edit {tag} --notes-file "
+                f"docs/release-notes-{tag}.md`")
+
     enlaces = _enlaces(notas.stdout)
     if not enlaces:
         anotar(False, f"docs/release-notes-{tag}.md no enlaza ficheros del repo")
