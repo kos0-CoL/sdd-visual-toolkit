@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sdd-toolkit"
-version = "0.1.1"
+version = "0.1.2"
 description = "Herramienta visual de Desarrollo Guiado por Especificaciones (SDD): orquesta, asiste y controla el desarrollo con IA sin burocracia."
 readme = "README.md"
 requires-python = ">=3.11"

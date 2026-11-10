@@ -6,18 +6,29 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+Sin cambios pendientes de publicar.
+
+## [0.1.2] — 2026-11-10
+
+Versión de mantenimiento y herramientas: sin cambios en el motor ni en el
+formato de `.specify/`.
+
 ### Añadido
 
 - `toolkit --version` imprime la versión, tomada de `pyproject.toml` en el
   árbol de fuentes y de los metadatos del paquete en una instalación normal.
   El servidor MCP declara esa misma versión en lugar de una constante.
+- `docs/BRANCH_PROTECTION.md` describe las reglas de `main`, el motivo de
+  cada una y cómo replicarlas; enlazado desde `CONTRIBUTING.md`.
+- Caché de las dependencias de pip en la CI, con clave por versión de Python
+  y hash de `pyproject.toml`.
+- Pruebas que mantienen alineadas la versión de `pyproject.toml` con la
+  primera entrada del CHANGELOG y el badge de tests del README con la suite.
 
 ### Corregido
 
 - El servidor MCP informaba `0.1.0` después de publicar la 0.1.1.
-- El badge de tests del README anunciaba 259 pruebas con 268 en la suite;
-  ahora `tests/test_readme.py` compara el badge con lo que recolecta pytest
-  y falla cuando se desfasa.
+- El badge de tests del README anunciaba 259 pruebas con 268 en la suite.
 
 ## [0.1.1] — 2026-11-10
 
@@ -86,6 +97,7 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.1...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.2
 [0.1.1]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.1
 [0.1.0]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.0
