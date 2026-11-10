@@ -6,7 +6,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
-Sin cambios pendientes de publicar.
+### Añadido
+
+- `docs/RELEASES.md` incluye el paso posterior a publicar: comprobar que el
+tag anotado existe en el remoto y apunta al commit con la versión, que la
+release no quedó en borrador y que los enlaces de las notas resuelven en la
+ref del tag.
 
 ## [0.1.2] — 2026-11-10
 
