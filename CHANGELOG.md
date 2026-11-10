@@ -24,6 +24,9 @@ formato de `.specify/`.
 - `SECURITY.md` con versiones soportadas, alcance y expectativas; el reporte
   privado de vulnerabilidades queda habilitado en el repositorio.
 - `CODEOWNERS` para solicitar revisión automática al dueño en PR de terceros.
+- Job de CI `instalación editable`: instala el paquete y ejecuta `toolkit`
+  fuera del árbol del repositorio. Queda exigido en `main` junto con la suite
+  en las cuatro versiones soportadas.
 
 ### Corregido
 

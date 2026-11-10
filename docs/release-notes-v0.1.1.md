@@ -31,6 +31,8 @@ de `.specify/`, así que es compatible con proyectos creados con 0.1.0.
   reporte privado de vulnerabilidades quedó habilitado en el repositorio.
 - **`CODEOWNERS`** para solicitar revisión automática al dueño en PR de
   terceros.
+- **CI de instalación**: un job instala el paquete y ejecuta `toolkit` fuera
+  del árbol del repositorio, y queda exigido en `main` junto con la suite.
 
 ## Instalación
 
