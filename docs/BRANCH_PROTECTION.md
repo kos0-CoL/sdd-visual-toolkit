@@ -5,70 +5,113 @@ código: este archivo la describe para que no dependa de la memoria de una
 persona. **GitHub no lee este archivo**; si algo cambia acá, hay que
 aplicarlo en el repositorio.
 
-Estado verificado el 2026-11-10 sobre `main`:
+Desde el 2026-11-10 se usa un **ruleset de repositorio** (id `26952531`,
+«main protegida») en lugar de la protección clásica de rama, que quedó
+eliminada.
 
-| Regla | Valor | Por qué |
+## Reglas activas
+
+| Regla del ruleset | Efecto | Equivalente clásico |
 |---|---|---|
-| Checks obligatorios | `tests (Python 3.11)`, `tests (Python 3.12)`, `tests (Python 3.13)`, `tests (Python 3.14)`, `instalación editable` | La suite por versión y el empaquetado no pueden quedar en rojo |
-| Rama al día antes de fusionar (`strict`) | Desactivado | Con un solo mantenedor, exigir rebase en cada PR agrega fricción; ver el riesgo abajo |
-| Revisiones obligatorias | Ninguna | Quien abre el PR no puede aprobarlo; con una sola cuenta bloquearía todo |
-| Aplicar a administradores (`enforce_admins`) | Activado | El dueño tampoco fusiona por atajo: todo entra por PR |
-| Push forzado | Bloqueado | No se reescribe el historial de `main` |
-| Borrar la rama | Bloqueado | `main` existe siempre |
-| Resolver conversaciones | Obligatorio | Un comentario abierto impide fusionar |
-| Restricciones de push | Ninguna | Quien tiene escritura puede crear ramas |
-| Historial lineal | Desactivado | El squash merge ya deja un commit por PR |
-| Commits firmados | Desactivado | No hay infraestructura de firma en el proyecto |
+| `pull_request` | Todo cambio entra por pull request | No existía: se cumplía por costumbre |
+| `required_status_checks` | `tests (Python 3.11)` … `3.14` e `instalación editable` | Igual |
+| `deletion` | No se puede borrar `main` | Igual |
+| `non_fast_forward` | No se puede reescribir el historial | `allow_force_pushes: false` |
 
-## Los checks obligatorios dependen del workflow
+Parámetros del ruleset:
 
-Los nombres de los checks son los nombres **resueltos** de los jobs de
-`.github/workflows/ci.yml`:
+- `strict_required_status_checks_policy: false` — no se exige rama al día.
+- `required_approving_review_count: 0` — sin revisiones obligatorias.
+- `required_review_thread_resolution: true` — conversaciones resueltas.
+- `require_extra_approval_for_unattributed_changes: false` — ver abajo.
+- `bypass_actors: []` — nadie queda exento, ni el dueño.
 
-- `tests (Python ${{ matrix.python-version }})` produce `tests (Python 3.11)` … `3.14`.
-- `instalación editable` es el job que instala el paquete y ejecuta `toolkit`
-  fuera del árbol.
+## Qué cambia frente a la protección clásica
 
-Si se renombra un job o se quita una versión de la matriz, el check esperado
-**deja de reportarse** y GitHub bloquea los merges con «Expected — Waiting
-for status to be reported». Falla de forma ruidosa, no silenciosa, pero hay
-que acordarse de actualizar la protección en el mismo cambio.
+1. **Los administradores quedan cubiertos por defecto.** En la clásica hacía
+   falta `enforce_admins: true`; en el ruleset la exención se pide
+   explícitamente con `bypass_actors`, y acá está vacía.
+2. **«Todo por pull request» pasó a estar forzado por el servidor.** Antes era
+   una convención: la protección clásica no impedía un push directo. Ahora se
+   verifica que un push directo a `main` se rechaza con
+   `push declined due to repository rule violations` y
+   `Changes must be made through a pull request`.
+3. **El ruleset es un objeto con historial y estado.** Se puede consultar,
+   versionar y desactivar (`enforcement: disabled`) sin perder la
+   configuración; la clásica se sobrescribía a ciegas.
+4. **Los refs se eligen por patrón.** Acá se usa `~DEFAULT_BRANCH`, así que si
+   el repositorio cambia de rama por defecto, la regla la sigue.
+5. **El endpoint clásico ya no existe.** `GET /branches/main/protection`
+   responde `404 Branch not protected`; los scripts que lo consulten deben
+   pasar al de rulesets.
 
-## Riesgo asumido con `strict` desactivado
+## Dos detalles que muerden
 
-La CI de un PR corre contra el resultado de fusionar el PR con la base del
-momento. Si la base avanza después de esa ejecución, el merge puede no haber
-sido probado exactamente como quedará. Es aceptable mientras haya una sola
-persona fusionando de a un PR; si entran varios PR en paralelo, conviene
-activar `strict` para forzar la rama al día.
+- **`require_extra_approval_for_unattributed_changes` viene en `true` por
+  defecto** al crear el ruleset, aunque no se envíe. Con una sola cuenta y
+  cero aprobaciones requeridas, eso puede bloquear un PR sin que nadie pueda
+  aprobarlo; se desactivó de forma explícita y conviene revisarlo si se
+  recrea el ruleset.
+- **Los nombres de los checks dependen del workflow.** `tests (Python …)` sale
+  de la matriz de `.github/workflows/ci.yml` e `instalación editable` del job
+  `install`. Si se renombra un job o se quita una versión de la matriz, el
+  check esperado deja de reportarse y GitHub bloquea los merges con
+  «Expected — Waiting for status to be reported». Falla de forma ruidosa, no
+  silenciosa, pero hay que actualizar la regla en el mismo cambio.
 
-## Revisión automática
+## Riesgo asumido
 
-`.github/CODEOWNERS` asigna todas las rutas a `@kos0-CoL`, así que un PR de
-otra persona solicita revisión sin configuración extra. GitHub **no** pide
-revisión a quien abre el PR: con una sola cuenta el efecto no se ve.
+- **Sin revisiones obligatorias**: con una sola cuenta, exigirlas bloquearía
+  todos los PR. `.github/CODEOWNERS` sí solicita revisión en PR de terceros,
+  porque GitHub nunca pide revisión a quien abre el PR.
+- **`strict` desactivado**: la CI de un PR corre contra el resultado de
+  fusionarlo con la base del momento; si la base avanza después, el merge
+  puede no haber sido probado exactamente como quedará. Aceptable con una
+  persona fusionando de a un PR; con varios PR en paralelo conviene activarlo.
 
-## Replicar la configuración
+## Replicar el ruleset
 
 ```bash
-gh api -X PUT repos/kos0-CoL/sdd-visual-toolkit/branches/main/protection --input - <<'JSON'
+# `allowed_merge_methods` y `required_reviewers` los rellena GitHub; se
+# incluyen para que este bloque coincida con lo que devuelve la API.
+gh api -X POST repos/kos0-CoL/sdd-visual-toolkit/rulesets --input - <<'JSON'
 {
-  "required_status_checks": {
-    "strict": false,
-    "contexts": [
-      "tests (Python 3.11)",
-      "tests (Python 3.12)",
-      "tests (Python 3.13)",
-      "tests (Python 3.14)",
-      "instalación editable"
-    ]
-  },
-  "enforce_admins": true,
-  "required_pull_request_reviews": null,
-  "restrictions": null,
-  "allow_force_pushes": false,
-  "allow_deletions": false,
-  "required_conversation_resolution": true
+  "name": "main protegida",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}},
+  "rules": [
+    {"type": "deletion"},
+    {"type": "non_fast_forward"},
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {"context": "tests (Python 3.11)"},
+          {"context": "tests (Python 3.12)"},
+          {"context": "tests (Python 3.13)"},
+          {"context": "tests (Python 3.14)"},
+          {"context": "instalación editable"}
+        ]
+      }
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true,
+        "require_extra_approval_for_unattributed_changes": false,
+        "allowed_merge_methods": ["merge", "squash", "rebase"],
+        "required_reviewers": []
+      }
+    }
+  ],
+  "bypass_actors": []
 }
 JSON
 ```
@@ -76,11 +119,12 @@ JSON
 ## Comprobar el estado actual
 
 ```bash
-gh api repos/kos0-CoL/sdd-visual-toolkit/branches/main/protection \
-  --jq '{checks: .required_status_checks.contexts,
-         strict: .required_status_checks.strict,
-         admins: .enforce_admins.enabled,
-         force: .allow_force_pushes.enabled,
-         borrar: .allow_deletions.enabled,
-         conversaciones: .required_conversation_resolution.enabled}'
+gh api repos/kos0-CoL/sdd-visual-toolkit/rulesets \
+  --jq '.[] | {name, enforcement, target}'
+
+gh api repos/kos0-CoL/sdd-visual-toolkit/rules/branches/main \
+  --jq '.[] | {type, params: (.parameters // {})}'
 ```
+
+Para desactivarlo sin borrarlo: `PATCH /rulesets/26952531` con
+`{"enforcement": "disabled"}`.
