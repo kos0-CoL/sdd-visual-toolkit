@@ -100,6 +100,11 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       fila de esa misma fase en *Árbol de estados* aparece *Abrir artefacto de
       la fase* y abre el mismo archivo que desde el flujo; en las fases sin
       artefacto no aparece.
+- [ ] Aviso de skills desactualizadas: reescribir la ruta horneada de un
+      archivo de `.github/prompts/` a `/tmp/toolkit-viejo/cli/main.py`,
+      recargar y comprobar que `Fases y tareas` abre con
+      `⚠️ Comandos de barra desactualizados: 1` y que el hijo dice cuántos
+      archivos apuntan a esa ruta. Restaurar el archivo después.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece

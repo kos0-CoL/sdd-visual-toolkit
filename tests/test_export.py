@@ -41,6 +41,16 @@ class TestDocumento(unittest.TestCase):
         visto = json.loads(render(doc))
         self.assertEqual(visto, doc)
 
+    def test_publica_las_rutas_de_skills_que_no_existen(self):
+        """El IDE avisa con esto: la cuenta la hace la CLI, no el editor."""
+        doc = documento({"proyecto": "d"}, [], [], {"pills": []},
+                        skills={"/tmp/viejo/cli/main.py": 14})
+        self.assertEqual(doc["avisos"]["skills"]["total"], 14)
+        self.assertEqual(doc["avisos"]["skills"]["rutas"],
+                         [{"ruta": "/tmp/viejo/cli/main.py", "archivos": 14}])
+        sano = documento({"proyecto": "d"}, [], [], {"pills": []})
+        self.assertEqual(sano["avisos"]["skills"], {"total": 0, "rutas": []})
+
     def test_sin_spec_tambien_serializa(self):
         doc = documento({"proyecto": "d"}, [], [], {"pills": []})
         self.assertIsNone(doc["spec_id"])
@@ -122,6 +132,36 @@ class TestExportCLI(unittest.TestCase):
         # Sin plan no hay artefacto ni comando de fases posteriores.
         self.assertIsNone(por_fase["Tareas"]["artefacto"])
         self.assertIsNone(por_fase["Tareas"]["comando"])
+
+
+class TestAvisoDeSkillsEnExport(unittest.TestCase):
+    """Una skill con la ruta muerta tiene que llegar al `export`."""
+
+    def test_export_reporta_un_archivo_generado_con_ruta_muerta(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name) / "proyecto"
+        cli = [sys.executable, "cli/main.py", "--root", str(root)]
+
+        def correr(*args):
+            r = subprocess.run([*cli, *args], capture_output=True, text=True,
+                               cwd=Path.cwd(), input="", timeout=60)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            return r.stdout
+
+        correr("init", "--sin-comandos")
+        sano = json.loads(correr("export"))
+        self.assertEqual(sano["avisos"]["skills"]["total"], 0)
+
+        generado = root / ".github" / "prompts" / "sdd-status.prompt.md"
+        generado.parent.mkdir(parents=True, exist_ok=True)
+        generado.write_text(
+            'python3 "/tmp/toolkit-viejo/cli/main.py" --root . status\n',
+            encoding="utf-8")
+        doc = json.loads(correr("export"))
+        self.assertEqual(doc["avisos"]["skills"]["total"], 1)
+        self.assertEqual(doc["avisos"]["skills"]["rutas"][0]["ruta"],
+                         "/tmp/toolkit-viejo/cli/main.py")
 
 
 class TestArtefactosDelFlujo(unittest.TestCase):

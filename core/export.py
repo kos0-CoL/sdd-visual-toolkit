@@ -14,9 +14,15 @@ VERSION = "1.0"
 
 
 def documento(estado: dict, nodos: list, transiciones: list,
-              navegacion: dict, flujo: list | None = None) -> dict:
-    """Foto máquina del proyecto. Todo sale de artefactos reales."""
+              navegacion: dict, flujo: list | None = None,
+              skills: dict | None = None) -> dict:
+    """Foto máquina del proyecto. Todo sale de artefactos reales.
+
+    `skills` es el mapa ruta muerta → cuántos archivos la usan; se publica para
+    que el IDE avise sin tener que leer los archivos generados por su cuenta.
+    """
     errores = estado.get("errores") or []
+    muertas = skills or {}
     return {
         "toolkit": "sdd-visual-toolkit",
         "api": VERSION,
@@ -49,6 +55,13 @@ def documento(estado: dict, nodos: list, transiciones: list,
             "bloqueos": list(navegacion.get("bloqueos") or []),
             "requiere_aprobacion": bool(
                 navegacion.get("requiere_aprobacion")),
+        },
+        "avisos": {
+            "skills": {
+                "total": sum(muertas.values()),
+                "rutas": [{"ruta": ruta, "archivos": cuantos}
+                          for ruta, cuantos in sorted(muertas.items())],
+            },
         },
     }
 
