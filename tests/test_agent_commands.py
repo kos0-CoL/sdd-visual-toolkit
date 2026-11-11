@@ -70,21 +70,44 @@ class TestRender(unittest.TestCase):
                         self.assertTrue(empieza, nombre)
 
     def test_frontmatter_declara_nombre_y_descripcion(self):
+        """Se compara por ruta exacta: «name: sdd» aparece dentro de «sdd-status»
+        y una búsqueda por subcadena daba por bueno el comando equivocado."""
         for cliente in set(agent_commands.CLIENTES) - agent_commands.SIN_FRONTMATTER:
             with self.subTest(cliente=cliente):
                 archivos = agent_commands.generar(cliente, PYTHON, CLI)
-                for ruta, contenido in archivos.items():
-                    cabecera = contenido.split("---\n")[1]
-                    comando = next(c for c in agent_commands.COMANDOS
-                                   if f"/{c.nombre}/" in f"/{ruta}/"
-                                   or c.nombre in ruta)
-                    self.assertIn(f"name: {comando.nombre}", cabecera)
-                    self.assertIn("description: ", cabecera)
+                plantilla = agent_commands.CLIENTES[cliente]
+                for comando in agent_commands.COMANDOS:
+                    ruta = plantilla.format(nombre=comando.nombre)
+                    cabecera = archivos[ruta].split("---\n")[1]
+                    self.assertIn(f"name: '{comando.nombre}'", cabecera)
+                    self.assertIn(f"description: '{comando.descripcion}'",
+                                  cabecera)
 
     def test_copilot_pide_el_agente_con_terminal(self):
         archivos = agent_commands.generar("copilot", PYTHON, CLI)
         for contenido in archivos.values():
-            self.assertIn("agent: agent", contenido.split("---\n")[1])
+            self.assertIn("agent: 'agent'", contenido.split("---\n")[1])
+
+    def test_frontmatter_cita_todos_los_valores(self):
+        """Sin comillas, un valor con «: » rompe el YAML del cliente."""
+        for cliente in set(agent_commands.CLIENTES) - agent_commands.SIN_FRONTMATTER:
+            with self.subTest(cliente=cliente):
+                for ruta, contenido in agent_commands.generar(
+                        cliente, PYTHON, CLI).items():
+                    cabecera = contenido.split("---\n")[1]
+                    for linea in cabecera.splitlines():
+                        clave, valor = linea.split(": ", 1)
+                        self.assertTrue(valor.startswith("'") and
+                                        valor.endswith("'"),
+                                        f"{ruta}: {linea}")
+
+    def test_descripcion_con_dos_puntos_va_entre_comillas(self):
+        """`sdd-status` describe «Estado del proyecto: …»: el caso que rompía."""
+        archivos = agent_commands.generar("claude", PYTHON, CLI)
+        cabecera = archivos[".claude/skills/sdd-status/SKILL.md"].split("---\n")[1]
+        self.assertIn(
+            "description: 'Estado del proyecto: fase, progreso y bloqueos'",
+            cabecera)
 
     def test_cuerpo_invoca_la_cli_con_ruta_absoluta(self):
         for cliente in agent_commands.CLIENTES:

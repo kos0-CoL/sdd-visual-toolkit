@@ -98,8 +98,9 @@ python3 cli/main.py --root /tmp/sdd-manual comandos --cliente antigravity
       la ruta absoluta horneada?
 - [ ] Comprobar si el agente tiene terminal integrada y permiso de shell, y
       si pide aprobación por comando.
-- [ ] Comprobar si acepta argumentos detrás del comando (`argument-hint`):
-      `/sdd-plan PLAN-001`.
+- [ ] Comprobar si la skill se puede invocar a mano (`/sdd-plan`) y si toma el
+      ID del pedido. El manifiesto de Antigravity solo documenta `name` y
+      `description`, así que `argument-hint` no se muestra.
 - [ ] Comprobar si respeta «la salida de la CLI es la fuente de la verdad».
 - [ ] Si acepta extensiones de VS Code, intentar instalar el `.vsix` y mirar
       paleta, vista y barra de estado; si no lo acepta, anotar el error.
