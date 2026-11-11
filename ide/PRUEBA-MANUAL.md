@@ -27,9 +27,9 @@ checklist; anótalo como defecto del puente y sigue. Llamada a mano con
 
 ## VS Code — extensión
 
-`ide/vscode/package.json` declara `0.1.4`; usa el `.vsix` de esa release.
+`ide/vscode/package.json` declara `0.1.5`; usa el `.vsix` de esa release.
 
-- [ ] Instalar: `code --install-extension sdd-visual-toolkit-0.1.4.vsix`.
+- [ ] Instalar: `code --install-extension sdd-visual-toolkit-0.1.5.vsix`.
       Recargar la ventana.
 - [ ] Abrir `/tmp/sdd-manual` como carpeta.
 - [ ] Ajustar `sddToolkit.cliPath` con la ruta absoluta a `cli/main.py`
