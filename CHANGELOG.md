@@ -16,6 +16,14 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   `sdd-visual-toolkit-X.Y.Z.vsix` con tamaño mayor que cero desde la 0.1.5, en
   vez de dejar ese adjunto a una revisión a mano.
 
+### Corregido
+
+- `init` respeta `--root`, la opción global que usan los demás comandos y que
+  la extensión de VS Code pasa siempre; antes la ignoraba y creaba `.specify/`
+  en la carpeta actual, así que `Inicializar proyecto` desde la paleta
+  inicializaba una carpeta distinta de la abierta. El path posicional sigue
+  mandando cuando se indica.
+
 ## [0.1.5] — 2026-11-11
 
 ### Añadido
