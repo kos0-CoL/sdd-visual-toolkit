@@ -15,7 +15,10 @@ from cli.commands import plan as mod_plan
 from cli.commands import specify as mod_specify
 from cli.commands import tablero as mod_tablero
 from cli.commands import tasks as mod_tasks
+from core.context import ContextError
+from core.plan import PlanError
 from core.restrictions import clasificar, render
+from core.spec import SpecError
 from state import store
 
 
@@ -91,7 +94,7 @@ def despachar(args) -> int:
             spec = mod_specify._cargar_spec(raiz, spec_id)
             titulo, secciones = _panel_spec(raiz, spec)
         print(render(titulo, secciones, tarea_ctx))
-    except store.StoreError as error:
+    except (ContextError, PlanError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0
