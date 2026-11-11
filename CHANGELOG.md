@@ -21,6 +21,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `specify --revise` copiaba la SPEC a `.specify/spec_history/` antes de
+  comprobar que su ENR de origen existiera: si faltaba, dejaba una copia
+  huérfana y moría con un traceback. Ahora arma la revisión primero y avisa
+  con un `⛔` sin escribir nada.
 - El verificador solo miraba los enlaces `blob` de las notas y dejaba pasar
   el resto: un relativo o un `/tree/` no lo hacían fallar. Ahora todo enlace
   a un repositorio debe ser `blob` del tag en el repositorio propio, y se

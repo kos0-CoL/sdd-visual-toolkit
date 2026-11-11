@@ -5,7 +5,7 @@ from __future__ import annotations
 import pathlib
 
 from cli.commands import enrich as mod_enrich
-from core.enrich import VALIDADO
+from core.enrich import VALIDADO, EnriquecimientoError
 from core.requirements import RegistroRequerimientos
 from core.spec import Spec, SpecError, generar_desde_enriquecimiento, render_markdown
 from state import store
@@ -151,15 +151,9 @@ def cmd_specify_revise(args) -> int:
         if not args.motivo:
             raise SpecError("indique --motivo de la revisión (§6.6)")
         spec = _cargar_spec(raiz, args.revise)
-        # §6.6: conservar historial antes de modificar.
         from core.spec import _subir_version  # noqa: PLC0415
 
         previa = (raiz / "specs" / f"{spec.spec_id}.md").read_text(encoding="utf-8")
-        snap_dir = raiz / store.SPECIFY_DIR / SPEC_HISTORY_DIR
-        snap_dir.mkdir(parents=True, exist_ok=True)
-        (snap_dir / f"{spec.spec_id}_v{spec.version}.md").write_text(
-            previa, encoding="utf-8"
-        )
         refs_previas = set(spec.referencias)
         enr = mod_enrich._registro(raiz).obtener(spec.enr_origen)
         reqs = mod_enrich._registro_req(raiz).listar()
@@ -169,6 +163,13 @@ def cmd_specify_revise(args) -> int:
         nueva.created_at = spec.created_at
         nueva.approved_at = spec.approved_at
         refs_nuevas = set(nueva.referencias)
+        # §6.6: conservar la versión anterior justo antes de sobrescribirla.
+        # Si la revisión falla antes de este punto no queda copia huérfana.
+        snap_dir = raiz / store.SPECIFY_DIR / SPEC_HISTORY_DIR
+        snap_dir.mkdir(parents=True, exist_ok=True)
+        (snap_dir / f"{spec.spec_id}_v{spec.version}.md").write_text(
+            previa, encoding="utf-8"
+        )
         _persistir_spec(raiz, nueva)
         indice = _indice(raiz)
         indice[nueva.spec_id]["version"] = nueva.version
@@ -184,7 +185,7 @@ def cmd_specify_revise(args) -> int:
         )
         _guardar_indice(raiz, indice)
         spec = nueva
-    except (SpecError, store.StoreError) as error:
+    except (SpecError, store.StoreError, EnriquecimientoError) as error:
         print(f"⛔ {error}")
         return 1
     mostrar_resumen(spec)
