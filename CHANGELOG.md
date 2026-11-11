@@ -27,12 +27,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   toolkit en una carpeta superior: los comandos suben hasta el estado más
   cercano, así que el segundo dejaría dos raíces contradictorias. Volver a
   inicializar el mismo proyecto sigue siendo inocuo.
-- La paleta de VS Code muestra el resultado de `init` como notificación en
-  vez de dejarlo en el terminal: cuando la CLI sale con 1 (por ejemplo, ya
-  hay un proyecto por encima) el aviso se perdía al fondo y el comando
-  parecía no haber hecho nada. Al terminar refresca la vista y la barra, y
-  cuando falla el aviso ofrece «Ver salida», que abre el canal `SDD Toolkit`
-  con la orden, el código y la salida completa.
+- La paleta de VS Code ejecuta los comandos capturando la salida y los
+  muestra en el canal `SDD Toolkit`: cuando la CLI sale con 1 el fallo
+  aparece como notificación con «Ver salida», en vez de perderse al fondo de
+  un terminal. `clarify` sigue en la terminal porque pregunta por stdin, y
+  `init` además confirma por notificación y refresca la vista y la barra.
 
 ## [0.1.5] — 2026-11-11
 

@@ -77,28 +77,40 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("flag: '--task'", pin)
         self.assertIn("entrada.siguiente", fuente)
 
-    def test_init_avisa_en_el_ide(self):
-        """`init` sale con 1 si ya hay un proyecto por encima: desde la paleta
-        el aviso no puede quedarse al fondo del terminal."""
+    def test_los_fallos_se_notifican(self):
+        """Un comando que sale con 1 no puede dejar el aviso al fondo de un
+        terminal: la paleta captura la salida y notifica."""
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
-        init = re.search(r"function inicializar\(dir\).*?\n\}", fuente, re.S)
-        self.assertIsNotNone(init, "falta la ejecución capturada de init")
-        cuerpo = init.group(0)
+        corrida = re.search(r"function correr\(dir, argv.*?\n\}", fuente, re.S)
+        self.assertIsNotNone(corrida, "falta la ejecución capturada")
+        cuerpo = corrida.group(0)
         self.assertIn("execFile", cuerpo)
-        self.assertIn("'--root', dir, 'init'", cuerpo)
+        self.assertIn("[rutaCli(dir), '--root', dir, ...argv]", cuerpo)
         self.assertIn("showErrorMessage", cuerpo)
-        self.assertIn("showInformationMessage", cuerpo)
         # El aviso ofrece la salida completa de la CLI, no solo su primera línea.
         self.assertIn("'Ver salida'", cuerpo)
         self.assertIn("mostrarSalida", cuerpo)
         self.assertIn("createOutputChannel", fuente)
-        # El resto de comandos sigue yendo al terminal, tras el desvío de init.
-        corrida = re.search(r"function ejecutar\(cliArgs\).*?\n\}", fuente, re.S)
-        self.assertIsNotNone(corrida, "falta el despacho de comandos")
-        despacho = corrida.group(0)
-        self.assertIn("cliArgs === 'init'", despacho)
-        self.assertLess(despacho.index("cliArgs === 'init'"),
-                        despacho.index("sendText"))
+
+    def test_solo_clarify_va_al_terminal(self):
+        """`clarify` pregunta por stdin: el resto se puede capturar."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("INTERACTIVOS = new Set(['clarify'])", fuente)
+        despacho = re.search(r"function ejecutar\(cliArgs\).*?\n\}",
+                             fuente, re.S)
+        self.assertIsNotNone(despacho, "falta el despacho de comandos")
+        cuerpo = despacho.group(0)
+        self.assertIn("INTERACTIVOS.has(argv[0])", cuerpo)
+        self.assertIn("terminal().sendText", cuerpo)
+        self.assertIn("correr(dir, argv)", cuerpo)
+
+    def test_init_avisa_y_refresca(self):
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        init = re.search(r"function inicializar\(dir\).*?\n\}", fuente, re.S)
+        self.assertIsNotNone(init, "falta el atajo de init")
+        cuerpo = init.group(0)
+        self.assertIn("correr(dir, ['init']", cuerpo)
+        self.assertIn("refrescar: true", cuerpo)
 
     def test_diez_puntos_del_29_cubiertos(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")

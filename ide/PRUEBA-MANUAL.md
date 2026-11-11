@@ -39,8 +39,14 @@ La ruta de `--root` va **antes** del subcomando.
       sin `🔒`, ningún grupo `Bloqueos`, y nueve fases en `Árbol de estados`
       (cinco completadas; Tareas e Implementación en progreso; Análisis y
       Recuperación pendientes). Cualquier diferencia es un hallazgo.
-- [ ] Clic en un nodo con comando: se abre la terminal `SDD Toolkit` y corre
-      ese comando. Clic en una píldora bloqueada: no pasa nada.
+- [ ] Clic en un nodo con comando: corre ese comando y su salida aparece en
+      el canal `SDD Toolkit`. Clic en una píldora bloqueada: no pasa nada.
+- [ ] Fallo visible: `SDD: Implementar (build)` con `PLAN-999` muestra una
+      notificación de error con `plan inexistente: PLAN-999`; su botón `Ver
+      salida` abre el canal con la orden, el código y la salida completa.
+      Cerrar la notificación sin pulsarlo no abre el canal.
+- [ ] `SDD: Aclarar SPEC` con `SPEC-001` sigue abriéndose en la terminal
+      `SDD Toolkit`, porque pregunta por stdin.
 - [ ] Paleta, comando sin argumentos (`SDD: Estado + siguiente`): corre
       `status` sin preguntar.
 - [ ] Paleta, comando con argumento (`SDD: Generar / ver plan`): pide
