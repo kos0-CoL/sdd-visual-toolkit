@@ -8,6 +8,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- Una prueba recorre los documentos del repo y falla si un enlace relativo
+  apunta a una ruta que no existe o si un documento cita `archivo.py::símbolo`
+  y ese símbolo ya no está; los bloques de código y las carpetas que el
+  toolkit escribe en el proyecto del usuario quedan fuera.
 - El verificador posterior exige que la release adjunte
   `sdd-visual-toolkit-X.Y.Z.vsix` con tamaño mayor que cero desde la 0.1.5, en
   vez de dejar ese adjunto a una revisión a mano.
