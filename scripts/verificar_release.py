@@ -14,8 +14,10 @@ Comprueba en un solo comando, para una versión dada:
    contar espacios ni saltos finales— y no un texto autogenerado (para los
    tags de `NOTAS_DEL_ARBOL` ese archivo se lee del árbol: su tag conserva
    notas que la página rompe y no se puede corregir);
-6. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
-   apunta al tag y que la ruta existe en esa ref.
+6. que cada enlace de las notas a un repositorio de GitHub sea
+   `.../blob/<tag>/<ruta>` en este mismo repositorio y que la ruta exista en
+   esa ref: se rechazan los relativos, los `/tree/`, otras refs y los enlaces
+   a otro repositorio.
 
 Con `--previo` comprueba lo que se puede saber **antes** de crear el tag
 (tag libre, árbol limpio, `HEAD` en `origin/main`, versión y CHANGELOG en el
@@ -44,8 +46,18 @@ from typing import Callable
 
 RAIZ = Path(__file__).resolve().parent.parent
 
-_BLOB = re.compile(
-    r"https://github\.com/([^/\s]+)/([^/\s]+)/blob/([^/\s)]+)/([^)\s]+)")
+_ENLACE_MD = re.compile(r"\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
+_ENLACE_REF = re.compile(r"^\[[^\]^]+\]:\s*(\S+)", re.MULTILINE)
+_URL_GITHUB = re.compile(r"https?://(?:www\.)?github\.com/[^\s)\]\"'<>]+")
+_GITHUB = re.compile(
+    r"https?://(?:www\.)?github\.com/([^/\s#?]+)/([^/\s#?]+)(/[^\s#?]*)?")
+_BLOB = re.compile(r"/blob/([^/\s#?]+)/([^\s#?]+)")
+_REMOTO = re.compile(r"github\.com[:/]([^/\s]+)/([^/\s]+?)(?:\.git)?/?$")
+_BLOQUE = re.compile(r"^```.*?^```", re.MULTILINE | re.DOTALL)
+
+# Páginas de GitHub que no son ficheros: no tienen `blob` equivalente, así que
+# no se exige que lo sean (el pie de la release enlaza `compare`).
+NAVEGACION = {"commits", "compare", "releases", "tags"}
 _VERSION_TOML = re.compile(r'^version = "([^"]+)"', re.MULTILINE)
 _VERSION_CHANGELOG = re.compile(r"^## \[([^\]]+)\] — \d{4}-\d{2}-\d{2}$",
                                 re.MULTILINE)
@@ -89,10 +101,98 @@ def _normalizar(texto: str) -> list[str]:
     return [linea.rstrip() for linea in texto.strip().splitlines()]
 
 
-def _enlaces(notas: str) -> list[tuple[str, str, str]]:
-    """Enlaces a ficheros del repo: (owner/repo, ref, ruta)."""
-    return [("".join((dueno, "/", repo)), ref, ruta)
-            for dueno, repo, ref, ruta in _BLOB.findall(notas)]
+def _repo_propio(correr_comando: Callable[[list[str]], Salida]) -> str | None:
+    """`owner/repo` de `origin`: las notas solo pueden enlazar este repo."""
+    remoto = correr_comando(["git", "remote", "get-url", "origin"])
+    if remoto.codigo != 0:
+        return None
+    encontrado = _REMOTO.search(remoto.stdout.strip())
+    if encontrado is None:
+        return None
+    return f"{encontrado.group(1)}/{encontrado.group(2)}"
+
+
+def _destinos(notas: str) -> list[str]:
+    """Destinos de todos los enlaces de las notas, sin repetir.
+
+    Incluye los de sintaxis Markdown y las URL de GitHub sueltas: una URL
+    pegada sin corchetes también se publica como enlace.
+    """
+    destinos: list[str] = []
+    visible = _BLOQUE.sub("", notas)  # el `git clone` de un bloque no es enlace
+    for destino in (_ENLACE_MD.findall(visible)
+                    + _ENLACE_REF.findall(visible)
+                    + _URL_GITHUB.findall(visible)):
+        limpio = destino.rstrip(".,;:")
+        if limpio not in destinos:
+            destinos.append(limpio)
+    return destinos
+
+
+def _revisar_enlaces(notas: str, propio: str, tag: str,
+                     existe: Callable[[str], bool]) -> list[tuple[bool, str]]:
+    """Todo enlace a un repositorio debe ser `blob` del tag en el repo propio.
+
+    Desde la página de la release solo resuelve una ruta absoluta a un fichero
+    del tag, así que se rechazan los enlaces relativos, los `/tree/`, las
+    demás refs y los que apuntan a otro repositorio; cada ruta se comprueba
+    con `existe`. Las páginas de `NAVEGACION` no son ficheros y se dejan
+    pasar: no tienen `blob` equivalente.
+    """
+    resultados: list[tuple[bool, str]] = []
+    a_fichero = 0
+    for destino in _destinos(notas):
+        limpio = destino.split("#", 1)[0].split("?", 1)[0]
+        if limpio.startswith(("http://", "https://")):
+            github = _GITHUB.match(limpio)
+            if github is None:
+                continue
+            repositorio = f"{github.group(1)}/{github.group(2)}"
+            if repositorio.lower() != propio.lower():
+                resultados.append((
+                    False, f"{destino} apunta a {repositorio}, no a {propio}: "
+                           "las notas solo enlazan este repositorio"))
+                continue
+            resto = (github.group(3) or "").rstrip("/")
+            if not resto:
+                resultados.append((
+                    False, f"{destino} apunta a la raíz del repo: use "
+                           f"blob/{tag}/<ruta>"))
+                continue
+            verbo = resto.strip("/").split("/", 1)[0]
+            if verbo in NAVEGACION:
+                continue  # página de GitHub, no un fichero del tag
+            a_fichero += 1
+            if verbo == "tree":
+                resultados.append((
+                    False, f"{destino} es un enlace tree: use "
+                           f"blob/{tag}/<ruta>"))
+                continue
+            blob = _BLOB.fullmatch(resto)
+            if blob is None:
+                resultados.append((
+                    False, f"{destino} no apunta a un fichero: use "
+                           f"blob/{tag}/<ruta>"))
+                continue
+            ref, ruta = blob.group(1), blob.group(2)
+            if ref != tag:
+                resultados.append((False, f"{ruta} apunta a {ref}, no a {tag}"))
+            elif not existe(ruta):
+                resultados.append((False, f"{ruta} no existe en {tag}"))
+            else:
+                resultados.append((True, f"{ruta} existe y apunta a {tag}"))
+            continue
+        if re.match(r"[a-zA-Z][a-zA-Z0-9+.\-]*:", limpio):
+            continue  # otro esquema (mailto, etc.): no es un enlace al repo
+        resultados.append((
+            False, f"{destino} es un enlace relativo: desde la página de la "
+                   "release no resuelve"))
+    if not a_fichero:
+        resultados.append((False, "las notas no enlazan ficheros del repo"))
+    return resultados
+
+
+
 
 
 def _tag_remoto(correr_comando: Callable[[list[str]], Salida],
@@ -209,18 +309,13 @@ def verificar_previo(version: str,
     except OSError:
         anotar(False, f"falta docs/release-notes-{tag}.md")
         return resultados
-    enlaces = _enlaces(notas)
-    if not enlaces:
-        anotar(False, f"docs/release-notes-{tag}.md no enlaza "
-                      "ficheros del repo")
-        return resultados
-    for _repositorio, ref, ruta in enlaces:
-        if ref != tag:
-            anotar(False, f"{ruta} apunta a {ref}, no a {tag}")
-        elif not (raiz / ruta).is_file():
-            anotar(False, f"{ruta} no existe en el árbol")
-        else:
-            anotar(True, f"{ruta} existe y apunta a {tag}")
+    propio = _repo_propio(correr_comando)
+    if propio is None:
+        anotar(False, "no se pudo leer el repositorio de origin: sin eso no "
+                      "se puede exigir que las notas enlacen este repo")
+    else:
+        resultados += _revisar_enlaces(
+            notas, propio, tag, lambda ruta: (raiz / ruta).is_file())
 
     etiquetas = correr_comando(["git", "tag", "--list", "v*"]).stdout.split()
     previas = [(m.groups(), m.group(0))
@@ -357,21 +452,19 @@ def verificar(version: str,
                 f"`gh release edit {tag} --notes-file "
                 f"docs/release-notes-{tag}.md`")
 
-    enlaces = _enlaces(notas.stdout)
-    if not enlaces:
-        anotar(False, f"docs/release-notes-{tag}.md no enlaza ficheros del repo")
+    propio = _repo_propio(correr_comando)
+    if propio is None:
+        anotar(False, "no se pudo leer el repositorio de origin: sin eso no "
+                      "se puede exigir que las notas enlacen este repo")
         return resultados
-    for repositorio, ref, ruta in enlaces:
-        if ref != tag:
-            anotar(False, f"{ruta} apunta a {ref}, no a {tag}")
-            continue
+
+    def existe(ruta: str) -> bool:
         consulta = correr_comando([
-            "gh", "api", f"repos/{repositorio}/contents/{ruta}?ref={ref}",
+            "gh", "api", f"repos/{propio}/contents/{ruta}?ref={tag}",
             "--jq", ".path"])
-        anotar(consulta.codigo == 0,
-               f"{ruta} existe en {ref}" if consulta.codigo == 0
-               else f"{ruta} devuelve {consulta.codigo or 1} en {ref}")
-    return resultados
+        return consulta.codigo == 0
+
+    return resultados + _revisar_enlaces(notas.stdout, propio, tag, existe)
 
 
 def main(argumentos: list[str] | None = None) -> int:
