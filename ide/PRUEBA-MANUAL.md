@@ -52,6 +52,21 @@ que no se combina con `--sin-vsix`).
 
 La ruta de `--root` va **antes** del subcomando cuando se corre a mano.
 
+### Cada pasada, en este orden
+
+```bash
+scripts/preparar-manual.sh --solo-verificar   # ¿sirve lo que ya hay?
+```
+
+1. Un `⛔` en la tabla se arregla antes de abrir el editor: es un entorno roto,
+   no una casilla pendiente.
+2. Los `✓` son hechos comprobados en archivos y CLI; no autorizan a marcar una
+   casilla.
+3. Los `☐` son lo que falta mirar; el arnés sale siempre así, porque el editor
+   no lo vio.
+4. Al recorrer una casilla se marca en este archivo y se deja su línea en
+   `ide/COMPATIBILIDAD.md`. La tabla no marca casillas por sí sola.
+
 ## VS Code — extensión
 
 `ide/vscode/package.json` declara `0.1.5`; sirve el `.vsix` de esa release o el
