@@ -8,6 +8,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- Una prueba extrae las rutas que cita el LEEME del fixture de 0.1.0 y exige
+  que existan, y el LEEME aclara que aquel formato era solo JSON: la CLI
+  actual escribe el JSON y también el `.md` al lado.
 - `init` puede dejar los comandos del agente generados en el acto: pregunta
   por el cliente cuando hay terminal, acepta `--cliente` repetible para no
   preguntar y `--sin-comandos` para omitirlo. Sin terminal no pregunta, porque
