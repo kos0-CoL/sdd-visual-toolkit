@@ -68,5 +68,31 @@ class TestInitConRoot(unittest.TestCase):
         self.assertFalse(self.destino.exists())
 
 
+class TestInitNoAnida(unittest.TestCase):
+    """Un segundo `.specify/` dentro del primero deja dos raíces en conflicto."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.base = Path(tmp.name).resolve()
+        codigo, salida = _despachar(["--root", str(self.base), "init"])
+        self.assertEqual(codigo, 0, salida)
+
+    def test_no_crea_un_specify_anidado(self):
+        dentro = self.base / "sub"
+        dentro.mkdir()
+        codigo, salida = _despachar(["--root", str(dentro), "init"])
+        self.assertEqual(codigo, 1, salida)
+        self.assertFalse((dentro / ".specify").exists())
+        self.assertIn(str(self.base), salida)
+
+    def test_reinicializar_el_mismo_proyecto_es_inocuo(self):
+        nota = self.base / "specs" / "nota.md"
+        nota.write_text("mia", encoding="utf-8")
+        codigo, salida = _despachar(["init", str(self.base)])
+        self.assertEqual(codigo, 0, salida)
+        self.assertEqual(nota.read_text(encoding="utf-8"), "mia")
+
+
 if __name__ == "__main__":
     unittest.main()
