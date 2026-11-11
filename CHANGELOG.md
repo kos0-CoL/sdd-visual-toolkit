@@ -11,6 +11,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La extensión lleva su `LICENSE` (copia del del repo) y un `.vscodeignore`:
   `vsce` empaqueta solo `extension.js`, `package.json`, el `readme.md` y la
   licencia, sin avisos de archivos faltantes ni de sobrantes.
+- `scripts/materializar_md.py` reescribe los `.md` de plan y tareas a partir
+  de sus JSON con los renderizadores de la CLI, sin tocar el estado: el fixture
+  de 0.1.0 solo trae los JSON (`plan --force` movería el proyecto a
+  Arquitectura 0/18). La preparación lo usa y corre `analyze` —que tampoco
+  cambia el estado— para que el clic derecho del IDE tenga los tres artefactos.
 - La checklist manual corrige dos esperados que no coincidían con el editor:
   al regenerar los comandos la notificación muestra la primera línea de la CLI
   (`🧩 copilot: 14 comando(s)…`), no un texto propio, y el fixture de 0.1.0 no

@@ -87,6 +87,16 @@ if origen.is_file():
     print("· src/productos.py restaurado del snapshot 0")
 PY
 
+# El fixture trae los JSON de plan y tareas sin sus `.md`, y no tiene informe:
+# sin ellos las fases Arquitectura, Tareas y Análisis aparecen sin artefacto y
+# el clic derecho no se puede probar. Se materializan con los renderizadores y
+# con `analyze`, que no mueve el estado (sigue en 1/18, fase Pruebas).
+"$PYTHON" "$RAIZ/scripts/materializar_md.py" "$DESTINO"
+if [ -f "$DESTINO/.specify/planes/PLAN-001.json" ]; then
+    "$PYTHON" "$RAIZ/cli/main.py" --root "$DESTINO" analyze PLAN-001 >/dev/null
+    echo "· .specify/informes/INFORME-PLAN-001.md materializado (analyze)"
+fi
+
 "$PYTHON" "$RAIZ/cli/main.py" --root "$DESTINO" comandos --cliente copilot
 "$PYTHON" "$RAIZ/cli/main.py" --root "$DESTINO" comandos --verificar
 

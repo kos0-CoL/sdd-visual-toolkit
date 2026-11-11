@@ -34,7 +34,8 @@ Hace lo que antes se copiaba a mano: copia el fixture
 `sddToolkit.python` y la ruta absoluta a `cli/main.py`, restaura
 `src/productos.py` desde el snapshot 0 (lo que compara `validate`), genera los
 14 comandos de copilot y comprueba con `toolkit comandos --verificar` que sus
-rutas existen. Sin `--sin-vsix` empaqueta además
+rutas existen. Además materializa los `.md` que el fixture de 0.1.0 no trae
+—plan, tareas e informe— para poder probar el clic derecho, sin mover el estado. Sin `--sin-vsix` empaqueta además
 `sdd-visual-toolkit-<versión>.vsix`, falla si `vsce` deja algún `WARNING` y
 comprueba con `scripts/verificar_vsix.py` que el paquete lleve la extensión, el
 manifiesto, el `readme.md` y la licencia, sin archivos vacíos ni sobrantes; si
@@ -102,13 +103,13 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       En una fase sin ejecutar, la notificación dice qué ruta falta y no abre
       nada.
 
-      **Con el fixture de 0.1.0 no se pueden probar los `.md` de plan, tareas
-      e informe**: el proyecto trae `.specify/planes/PLAN-001.json` y
-      `.specify/tareas/TASKS-PLAN-001.json` sin sus `.md`, y no tiene
-      `.specify/informes/`, así que `Arquitectura`, `Tareas` y `Análisis`
-      aparecen sin artefacto y sin clic derecho. Eso es lo correcto con el
-      estado del fixture; para probar esos tres `.md` hace falta un proyecto
-      con el flujo corrido de punta a punta.
+      **El fixture de 0.1.0 solo trae `.specify/planes/PLAN-001.json` y
+      `.specify/tareas/TASKS-PLAN-001.json`**, y no tiene
+      `.specify/informes/`. La preparación materializa los tres `.md`
+      (`scripts/materializar_md.py` reescribe plan y tareas con los
+      renderizadores de la CLI y `analyze PLAN-001` crea el informe) sin mover
+      el estado: sigue en `1/18` y `🧪 Pruebas`. Si se salta ese paso,
+      `Arquitectura`, `Tareas` y `Análisis` aparecen sin artefacto.
 - [ ] Clic derecho en `SDD → Fases y tareas`: sobre `📍 Fase: …` y sobre la
       fila de esa misma fase en *Árbol de estados* aparece *Abrir artefacto de
       la fase* y abre el mismo archivo que desde el flujo; en las fases sin
