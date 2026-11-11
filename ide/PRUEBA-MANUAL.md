@@ -33,7 +33,7 @@ ajustes, las skills y el `.vsix`:
 scripts/preparar-manual.sh                         # /tmp/sdd-manual y /tmp/sdd-manual-vsix
 scripts/preparar-manual.sh --instalar              # y además instala el .vsix
 scripts/preparar-manual.sh --destino /tmp/x --sin-vsix
-scripts/preparar-manual.sh --solo-verificar        # solo mira: dice qué falta
+scripts/preparar-manual.sh --solo-verificar        # solo mira: tabla de resultados
 ```
 
 Hace lo que antes se copiaba a mano: copia el fixture
