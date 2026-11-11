@@ -8,6 +8,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- `init` termina diciendo cómo generar los comandos del agente, con el comando
+  exacto (`<python> "<ruta>/cli/main.py" comandos --cliente copilot`) y la
+  advertencia de que la ruta absoluta queda grabada, así que hay que
+  regenerarlos si el toolkit cambia de sitio; los pasos sugeridos incluyen
+  `[ comandos ]`.
 - Una prueba recorre los documentos del repo y falla si un enlace relativo
   apunta a una ruta que no existe o si un documento cita `archivo.py::símbolo`
   y ese símbolo ya no está; los bloques de código y las carpetas que el
