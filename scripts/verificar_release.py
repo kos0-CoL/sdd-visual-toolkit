@@ -21,8 +21,9 @@ Comprueba en un solo comando, para una versión dada:
 
 Con `--previo` comprueba lo que se puede saber **antes** de crear el tag
 (tag libre, árbol limpio, `HEAD` en `origin/main` y con el CI en verde,
-versión y CHANGELOG en el árbol, `[No publicado]` vacía, notas con enlaces al
-tag futuro y versión posterior a la última etiquetada).
+versión y CHANGELOG en el árbol, que la extensión declare esa misma versión
+—su `.vsix` se adjunta al release—, `[No publicado]` vacía, notas con enlaces
+al tag futuro y versión posterior a la última etiquetada).
 
 Uso:
 
@@ -311,6 +312,21 @@ def verificar_previo(version: str,
     anotar(en_arbol == version,
            f"pyproject.toml declara {version}" if en_arbol == version
            else f"pyproject.toml declara {en_arbol}, no {version}")
+
+    try:
+        manifiesto = json.loads(
+            (raiz / "ide" / "vscode" / "package.json").read_text(
+                encoding="utf-8"))
+        extension = str(manifiesto["version"])
+    except (OSError, KeyError, ValueError) as error:
+        anotar(False, "no se pudo leer la versión de ide/vscode/package.json: "
+                      f"{error}")
+    else:
+        anotar(extension == version,
+               f"la extensión se empaqueta como {version}"
+               if extension == version
+               else f"ide/vscode/package.json declara {extension}, no "
+                    f"{version}: el .vsix de {tag} llevaría otra versión")
 
     try:
         changelog = (raiz / "CHANGELOG.md").read_text(encoding="utf-8")
