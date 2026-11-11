@@ -33,8 +33,10 @@ COMANDOS: tuple[Comando, ...] = (
             "siguiente"),
     Comando("sdd-status", "Estado del proyecto: fase, progreso y bloqueos",
             "status"),
+    # La idea va como un solo argumento: sin comillas, `enrich una idea`
+    # termina en `unrecognized arguments`.
     Comando("sdd-enrich", "Enriquecer una idea y dejarla pendiente de validar",
-            "enrich", pista="idea en una frase"),
+            "enrich", pista='idea entre comillas: "…"'),
     Comando("sdd-specify", "Generar la SPEC a partir de un ENR validado",
             "specify", pista="ENR-ID"),
     Comando("sdd-clarify", "Responder las aclaraciones abiertas de una SPEC",
@@ -105,18 +107,27 @@ def _cuerpo(comando: Comando, python: str, cli: Path, cliente: str) -> str:
     return "\n".join(lineas)
 
 
+def _escalar(texto: str) -> str:
+    """Valor entre comillas simples, que es YAML válido para cualquier texto.
+
+    Sin comillas, una descripción con «: » deja el frontmatter roto
+    (`mapping values are not allowed here`) y el cliente no carga el comando.
+    """
+    return "'" + texto.replace("'", "''") + "'"
+
+
 def _frontmatter(comando: Comando, cliente: str) -> str:
     if cliente in SIN_FRONTMATTER:
         return ""
     lineas = [
         "---",
-        f"name: {comando.nombre}",
-        f"description: {comando.descripcion}",
+        f"name: {_escalar(comando.nombre)}",
+        f"description: {_escalar(comando.descripcion)}",
     ]
     if comando.pista:
-        lineas.append(f"argument-hint: \"{comando.pista}\"")
+        lineas.append(f"argument-hint: {_escalar(comando.pista)}")
     if cliente == "copilot":
-        lineas.append("agent: agent")
+        lineas.append(f"agent: {_escalar('agent')}")
     lineas.append("---")
     return "\n".join(lineas)
 

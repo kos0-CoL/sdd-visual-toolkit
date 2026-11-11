@@ -38,6 +38,15 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- Los comandos de barra se escribían con el frontmatter roto cuando la
+  descripción llevaba «: »: 12 de los 56 archivos no eran YAML válido y el
+  cliente podía no cargar el comando. Los valores van entre comillas simples.
+- La pista de `/sdd-enrich` pedía «idea en una frase», pero `enrich` toma un
+  solo argumento: sin comillas la orden acababa en `unrecognized arguments`.
+  Ahora pide la idea entre comillas.
+- La matriz de compatibilidad afirmaba que Cursor no recibe texto detrás del
+  comando y que Windsurf sustituye `$ARGUMENTS`; ninguna de las dos cosas es
+  así, y los pasos de prueba se corrigieron.
 - `build` y su alias `implement` respondían «sin informe para PLAN-999;
   ejecute `analyze PLAN-999` primero» cuando el plan no existía: ahora dicen
   «plan inexistente» y el Quality Gate 4 sigue igual para los planes que sí

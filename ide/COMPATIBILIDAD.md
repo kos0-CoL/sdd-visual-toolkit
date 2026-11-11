@@ -52,26 +52,29 @@ toolkit comandos --cliente <cliente>
 
 1. `toolkit comandos --cliente cursor`; los archivos quedan en
    `.cursor/commands/`.
-2. `/sdd` debe aparecer en el chat; comprobar que el agente **no** recibe
-   argumentos detrás del comando y que aun así pide el ID cuando falta (los
-   comandos de Cursor no los pasan).
+2. `/sdd` debe aparecer en el chat. Lo que se escriba detrás del comando no
+   llega como `$ARGUMENTS`, sino dentro del prompt: el agente tiene que
+   leerlo y ponerlo al final del comando.
 3. La extensión se prueba igual que en VS Code si el editor la acepta.
 
 ### Windsurf
 
 1. `toolkit comandos --cliente windsurf`; quedan en
    `.windsurf/workflows/`.
-2. `/sdd-plan` debe invocarse desde Cascade y ejecutar `plan $ARGUMENTS`
-   con el ID que se escriba detrás.
+2. `/sdd-plan` debe invocarse desde Cascade y ejecutar `plan` con el ID que
+   se escriba detrás.
 
 ### Antigravity
 
 1. `toolkit comandos --cliente antigravity`; quedan en `.agents/skills/`.
    No se generan *workflows*: ese mecanismo está deprecado y la migración es
    hacia skills.
-2. Verificar que las skills aparecen en el agente y que la ejecución de shell
+2. Aquí no hay comandos de barra: el agente ve las skills por nombre y
+   descripción y elige. El manifiesto solo documenta `name` y `description`,
+   así que `argument-hint` se ignora; el ID se pasa como texto en el pedido.
+3. Verificar que las skills aparecen en el agente y que la ejecución de shell
    les permite correr la CLI.
-3. Mientras no se verifique: usar la CLI (RF-36) o el MCP.
+4. Mientras no se verifique: usar la CLI (RF-36) o el MCP.
 
 ### Claude Code
 
