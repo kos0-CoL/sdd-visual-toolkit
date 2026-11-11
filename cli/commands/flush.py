@@ -15,6 +15,7 @@ from core.flush import (
     medir,
 )
 from core.journal import historial, registrar
+from core.plan import PlanError
 from core.recover import diagnosticar, formatear
 from state import store
 
@@ -65,9 +66,9 @@ def despachar(args) -> int:
         try:
             spec_d = {"funcionales": spec.funcionales}
             print(formatear(diagnosticar(raiz, plan.plan_id, spec_d, tareas)))
-        except (store.StoreError, FlushError) as error:
+        except (PlanError, store.StoreError, FlushError) as error:
             print(f"⚠️ verificación posterior incompleta: {error}")
-    except (FlushError, store.StoreError) as error:
+    except (FlushError, PlanError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0
