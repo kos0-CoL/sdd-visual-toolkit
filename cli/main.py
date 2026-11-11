@@ -100,9 +100,13 @@ def _clientes_de_init(args) -> list[str] | None:
     except EOFError:
         print()
         return None
+    # La elección se deja escrita: en un registro o una captura, lo tecleado
+    # en el prompt no aparece y no se sabría qué se generó.
     if not respuesta:
+        print("· cliente: ninguno (sin comandos de barra)")
         return None
     if respuesta in ("todos", "all"):
+        print(f"· cliente: todos ({', '.join(disponibles)})")
         return disponibles
     elegidos = respuesta.replace(",", " ").split()
     desconocidos = [c for c in elegidos
@@ -111,6 +115,7 @@ def _clientes_de_init(args) -> list[str] | None:
         print(f"· cliente(s) desconocido(s): {', '.join(desconocidos)};"
               " no se generaron comandos de barra")
         return None
+    print(f"· cliente: {', '.join(elegidos)}")
     return elegidos
 
 
