@@ -11,6 +11,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La extensión lleva su `LICENSE` (copia del del repo) y un `.vscodeignore`:
   `vsce` empaqueta solo `extension.js`, `package.json`, el `readme.md` y la
   licencia, sin avisos de archivos faltantes ni de sobrantes.
+- `tests/test_extension_headless.py` lleva el marcador `lento`, registrado en
+  `pyproject.toml`: `pytest -m "not lento"` deja fuera el arnés y sus catorce
+  invocaciones a la CLI (medido: 30,2 s frente a 38,7 s). Con `-q` sin filtro
+  se sigue corriendo todo, también en CI.
 - `scripts/preparar-manual.sh --solo-verificar` mira un entorno ya preparado
   sin rehacerlo: ajustes, `src/`, los tres `.md`, `comandos --verificar`, el
   estado, la extensión instalada y el arnés, y termina diciendo qué bloques de
