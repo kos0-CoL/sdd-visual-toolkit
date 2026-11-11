@@ -93,6 +93,9 @@ def _clientes_de_init(args) -> list[str] | None:
     if getattr(args, "sin_comandos", False) or not sys.stdin.isatty():
         return None
     disponibles = sorted(cmd_comandos.agent_commands.CLIENTES)
+    # Sin línea en blanco después: en un terminal el Enter ya abre el renglón
+    # del eco. Una captura sin eco (pty con stdin canalizado) lo deja pegado a
+    # la pregunta, que es el precio de no ensuciar la salida interactiva.
     print(f"Cliente del agente ({', '.join(disponibles)}; «todos» o vacío ="
           " ninguno): ", end="", flush=True)
     try:
@@ -100,9 +103,6 @@ def _clientes_de_init(args) -> list[str] | None:
     except EOFError:
         print()
         return None
-    # En su propia línea: lo tecleado no siempre queda en la salida capturada
-    # (pty, CI), y ahí el eco salía pegado a la pregunta.
-    print()
     # La elección se deja escrita: en un registro o una captura, lo tecleado
     # en el prompt no aparece y no se sabría qué se generó.
     if not respuesta:
