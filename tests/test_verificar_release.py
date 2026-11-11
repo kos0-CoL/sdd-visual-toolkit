@@ -293,6 +293,8 @@ class TestVerificarRelease(unittest.TestCase):
 
 
 PREVIA = "v0.1.4"
+CI_PREVIO = ("gh", "api", "repos/{owner}/{repo}/commits/abc123/check-runs",
+             "--jq", ".check_runs | map({name, status, conclusion})")
 
 
 def _changelog(version: str = "0.1.4", previa: str = "0.1.3",
@@ -348,6 +350,9 @@ class TestVerificarPrevio(unittest.TestCase):
                 _salida(stdout="v0.1.2\nv0.1.3\n"),
             ("git", "remote", "get-url", "origin"):
                 _salida(stdout=f"git@github.com:{SLUG}.git\n"),
+            CI_PREVIO: _salida(stdout=json.dumps([
+                {"name": "tests (Python 3.12)", "status": "completed",
+                 "conclusion": "success"}])),
         }
         respuestas.update(cambios or {})
         return vr.verificar_previo("0.1.4", _correr_con(respuestas),
@@ -359,7 +364,27 @@ class TestVerificarPrevio(unittest.TestCase):
     def test_todo_correcto(self):
         resultados = self.verificar()
         self.assertEqual([m for ok, m in resultados if not ok], [])
-        self.assertEqual(len(resultados), 9)
+        self.assertEqual(len(resultados), 10)
+
+    def test_ci_rojo_bloquea_el_tag(self):
+        self.assertIn("no está verde", " ".join(self.fallos({
+            CI_PREVIO: _salida(stdout=json.dumps([
+                {"name": "tests (Python 3.12)", "status": "completed",
+                 "conclusion": "failure"}]))})))
+
+    def test_ci_sin_terminar_bloquea_el_tag(self):
+        self.assertIn("sin terminar", " ".join(self.fallos({
+            CI_PREVIO: _salida(stdout=json.dumps([
+                {"name": "tests (Python 3.12)", "status": "queued",
+                 "conclusion": None}]))})))
+
+    def test_ci_sin_checks_bloquea_el_tag(self):
+        self.assertIn("no tiene checks", " ".join(self.fallos({
+            CI_PREVIO: _salida(stdout="[]")})))
+
+    def test_ci_ilegible_bloquea_el_tag(self):
+        self.assertIn("no se pudo leer el CI", " ".join(self.fallos({
+            CI_PREVIO: _salida(1, stderr="HTTP 403")})))
 
     def test_tag_existente_en_local(self):
         resultados = self.verificar({
