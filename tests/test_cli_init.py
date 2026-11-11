@@ -111,6 +111,12 @@ class TestInitEstructuraReal(unittest.TestCase):
             self.assertIn(".specify/planes", salida)
             self.assertIn("specs/", salida)
             self.assertNotIn("plans/", salida)
+            # Estado e historial son del journal, en `memory/`.
+            self.assertTrue((raiz / ".specify" / "memory").is_dir())
+            self.assertFalse(
+                (raiz / ".specify" / "current_task.json").exists())
+            self.assertFalse(
+                (raiz / ".specify" / "execution_history.jsonl").exists())
 
 
 class TestInitDejaElIDEListo(unittest.TestCase):

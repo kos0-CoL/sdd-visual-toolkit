@@ -686,9 +686,9 @@ Se propone:
 
 ```text
 .specify/
-├── memory/
-├── current_task.json
-└── execution_history.jsonl
+└── memory/
+    ├── current_task.json
+    └── execution_history.jsonl
 ```
 
 ### 13.3. Estado de ejecución
@@ -1548,8 +1548,9 @@ proyecto-del-usuario/
 │   ├── planes/
 │   ├── tareas/
 │   ├── informes/
-│   ├── current_task.json
-│   └── execution_history.jsonl
+│   └── memory/
+│       ├── current_task.json
+│       └── execution_history.jsonl
 │
 ├── specs/
 │   ├── SPEC-001.md

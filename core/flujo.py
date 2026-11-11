@@ -23,7 +23,7 @@ FASES = (
     ("Tareas", "sdd-tasks", ".specify/tareas/TASKS-{plan}.md"),
     ("Análisis", "sdd-analyze", ".specify/informes/INFORME-{plan}.md"),
     ("Implementación", "sdd-build", ".specify/memory/current_task.json"),
-    ("Pruebas", "sdd-test", ".specify/execution_history.jsonl"),
+    ("Pruebas", "sdd-test", ".specify/memory/execution_history.jsonl"),
     ("Recuperación", None, ".specify/checkpoints"),
 )
 

@@ -43,9 +43,10 @@ def inicializar_proyecto(raiz: Path) -> Path:
     # creaban plans/ y tasks/ en la raíz, que nadie llegaba a usar.
     for sub in ("planes", "tareas", "informes"):
         (specify / sub).mkdir(exist_ok=True)
+    # El estado de ejecución y el historial los escribe el journal dentro de
+    # `memory/`; antes init dejaba aquí un `current_task.json` y un
+    # `execution_history.jsonl` que nadie leía ni actualizaba.
     for nombre, contenido in (
-        ("current_task.json", {"current_spec": None, "current_phase": None}),
-        ("execution_history.jsonl", ""),
         (REQUERIMIENTOS_FILE, []),
     ):
         destino = specify / nombre

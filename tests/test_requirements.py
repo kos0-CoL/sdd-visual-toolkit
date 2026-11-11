@@ -76,8 +76,6 @@ class TestPersistenciaYCLI(unittest.TestCase):
         for ruta in (
             ".specify/memory",
             ".specify/checkpoints",
-            ".specify/current_task.json",
-            ".specify/execution_history.jsonl",
             ".specify/requerimientos.json",
             ".specify/planes",
             ".specify/tareas",
@@ -85,6 +83,10 @@ class TestPersistenciaYCLI(unittest.TestCase):
             "specs",
         ):
             self.assertTrue((self.root / ruta).exists(), ruta)
+        # Estado e historial viven en `memory/`, que es donde los escribe el
+        # journal: en la raíz de `.specify/` no queda copia que nadie actualice.
+        for suelto in ("current_task.json", "execution_history.jsonl"):
+            self.assertFalse((self.root / ".specify" / suelto).exists(), suelto)
         # Lo que nadie escribe no se crea: eran carpetas muertas en la raiz.
         self.assertFalse((self.root / "plans").exists())
         self.assertFalse((self.root / "tasks").exists())
