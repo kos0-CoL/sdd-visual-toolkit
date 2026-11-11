@@ -1,0 +1,66 @@
+"""La preparación de la pasada manual es repetible (§29).
+
+`scripts/preparar-manual.sh` hace lo que antes se copiaba a mano en
+`ide/PRUEBA-MANUAL.md`: fixture, ajustes del workspace, `src/` restaurado y
+comandos del agente. Aquí se comprueba con `--sin-vsix`, que no necesita red.
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
+SCRIPT = RAIZ / "scripts" / "preparar-manual.sh"
+
+
+class TestPrepararManual(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.base = Path(tmp.name)
+        self.destino = self.base / "proyecto"
+
+    def _preparar(self, *extra):
+        return subprocess.run(
+            ["bash", str(SCRIPT), "--sin-vsix", "--destino", str(self.destino),
+             *extra],
+            capture_output=True, text=True, timeout=180)
+
+    def test_deja_el_proyecto_listo(self):
+        r = self._preparar()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        ajustes = json.loads(
+            (self.destino / ".vscode" / "settings.json").read_text(encoding="utf-8"))
+        cli = Path(ajustes["sddToolkit.cliPath"])
+        self.assertTrue(cli.is_absolute(), cli)
+        self.assertTrue(cli.is_file(), cli)
+        self.assertTrue(ajustes["sddToolkit.python"])
+        prompts = list((self.destino / ".github" / "prompts").glob("*.md"))
+        self.assertEqual(len(prompts), 14)
+        self.assertTrue((self.destino / "src" / "productos.py").is_file())
+        self.assertTrue(
+            (self.destino / ".specify" / "memory" / "current_task.json").is_file())
+        self.assertIn("AL DÍA", r.stdout)
+        self.assertIn("PRUEBA-MANUAL.md", r.stdout)
+
+    def test_no_pisa_un_destino_existente_sin_force(self):
+        self.assertEqual(self._preparar().returncode, 0)
+        r = self._preparar()
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("--force", r.stderr)
+        self.assertTrue((self.destino / ".vscode" / "settings.json").is_file())
+
+    def test_force_rehace_el_destino(self):
+        self.assertEqual(self._preparar().returncode, 0)
+        (self.destino / "basura.txt").write_text("x", encoding="utf-8")
+        r = self._preparar("--force")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertFalse((self.destino / "basura.txt").exists())
+
+
+if __name__ == "__main__":
+    unittest.main()
