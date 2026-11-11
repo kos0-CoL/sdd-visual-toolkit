@@ -45,6 +45,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - `specify` y `restricciones` avisan con `⛔` cuando el ID no existe, en vez de
   terminar con un traceback: son los dos últimos comandos que reventaban al
   escribir un identificador equivocado.
+- `init` deja el proyecto listo para el IDE: escribe `.vscode/settings.json`
+  con el intérprete y la ruta del toolkit, y `.vscode/tasks.json` con las
+  tareas `SDD: …`. Al abrir la carpeta la extensión funciona sin configurar
+  nada, y los archivos existentes no se sobrescriben.
 
 ## [0.1.5] — 2026-11-11
 

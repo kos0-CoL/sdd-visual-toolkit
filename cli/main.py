@@ -48,6 +48,7 @@ from core.requirements import (  # noqa: E402
     RequerimientoError,
 )
 from state import store  # noqa: E402
+from core import ide_entorno  # noqa: E402
 from core.version import version as version_herramienta  # noqa: E402
 
 
@@ -91,10 +92,18 @@ def cmd_init(args) -> int:
         print("  no se crea .specify/ anidado: desde aquí ya mandan sus comandos.")
         return 1
     raiz = store.inicializar_proyecto(destino)
+    # La capa visual (§29): sin esto la extensión no sabe qué `cli/main.py`
+    # ejecutar y las tareas SDD no aparecen al abrir la carpeta en el IDE.
+    escritos, existentes = ide_entorno.preparar(
+        raiz, Path(__file__).resolve(), sys.executable or "python3")
     print(f"🟢 PROYECTO INICIALIZADO: {raiz}")
     print("Estado:")
     print("✓ .specify/ (estado, memoria, checkpoints, historial)")
     print("✓ specs/ plans/ tasks/")
+    if escritos:
+        print(f"✓ {', '.join(escritos)} (ruta del toolkit y tareas SDD)")
+    for nombre in existentes:
+        print(f"· {nombre} ya existía: no se tocó")
     print("¿Qué desea hacer ahora?")
     print("[ req add ]  [ status ]")
     return 0
