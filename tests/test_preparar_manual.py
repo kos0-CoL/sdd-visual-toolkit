@@ -60,6 +60,37 @@ class TestPrepararManual(unittest.TestCase):
         self.assertIn("--instalar necesita", r.stderr)
         self.assertFalse(self.destino.exists())
 
+    def _solo_verificar(self, *extra):
+        return subprocess.run(
+            ["bash", str(SCRIPT), "--solo-verificar", "--destino",
+             str(self.destino), *extra],
+            capture_output=True, text=True, timeout=300)
+
+    def test_solo_verificar_informa_sobre_lo_ya_preparado(self):
+        self.assertEqual(self._preparar().returncode, 0)
+        (self.destino / "marca.txt").write_text("x", encoding="utf-8")
+        r = self._solo_verificar()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("Verificación de", r.stdout)
+        for linea in ("✓ ajustes", "✓ artefactos", "✓ estado", "✓ comandos"):
+            self.assertIn(linea, r.stdout)
+        self.assertIn("Casillas de ide/PRUEBA-MANUAL.md", r.stdout)
+        self.assertIn("VS Code — extensión:", r.stdout)
+        # No rehace nada: el archivo de más sigue donde estaba.
+        self.assertTrue((self.destino / "marca.txt").is_file())
+
+    def test_solo_verificar_sin_proyecto_avisa(self):
+        r = self._solo_verificar()
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("no está preparado", r.stderr)
+        self.assertFalse(self.destino.exists())
+
+    def test_solo_verificar_no_se_mezcla_con_force(self):
+        self.assertEqual(self._preparar().returncode, 0)
+        r = self._solo_verificar("--force")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("--solo-verificar no rehace", r.stderr)
+
     def test_force_rehace_el_destino(self):
         self.assertEqual(self._preparar().returncode, 0)
         (self.destino / "basura.txt").write_text("x", encoding="utf-8")
