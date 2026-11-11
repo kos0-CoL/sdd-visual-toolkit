@@ -39,6 +39,10 @@ CASOS = [
     (["recover", "PLAN-999"], "sin tareas para PLAN-999"),
     (["traza", "SPEC-999"], "SPEC inexistente: SPEC-999"),
     (["clarify", "--list", "SPEC-999"], "SPEC inexistente: SPEC-999"),
+    (["build", "PLAN-999"], "plan inexistente: PLAN-999"),
+    (["build", "PLAN-999", "--done", "TASK-001"],
+     "plan inexistente: PLAN-999"),
+    (["implement", "PLAN-999"], "plan inexistente: PLAN-999"),
 ]
 
 
@@ -65,6 +69,29 @@ class TestIDsInexistentes(unittest.TestCase):
                 codigo, salida = self._despachar(argv)
                 self.assertEqual(codigo, 1, salida)
                 self.assertIn(esperado, salida)
+
+
+class TestGateDeBuild(unittest.TestCase):
+    """El plan que existe sigue pasando por el Quality Gate 4 (§10.4)."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name) / "proyecto"
+        shutil.copytree(FIXTURE, self.root)
+        self.parser = cli_main.construir_parser()
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_plan_sin_informe_sigue_pidiendo_analyze(self):
+        args = self.parser.parse_args(
+            ["--root", str(self.root), "build", "PLAN-001"])
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = args.func(args)
+        self.assertEqual(codigo, 1)
+        self.assertIn("sin informe para PLAN-001", salida.getvalue())
+        self.assertIn("analyze PLAN-001", salida.getvalue())
 
 
 class TestPinEscribe(unittest.TestCase):

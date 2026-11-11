@@ -32,6 +32,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `build` y su alias `implement` respondían «sin informe para PLAN-999;
+  ejecute `analyze PLAN-999` primero» cuando el plan no existía: ahora dicen
+  «plan inexistente» y el Quality Gate 4 sigue igual para los planes que sí
+  existen.
 - Los comandos de la CLI avisan cuando el ID no existe en vez de morir con un
   traceback: `ast`, `diff`, `historia`, `reporte`, `test`, `validate`,
   `flush`, `pin`, `recover`, `traza` y `clarify` capturaban solo el error de
