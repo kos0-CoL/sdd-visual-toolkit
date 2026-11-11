@@ -15,6 +15,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - El verificador posterior exige que la release adjunte
   `sdd-visual-toolkit-X.Y.Z.vsix` con tamaño mayor que cero desde la 0.1.5, en
   vez de dejar ese adjunto a una revisión a mano.
+- La paleta de VS Code muestra una notificación de progreso con la orden en
+  curso cuando un comando tarda más de 400 ms: `build` y `test` ya no se
+  esperan en silencio, y los rápidos no dejan un parpadeo.
 
 ### Corregido
 

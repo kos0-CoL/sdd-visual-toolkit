@@ -107,13 +107,35 @@ function mostrarSalida(orden, codigo, texto) {
   canal.show(true);
 }
 
+/* Los comandos rápidos no deben dejar un parpadeo de progreso; a partir de
+ * aquí el usuario ya está esperando y necesita saber que algo corre. */
+const ESPERA_PROGRESO = 400;
+
 /* La paleta ejecuta capturando la salida: así el código de salida llega al
  * IDE y un fallo se ve como notificación con la salida a un clic, en vez de
  * quedar al fondo de un terminal que nadie mira. */
 function correr(dir, argv, opciones = {}) {
   const orden = comando(dir, argv);
+  let terminado = false;
+  let cerrarIndicador = () => {};
+  const indicador = setTimeout(() => {
+    if (terminado) return;
+    /* Sin cancelación: matar el proceso a medias puede dejar el estado escrito
+     * a medio camino, y el tope de cinco minutos ya acota la espera. */
+    vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: `SDD: ${argv.join(' ')}`,
+      cancellable: false,
+    }, () => new Promise((listo) => { cerrarIndicador = listo; }));
+  }, ESPERA_PROGRESO);
+  const cerrar = () => {
+    terminado = true;
+    clearTimeout(indicador);
+    cerrarIndicador();
+  };
   execFile(cfg().python, [rutaCli(dir), '--root', dir, ...argv],
     { cwd: dir, timeout: 300000 }, (err, stdout, stderr) => {
+      cerrar();
       const completo = [stdout, stderr].filter(Boolean).join('\n');
       const aviso = primeraLinea(stdout) || primeraLinea(stderr);
       if (err) {
