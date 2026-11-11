@@ -8,6 +8,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- Dos filas de `Fases y tareas` ejecutaban un comando que no podía funcionar:
+  `Progreso` pasaba el SPEC-ID a `tasks` (que pide PLAN-ID) y `Pruebas` llamado
+  `reporte` sin argumento. Ahora son `tasks --list PLAN-001` y
+  `reporte TASK-001` (o `--history PLAN-001` si la etiqueta no trae tarea).
+- El arnés comprueba el argv de esas filas, no solo su etiqueta: era el hueco
+  por el que pasaron los dos fallos.
 - El clic derecho sobre `📍 Fase` en `Fases y tareas` no ofrecía *Abrir
   artefacto de la fase*: la fila compara `🧪 Pruebas` contra las claves de
   `flujo` (`Pruebas`) y no encontraba el artefacto. Ahora compara sin emoji,
