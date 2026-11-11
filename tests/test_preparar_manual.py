@@ -70,7 +70,9 @@ class TestPrepararManual(unittest.TestCase):
         self.assertEqual(self._preparar().returncode, 0)
         (self.destino / "marca.txt").write_text("x", encoding="utf-8")
         r = self._solo_verificar()
-        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        # El arnés queda pendiente de editor: eso ya cuenta como fallo de salida.
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("pendiente(s) de editor", r.stderr)
         self.assertIn("Verificación de", r.stdout)
         self.assertIn("comprobación", r.stdout)
         for nombre in ("ajustes", "snapshot", "artefactos", "comandos", "estado",

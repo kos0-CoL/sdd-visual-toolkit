@@ -36,7 +36,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   estado, la extensión instalada y el arnés, lo imprime como tabla y termina
   diciendo qué bloques de `ide/PRUEBA-MANUAL.md` quedan a mano. Las filas se
   separan en comprobado (`✓`) y pendiente de editor (`☐`): el arnés nunca sale
-  en verde, porque el editor no lo vio. `ide/PRUEBA-MANUAL.md` documenta el
+  en verde, porque el editor no lo vio, y **cuenta como fallo en el código de
+  salida** (`exit 1` mientras quede un `☐`), aunque en la tabla siga siendo
+  `☐` para no confundir «sin mirar» con «roto». `ide/PRUEBA-MANUAL.md` documenta el
   orden de cada pasada: la tabla primero, y ninguna casilla marcada por ella.
 - `ide/COMPATIBILIDAD.md` registra la primera pasada del IDE: la del
   2026-11-11, hecha **sin editor** con el arnés (41/41) sobre el entorno
