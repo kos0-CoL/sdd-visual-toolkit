@@ -9,7 +9,7 @@ y la otra no.
 
 | Entorno | Extensión | Comandos de barra |
 |---|---|---|
-| VS Code | ✅ `node --check` + `tests/test_ide.py`; **sin prueba manual** | ✅ `.github/prompts/`; **sin probar en el IDE** |
+| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **sin prueba manual en el editor** | ✅ `.github/prompts/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **sin abrir el chat** |
 | Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar |
 | Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar |
 | Antigravity | ⚠️ pendiente de verificación | ⚠️ `.agents/skills/`; sin probar |
@@ -98,7 +98,34 @@ nunca se inventa estado.
 
 | Fecha | Entorno y versión | Superficie | Resultado |
 |---|---|---|---|
-| — | — | — | sin pruebas manuales registradas |
+| 2026-11-11 | VS Code 1.142.0 · `sdd-toolkit.sdd-visual-toolkit@0.1.5` · arnés sin editor | extensión | ⚠️ parcial: 41/41 del arnés sobre `/tmp/sdd-manual`; no se abrió el editor |
+| 2026-11-11 | VS Code 1.142.0 · proyecto `/tmp/sdd-manual` | comandos de barra | ⚠️ parcial: 14 archivos en `.github/prompts/` y `comandos --verificar` en verde; no se abrió el chat |
+
+### Pasada del 2026-11-11 sin editor (arnés headless)
+
+Se preparó `/tmp/sdd-manual` con `scripts/preparar-manual.sh --instalar` —fixture
+0.1.0, `.md` de plan, tareas e informe materializados, `.vsix` verificado e
+instalado en VS Code 1.142.0— y se ejecutó `tests/js/arnes_extension.js`, que
+carga el `extension.js` real con un stub de `vscode` y la CLI real:
+
+- **41/41 comprobaciones en verde**: barra de estado con fase y siguiente,
+  nueve nodos de `Fases y tareas` (fase, `1/18`, pruebas, siguiente, cuatro
+  píldoras sin candado, nueve del árbol con cinco completadas), nueve del
+  `Flujo SDD` con artefacto y tooltip, clic derecho en vista previa —incluidos
+  `PLAN-001.md`, `TASKS-PLAN-001.md` e `INFORME-PLAN-001.md`—, paleta (`status`,
+  `plan`, `pin` con dos datos, opcional vacío, `Escape`), `clarify` válido e
+  inexistente, fallo de `build PLAN-999` sin abrir el canal, aviso de skills con
+  su regeneración y los estados vacío y CLI rota.
+- **Nada de esto se vio en un editor**: no hay ventana, ni menú contextual, ni
+  notificación. Por eso las filas quedan en ⚠️ y ninguna casilla de
+  `ide/PRUEBA-MANUAL.md` se marcó.
+
+Sigue pendiente para pasar a ✅: el pintado real de la vista y la barra, los
+tooltips y el menú contextual, la notificación de progreso con su «Cancelar"
+(también que muera el `pytest` hijo), el tope de `sddToolkit.timeoutMinutos`,
+las tareas `SDD: …` en *Terminal → Ejecutar tarea* y `/sdd*` en el chat. Esa
+casilla de las tareas usa `/tmp/sdd-init` con `init`, porque `/tmp/sdd-manual`
+se copia del fixture y no trae `.vscode/tasks.json`.
 
 Regla (§47): donde falte capacidad, se degrada a CLI + `export`, nunca se
 inventa estado.
