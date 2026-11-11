@@ -48,6 +48,9 @@ La ruta de `--root` va **antes** del subcomando.
 - [ ] Comando largo (`SDD: Correr pruebas` con `TASK-001`, o cualquiera que
       tarde más de medio segundo): aparece una notificación de progreso con
       la orden en curso y desaparece al terminar. Los rápidos no la muestran.
+- [ ] Cancelar: pulsar «Cancelar» en ese progreso. Aparece `SDD: <comando>
+      cancelado`, el canal guarda lo que alcanzó a imprimir con
+      `(cancelado)` y la vista se refresca; **no** sale notificación de error.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece

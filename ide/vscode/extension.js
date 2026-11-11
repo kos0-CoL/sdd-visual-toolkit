@@ -101,7 +101,7 @@ function comando(dir, argv) {
  * con su código y todo lo que imprimió la CLI. Se acumula como un terminal. */
 function mostrarSalida(orden, codigo, texto) {
   if (!canal) canal = vscode.window.createOutputChannel('SDD Toolkit');
-  canal.appendLine(`$ ${orden}   (código ${codigo})`);
+  canal.appendLine(`$ ${orden}   (${codigo})`);
   canal.appendLine((texto || '').trim() || '(sin salida)');
   canal.appendLine('');
   canal.show(true);
@@ -118,7 +118,7 @@ function reportarFallo(orden, codigo, stdout, stderr, nombre) {
     vscode.window.showErrorMessage(mensaje, 'Ver salida')
   ).then((elegido) => {
     if (elegido === 'Ver salida') {
-      mostrarSalida(orden, codigo || 'error', completo);
+      mostrarSalida(orden, `código ${codigo || 'error'}`, completo);
     }
   });
 }
@@ -133,32 +133,49 @@ const ESPERA_PROGRESO = 400;
 function correr(dir, argv, opciones = {}) {
   const orden = comando(dir, argv);
   let terminado = false;
+  let cancelado = false;
   let cerrarIndicador = () => {};
+  let hijo = null;
   const indicador = setTimeout(() => {
     if (terminado) return;
-    /* Sin cancelación: matar el proceso a medias puede dejar el estado escrito
-     * a medio camino, y el tope de cinco minutos ya acota la espera. */
     vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
       title: `SDD: ${argv.join(' ')}`,
-      cancellable: false,
-    }, () => new Promise((listo) => { cerrarIndicador = listo; }));
+      cancellable: true,
+    }, (_progreso, token) => {
+      token.onCancellationRequested(() => {
+        /* SIGTERM, no SIGKILL: el estado JSON se escribe con temporal +
+         * renombrado, así que lo que alcance a guardar queda entero. */
+        cancelado = true;
+        if (hijo) hijo.kill();
+      });
+      return new Promise((listo) => { cerrarIndicador = listo; });
+    });
   }, ESPERA_PROGRESO);
   const cerrar = () => {
     terminado = true;
     clearTimeout(indicador);
     cerrarIndicador();
   };
-  execFile(cfg().python, [rutaCli(dir), '--root', dir, ...argv],
+  hijo = execFile(cfg().python, [rutaCli(dir), '--root', dir, ...argv],
     { cwd: dir, timeout: 300000 }, (err, stdout, stderr) => {
       cerrar();
+      const completo = [stdout, stderr].filter(Boolean).join('\n');
+      if (cancelado) {
+        /* Un corte pedido por el usuario no es un fallo del comando: se dice
+         * que se canceló, se deja lo impreso en el canal y se relee el estado
+         * real, que puede haber cambiado antes de la señal. */
+        mostrarSalida(orden, 'cancelado', completo);
+        refrescar();
+        vscode.window.showInformationMessage(`SDD: ${argv[0]} cancelado`);
+        return;
+      }
       if (err) {
         reportarFallo(orden, err.code, stdout, stderr, argv[0]);
         return;
       }
-      const completo = [stdout, stderr].filter(Boolean).join('\n');
       const aviso = primeraLinea(stdout) || primeraLinea(stderr);
-      mostrarSalida(orden, 0, completo);
+      mostrarSalida(orden, 'código 0', completo);
       if (opciones.refrescar) refrescar();
       if (opciones.avisoExito) {
         vscode.window.showInformationMessage(

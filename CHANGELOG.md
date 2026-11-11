@@ -18,6 +18,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La paleta de VS Code muestra una notificación de progreso con la orden en
   curso cuando un comando tarda más de 400 ms: `build` y `test` ya no se
   esperan en silencio, y los rápidos no dejan un parpadeo.
+- Ese progreso se puede cancelar: el proceso recibe SIGTERM, el corte se
+  informa como cancelación y no como fallo, lo impreso queda en el canal con
+  `(cancelado)` y la vista se refresca. El estado JSON se escribe con
+  temporal y renombrado, así que un corte no lo deja truncado.
 
 ### Corregido
 

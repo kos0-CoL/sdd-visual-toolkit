@@ -137,6 +137,20 @@ class TestManifiesto(unittest.TestCase):
         # El indicador se cierra antes de notificar, en la misma devolución.
         self.assertLess(cuerpo.index("cerrar();"), cuerpo.index("const completo"))
 
+    def test_cancelar_un_comando_largo(self):
+        """El indicador se puede cancelar y el corte no se reporta como fallo."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        corrida = re.search(r"function correr\(dir, argv.*?\n\}", fuente, re.S)
+        self.assertIsNotNone(corrida, "falta la ejecución capturada")
+        cuerpo = corrida.group(0)
+        self.assertIn("cancellable: true", cuerpo)
+        self.assertIn("onCancellationRequested", cuerpo)
+        self.assertIn("hijo.kill()", cuerpo)
+        corte = cuerpo.split("if (cancelado)")[1].split("}")[0]
+        self.assertIn("showInformationMessage", corte)
+        self.assertIn("refrescar()", corte)
+        self.assertNotIn("reportarFallo", corte)
+
     def test_init_avisa_y_refresca(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         init = re.search(r"function inicializar\(dir\).*?\n\}", fuente, re.S)
