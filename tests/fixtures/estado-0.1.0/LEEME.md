@@ -17,6 +17,8 @@ el cierre de `TASK-001`.
   plan técnico y desglose.
 - `specs/SPEC-001.json` y su gemelo `SPEC-001.md`: la SPEC aprobada, en las
   dos formas que escribe 0.1.0 —máquina y legible—.
+- `.specify/enriquecimientos.json`: el ENR validado del que salieron los 21
+  requerimientos, con sus 22 elementos y la procedencia de cada uno.
 - `.specify/clarifications.json`: las aclaraciones de `SPEC-001` con su
   estado, su respuesta y su historial.
 - `.specify/memory/execution_history.jsonl`: el historial, que es lo que lleva
@@ -36,20 +38,35 @@ el cierre de `TASK-001`.
 
 ## Qué se dejó fuera, y por qué
 
-`enriquecimientos.json`, `informes.json`, `cache/` y `spec_history/`.
-Tampoco están `src/` ni `tests/` del proyecto, que sumaban la mayor parte del
-peso: se materializan restaurando un snapshot, y por eso
-`rollback --restore TASK-001` funciona sobre el fixture recién copiado.
+`informes.json`, `cache/` y `spec_history/`. Tampoco están `src/` ni
+`tests/` del proyecto, que sumaban la mayor parte del peso: se materializan
+restaurando un snapshot, y por eso `rollback --restore TASK-001` funciona
+sobre el fixture recién copiado.
 
-Sin `enriquecimientos.json` no se puede ejercitar `specify --revise`: el
-comando busca el ENR de origen y falla antes de aplicar la revisión. Es la
-pieza que falta para cubrir ese camino.
+`spec_history/` no está porque aparece al revisar una SPEC, y el fixture
+conserva la 1.0.0 sin revisar; la prueba lo crea sobre su copia temporal.
 
 Sin esos archivos `validate` no tiene qué comparar, pero conserva la línea
 base y no la rehace. Con el snapshot 0 restaurado —el estado exacto que
 fotografió la línea base— la validación sale limpia; con el 1, que añadía
 `Caja.descuento`, avisa de un cambio de cuerpo en `src/productos.py`. Ese es
 el comportamiento de 0.1.0 y lo que la prueba comprueba.
+
+## Cómo se generó el enriquecimiento
+
+`enriquecimientos.json` sí salió del ciclo real, no de una reconstrucción: el
+mismo `enrich "Quiero un dashboard para gestionar un kiosco"` del tag
+`v0.1.0` produce `ENR-001` con los 22 elementos —objetivo, 5 entidades, 5
+funcionalidades, 4 mejoras, 3 faltantes y 4 exclusiones—, y `enrich --accept
+ENR-001` los convierte en los 21 requerimientos del fixture: mismos
+identificadores, textos, procedencias y estados, uno a uno. Se generó en un
+proyecto aparte y solo se copió el archivo; el estado del fixture no se tocó.
+
+Con él, `specify --revise SPEC-001 --motivo «…»` funciona. Conviene saber qué
+hace 0.1.0: re-deriva la SPEC del ENR, así que una revisión sube la versión a
+1.0.1 y conserva los 14 requerimientos, las 5 entidades y las 4 exclusiones,
+pero deja atrás lo aclarado y la aceptación de los requerimientos. No es una
+pérdida del fixture: es el diseño del comando, y la prueba lo deja escrito.
 
 ## Cómo se generaron las aclaraciones, el checkpoint y el estado
 

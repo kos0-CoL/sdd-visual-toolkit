@@ -1,0 +1,167 @@
+[
+  {
+    "id": "ENR-001",
+    "entrada": "Quiero un dashboard para gestionar un kiosco",
+    "objetivo": "Un dashboard para gestionar un kiosco",
+    "dominio": "comercio",
+    "items": [
+      {
+        "item_id": "OBJ-1",
+        "seccion": "objetivo",
+        "texto": "Un dashboard para gestionar un kiosco",
+        "procedencia": "explicito",
+        "cita": "Quiero un dashboard para gestionar un kiosco"
+      },
+      {
+        "item_id": "ENT-1",
+        "seccion": "entidad",
+        "texto": "Productos",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "ENT-2",
+        "seccion": "entidad",
+        "texto": "Inventario",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "ENT-3",
+        "seccion": "entidad",
+        "texto": "Ventas",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "ENT-4",
+        "seccion": "entidad",
+        "texto": "Movimientos de stock",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "ENT-5",
+        "seccion": "entidad",
+        "texto": "Caja",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "FUN-1",
+        "seccion": "funcionalidad",
+        "texto": "Visualización de productos",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "FUN-2",
+        "seccion": "funcionalidad",
+        "texto": "Consulta de existencias",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "FUN-3",
+        "seccion": "funcionalidad",
+        "texto": "Registro de ventas",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "FUN-4",
+        "seccion": "funcionalidad",
+        "texto": "Actualización de inventario",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "FUN-5",
+        "seccion": "funcionalidad",
+        "texto": "Búsqueda de productos",
+        "procedencia": "inferido",
+        "cita": ""
+      },
+      {
+        "item_id": "MEJ-1",
+        "seccion": "mejora",
+        "texto": "Alertas de stock mínimo",
+        "procedencia": "sugerido",
+        "cita": ""
+      },
+      {
+        "item_id": "MEJ-2",
+        "seccion": "mejora",
+        "texto": "Lectura de códigos de barras",
+        "procedencia": "sugerido",
+        "cita": ""
+      },
+      {
+        "item_id": "MEJ-3",
+        "seccion": "mejora",
+        "texto": "Cierre de caja",
+        "procedencia": "sugerido",
+        "cita": ""
+      },
+      {
+        "item_id": "MEJ-4",
+        "seccion": "mejora",
+        "texto": "Reportes de ventas",
+        "procedencia": "sugerido",
+        "cita": ""
+      },
+      {
+        "item_id": "EXC-1",
+        "seccion": "exclusion",
+        "texto": "Gestión de franquicias",
+        "procedencia": "excluido",
+        "cita": ""
+      },
+      {
+        "item_id": "EXC-2",
+        "seccion": "exclusion",
+        "texto": "Múltiples sucursales",
+        "procedencia": "excluido",
+        "cita": ""
+      },
+      {
+        "item_id": "EXC-3",
+        "seccion": "exclusion",
+        "texto": "Integración con pasarelas de pago",
+        "procedencia": "excluido",
+        "cita": ""
+      },
+      {
+        "item_id": "EXC-4",
+        "seccion": "exclusion",
+        "texto": "Sistemas de crédito para clientes",
+        "procedencia": "excluido",
+        "cita": ""
+      },
+      {
+        "item_id": "FAL-1",
+        "seccion": "faltante",
+        "texto": "Stack tecnológico sin definir (pendiente de aclaración)",
+        "procedencia": "desconocido",
+        "cita": ""
+      },
+      {
+        "item_id": "FAL-2",
+        "seccion": "faltante",
+        "texto": "¿quiénes usarán el sistema? (roles y permisos)",
+        "procedencia": "desconocido",
+        "cita": ""
+      },
+      {
+        "item_id": "FAL-3",
+        "seccion": "faltante",
+        "texto": "¿dónde se guardan los datos hoy? (archivo, planilla, base de datos)",
+        "procedencia": "desconocido",
+        "cita": ""
+      }
+    ],
+    "estado": "validado",
+    "creado_en": "2026-11-11T01:46:03+00:00",
+    "validado_en": "2026-11-11T01:46:17+00:00"
+  }
+]

@@ -15,8 +15,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   todos sus checks terminados y en verde: un tag sobre un `main` con el CI
   roto o a medias ya no llega a crearse.
 - El fixture de compatibilidad de 0.1.0 incluye ya las aclaraciones, el
-  checkpoint de `TASK-001` y el estado del journal, y la prueba los ejercita
-  con la CLI actual.
+  checkpoint de `TASK-001`, el estado del journal y el enriquecimiento del
+  que salieron sus 21 requerimientos, así que la prueba ejercita también
+  `specify --revise`.
 
 ### Corregido
 
