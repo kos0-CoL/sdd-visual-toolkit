@@ -15,6 +15,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   `pyproject.toml`: `pytest -m "not lento"` deja fuera el arnés y sus catorce
   invocaciones a la CLI (medido: 30,2 s frente a 38,7 s). Con `-q` sin filtro
   se sigue corriendo todo, también en CI.
+- `ide/COMPATIBILIDAD.md` deja una plantilla prellenada con los datos del
+  entorno (versión, proyecto, sistema, fecha) para que la pasada en editor sea
+  escribir lo observado y cambiar tres filas, sin tocar la tabla a mano.
 - `scripts/preparar-manual.sh --solo-verificar` mira un entorno ya preparado
   sin rehacerlo: ajustes, `src/`, los tres `.md`, `comandos --verificar`, el
   estado, la extensión instalada y el arnés, lo imprime como tabla y termina
