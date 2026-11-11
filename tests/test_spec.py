@@ -1,6 +1,8 @@
 """Pruebas de RF-03 — Generación de SPEC (§6)."""
 
 import argparse
+import contextlib
+import io
 import sys
 import tempfile
 import unittest
@@ -146,6 +148,20 @@ class TestCLISpecify(unittest.TestCase):
     def test_revise_sin_motivo_falla(self):
         self._flujo_hasta_spec()
         self.assertEqual(cmd_specify.despachar(self.ns_spec(revise="SPEC-001")), 1)
+
+    def test_revise_sin_enriquecimiento_avisa_sin_escribir(self):
+        """Sin ENR no se revisa ni se deja copia huérfana en spec_history."""
+        self._flujo_hasta_spec()
+        (self.root / ".specify" / "enriquecimientos.json").unlink()
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = cmd_specify.despachar(
+                self.ns_spec(revise="SPEC-001", motivo="Sin ENR"))
+        self.assertEqual(codigo, 1)
+        self.assertIn("enriquecimiento inexistente", salida.getvalue())
+        self.assertFalse((self.root / ".specify" / "spec_history").exists())
+        spec = cmd_specify._cargar_spec(self.root, "SPEC-001")
+        self.assertEqual(spec.version, "1.0.0")
 
 
 if __name__ == "__main__":
