@@ -8,6 +8,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- `toolkit comandos --verificar` revisa lo ya generado sin reescribirlo: saca
+  la ruta absoluta que lleva cada archivo y falla si ya no existe, indicando
+  cuántos archivos apuntan a ella, dónde está este toolkit y la orden para
+  regenerarlos. Sin comandos instalados avisa y no falla.
 - `init` termina diciendo cómo generar los comandos del agente, con el comando
   exacto (`<python> "<ruta>/cli/main.py" comandos --cliente copilot`) y la
   advertencia de que la ruta absoluta queda grabada, así que hay que
