@@ -103,7 +103,8 @@ class TestCLIPlan(unittest.TestCase):
 
     def test_exige_gate1_superado(self):
         self.assertEqual(cmd_plan.despachar(self._ns_plan(texto="SPEC-001")), 1)
-        self.assertFalse((self.root / ".specify" / "planes").exists())
+        # La carpeta la deja `init`; lo que no puede quedar es un plan dentro.
+        self.assertEqual(list((self.root / ".specify" / "planes").iterdir()), [])
 
     def test_genera_plan_con_trazabilidad_total(self):
         self._superar_gate1()
@@ -156,7 +157,7 @@ class TestSugerencias(unittest.TestCase):
             self.assertEqual(sug.texto, "Usar caché")
             self.assertEqual(listar_sugerencias(raiz, "PLAN-001"), [sug])
             # No se crea plan ni tareas: la sugerencia vive aparte.
-            self.assertFalse((raiz / ".specify" / "planes").exists())
+            self.assertEqual(list((raiz / ".specify" / "planes").iterdir()), [])
             self.assertFalse((raiz / ".specify" / "tareas.json").exists())
             segunda = registrar_sugerencia(raiz, "PLAN-001", "Otra")
             self.assertEqual(segunda.id, "SUG-002")

@@ -95,6 +95,24 @@ class TestInitNoAnida(unittest.TestCase):
         self.assertEqual(nota.read_text(encoding="utf-8"), "mia")
 
 
+class TestInitEstructuraReal(unittest.TestCase):
+    """init crea donde escriben los comandos, no carpetas que nadie usa."""
+
+    def test_las_carpetas_son_las_que_usan_los_comandos(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp).resolve() / "proyecto"
+            codigo, salida = _despachar(["--root", str(raiz), "init"])
+            self.assertEqual(codigo, 0, salida)
+            for ruta in (".specify/planes", ".specify/tareas",
+                         ".specify/informes", "specs"):
+                self.assertTrue((raiz / ruta).is_dir(), ruta)
+            self.assertFalse((raiz / "plans").exists())
+            self.assertFalse((raiz / "tasks").exists())
+            self.assertIn(".specify/planes", salida)
+            self.assertIn("specs/", salida)
+            self.assertNotIn("plans/", salida)
+
+
 class TestInitDejaElIDEListo(unittest.TestCase):
     """Al abrir la carpeta, la capa visual ya sabe qué ejecutar (§29)."""
 

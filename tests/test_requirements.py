@@ -79,11 +79,15 @@ class TestPersistenciaYCLI(unittest.TestCase):
             ".specify/current_task.json",
             ".specify/execution_history.jsonl",
             ".specify/requerimientos.json",
+            ".specify/planes",
+            ".specify/tareas",
+            ".specify/informes",
             "specs",
-            "plans",
-            "tasks",
         ):
             self.assertTrue((self.root / ruta).exists(), ruta)
+        # Lo que nadie escribe no se crea: eran carpetas muertas en la raiz.
+        self.assertFalse((self.root / "plans").exists())
+        self.assertFalse((self.root / "tasks").exists())
 
     def test_cli_add_list_show_set_de_punta_a_punta(self):
         ns = lambda **kw: argparse_ns(self.root, **kw)  # noqa: E731
