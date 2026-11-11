@@ -182,9 +182,39 @@ class TestInitGeneraLosComandos(unittest.TestCase):
             codigo, salida = self._init()
         self.assertEqual(codigo, 0, salida)
         self.assertIn("Cliente del agente (", salida)
+        self.assertIn("· cliente: antigravity", salida)
         self.assertEqual(
             len(list((self.raiz / ".agents" / "skills").glob("*/SKILL.md"))),
             14)
+
+    def test_todos_genera_los_cinco_y_lo_dice(self):
+        class Tty(io.StringIO):
+            def isatty(self):
+                return True
+
+        anterior = sys.stdin
+        sys.stdin = Tty()
+        self.addCleanup(setattr, sys, "stdin", anterior)
+        with mock.patch("builtins.input", return_value="todos"):
+            codigo, salida = self._init()
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("· cliente: todos", salida)
+        for carpeta in (".claude", ".cursor", ".github", ".windsurf", ".agents"):
+            self.assertTrue((self.raiz / carpeta).is_dir(), carpeta)
+
+    def test_vacio_lo_dice_y_no_genera(self):
+        class Tty(io.StringIO):
+            def isatty(self):
+                return True
+
+        anterior = sys.stdin
+        sys.stdin = Tty()
+        self.addCleanup(setattr, sys, "stdin", anterior)
+        with mock.patch("builtins.input", return_value=""):
+            codigo, salida = self._init()
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("· cliente: ninguno", salida)
+        self.assertFalse((self.raiz / ".claude").exists())
 
     def test_sin_comandos_no_pregunta_aunque_haya_terminal(self):
         class Tty(io.StringIO):
