@@ -92,10 +92,11 @@ def cmd_init(args) -> int:
         print("  no se crea .specify/ anidado: desde aquí ya mandan sus comandos.")
         return 1
     raiz = store.inicializar_proyecto(destino)
+    cli = Path(__file__).resolve()
     # La capa visual (§29): sin esto la extensión no sabe qué `cli/main.py`
     # ejecutar y las tareas SDD no aparecen al abrir la carpeta en el IDE.
     escritos, existentes = ide_entorno.preparar(
-        raiz, Path(__file__).resolve(), sys.executable or "python3")
+        raiz, cli, sys.executable or "python3")
     print(f"🟢 PROYECTO INICIALIZADO: {raiz}")
     print("Estado:")
     print("✓ .specify/ (memoria con estado e historial, checkpoints)")
@@ -105,8 +106,15 @@ def cmd_init(args) -> int:
         print(f"✓ {', '.join(escritos)} (ruta del toolkit y tareas SDD)")
     for nombre in existentes:
         print(f"· {nombre} ya existía: no se tocó")
+    # Los comandos de barra son lo único que `init` no deja listo: sin ellos el
+    # agente no ve `/sdd-*`. La ruta se graba absoluta, así que hay que poder
+    # repetirlo y saber por qué.
+    print("Comandos para su agente (opcional, repetible):")
+    print(f"  {sys.executable or 'python3'} \"{cli}\" comandos --cliente copilot")
+    print("  sin --cliente escribe los cinco; la ruta absoluta queda grabada,"
+          " así que vuelva a ejecutarlo si mueve el repositorio.")
     print("¿Qué desea hacer ahora?")
-    print("[ req add ]  [ status ]")
+    print("[ req add ]  [ status ]  [ comandos ]")
     return 0
 
 

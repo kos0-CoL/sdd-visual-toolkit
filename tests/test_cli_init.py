@@ -119,6 +119,21 @@ class TestInitEstructuraReal(unittest.TestCase):
                 (raiz / ".specify" / "execution_history.jsonl").exists())
 
 
+class TestInitMencionaLosComandos(unittest.TestCase):
+    """Quien termina `init` tiene que saber cómo darle los comandos al agente."""
+
+    def test_la_salida_invita_a_comandos(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp).resolve() / "proyecto"
+            codigo, salida = _despachar(["--root", str(raiz), "init"])
+            self.assertEqual(codigo, 0, salida)
+            self.assertIn("comandos --cliente copilot", salida)
+            self.assertIn(str(Path(cli_main.__file__).resolve()), salida)
+            # La ruta absoluta se graba: hay que decirlo y ofrecer repetirlo.
+            self.assertIn("ruta absoluta queda grabada", salida)
+            self.assertIn("[ comandos ]", salida)
+
+
 class TestInitDejaElIDEListo(unittest.TestCase):
     """Al abrir la carpeta, la capa visual ya sabe qué ejecutar (§29)."""
 
