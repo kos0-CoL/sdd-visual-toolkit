@@ -58,6 +58,11 @@ La ruta de `--root` va **antes** del subcomando.
       /tmp/sdd-init init`) en VS Code: la vista `SDD → Fases y tareas`
       funciona sin configurar `cliPath` (lo dejó `.vscode/settings.json`) y
       *Terminal → Ejecutar tarea* lista las tareas `SDD: …`.
+- [ ] Vista `SDD → Flujo SDD`: nueve fases en orden, cada una con su estado
+      a la derecha y, al pasar el mouse, la skill (`skill /sdd-plan`) y el
+      artefacto. En un proyecto con SPEC, la fila Especificación muestra
+      `specs/SPEC-001.md`, y un clic en Aclaraciones ejecuta `clarify
+      SPEC-001`. En un proyecto vacío, las filas sin ID no ofrecen clic.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece

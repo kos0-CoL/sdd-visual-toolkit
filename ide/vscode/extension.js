@@ -316,6 +316,83 @@ async function pedirYCorrer(entrada) {
   ejecutar(argv);
 }
 
+/* Foto del estado para las vistas (§32): una lectura de `export` por refresco. */
+function cargarDoc() {
+  return new Promise((resolve) => {
+    const dir = carpeta();
+    if (!dir) {
+      resolve({ doc: null, error: 'sin carpeta abierta' });
+      return;
+    }
+    const { python, cliPath } = cfg();
+    const cli = path.isAbsolute(cliPath) ? cliPath : path.join(dir, cliPath);
+    execFile(python, [cli, '--root', dir, 'export'],
+      { cwd: dir, timeout: 30000 }, (err, stdout) => {
+        if (err) {
+          resolve({ doc: null, error: 'sin inicializar o CLI no disponible' });
+          return;
+        }
+        try {
+          resolve({ doc: JSON.parse(stdout), error: '' });
+        } catch (e) {
+          resolve({ doc: null, error: 'export no devolvió JSON válido' });
+        }
+      });
+  });
+}
+
+/* Símbolos del árbol §21, para que el flujo y el árbol hablen igual. */
+const SIMBOLOS = {
+  pendiente: '○',
+  'en progreso': '●',
+  completado: '✔',
+  'requiere intervención': '⚠',
+  fallido: '✘',
+  recuperado: '♻',
+};
+
+/* Panel VISUAL del flujo (§29): cada fase con su estado, el artefacto que
+ * deja y la skill que la ejecuta; el clic lanza el comando de la fase. */
+class VistaFlujo {
+  constructor() {
+    this._cambio = new vscode.EventEmitter();
+    this.onDidChangeTreeData = this._cambio.event;
+  }
+  actualizar() {
+    this._cambio.fire();
+  }
+  getTreeItem(nodo) {
+    return nodo;
+  }
+  async getChildren() {
+    const { doc, error } = await cargarDoc();
+    if (!doc) {
+      const it = new vscode.TreeItem('⛔ ' + error,
+        vscode.TreeItemCollapsibleState.None);
+      it.command = { command: 'sdd.ejecutar', title: 'Ejecutar', arguments: ['init'] };
+      return [it];
+    }
+    return (doc.flujo || []).map((fila) => {
+      const it = new vscode.TreeItem(
+        `${SIMBOLOS[fila.estado] || '·'} ${fila.fase}`,
+        vscode.TreeItemCollapsibleState.None);
+      it.description = fila.estado;
+      it.tooltip = [
+        fila.skill ? `skill /${fila.skill}` : 'sin skill',
+        fila.artefacto || 'sin artefacto',
+      ].join(' · ');
+      if (fila.comando) {
+        it.command = {
+          command: 'sdd.ejecutar',
+          title: 'Ejecutar',
+          arguments: [fila.comando],
+        };
+      }
+      return it;
+    });
+  }
+}
+
 /* Vista lateral desde `toolkit export` (contrato RF-38). */
 class VistaFases {
   constructor() {
@@ -328,31 +405,9 @@ class VistaFases {
     this._cambio.fire();
   }
   cargar() {
-    return new Promise((resolve) => {
-      const dir = carpeta();
-      if (!dir) {
-        this.doc = null;
-        this.error = 'sin carpeta abierta';
-        resolve();
-        return;
-      }
-      const { python, cliPath } = cfg();
-      const cli = path.isAbsolute(cliPath) ? cliPath : path.join(dir, cliPath);
-      execFile(python, [cli, '--root', dir, 'export'], { cwd: dir, timeout: 30000 }, (err, stdout) => {
-        if (err) {
-          this.doc = null;
-          this.error = 'sin inicializar o CLI no disponible';
-        } else {
-          try {
-            this.doc = JSON.parse(stdout);
-            this.error = '';
-          } catch (e) {
-            this.doc = null;
-            this.error = 'export no devolvió JSON válido';
-          }
-        }
-        resolve();
-      });
+    return cargarDoc().then(({ doc, error }) => {
+      this.doc = doc;
+      this.error = error;
     });
   }
   getTreeItem(nodo) {
@@ -410,9 +465,14 @@ function activate(contexto) {
     vscode.commands.registerCommand('sdd.ejecutar', (cliArgs) => ejecutar(cliArgs))
   );
   const vista = new VistaFases();
+  const flujo = new VistaFlujo();
   contexto.subscriptions.push(
     vscode.window.registerTreeDataProvider('sddFases', vista),
-    vscode.commands.registerCommand('sdd.actualizar', () => vista.actualizar())
+    vscode.window.registerTreeDataProvider('sddFlujo', flujo),
+    vscode.commands.registerCommand('sdd.actualizar', () => {
+      vista.actualizar();
+      flujo.actualizar();
+    })
   );
   /* Panel de estado: fase actual + siguiente recomendado. */
   const barra = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
@@ -430,6 +490,7 @@ function activate(contexto) {
   };
   refrescar = () => {
     vista.actualizar();
+    flujo.actualizar();
     refrescarBarra();
   };
   contexto.subscriptions.push(barra);

@@ -78,6 +78,47 @@ class TestExportCLI(unittest.TestCase):
         self.assertIn(doc["navegacion"]["recomendada"], sig)
         self.assertTrue(doc["arbol"])
 
+    def test_el_flujo_casa_fase_artefacto_y_skill(self):
+        """El panel del IDE pinta esto tal cual: fase, estado, artefacto,
+        skill y comando, sin inventar lo que todavía no existe."""
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        toolkit = [sys.executable, "cli/main.py", "--root", str(root)]
+
+        def cli(*args):
+            r = subprocess.run([*toolkit, *args], capture_output=True,
+                               text=True, cwd=Path.cwd(), input="",
+                               timeout=60)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            return r.stdout
+
+        cli("init", str(root))
+        filas = json.loads(cli("export"))["flujo"]
+        self.assertEqual([f["fase"] for f in filas][:3],
+                         ["Enriquecimiento", "Especificación", "Aclaraciones"])
+        self.assertTrue(all(f["estado"] for f in filas))
+        spec = filas[1]
+        self.assertEqual(spec["skill"], "sdd-specify")
+        self.assertIsNone(spec["artefacto"])  # todavía no hay SPEC
+        self.assertIsNone(spec["comando"])
+
+        cli("enrich", "Quiero un dashboard para gestionar un kiosco.")
+        cli("enrich", "--accept", "ENR-001")
+        cli("specify", "ENR-001", "--titulo", "Kiosco")
+        filas = json.loads(cli("export"))["flujo"]
+        por_fase = {f["fase"]: f for f in filas}
+        self.assertEqual(por_fase["Especificación"]["artefacto"],
+                         "specs/SPEC-001.md")
+        self.assertEqual(por_fase["Especificación"]["comando"],
+                         "specify --show SPEC-001")
+        self.assertEqual(por_fase["Aclaraciones"]["skill"], "sdd-clarify")
+        self.assertEqual(por_fase["Aclaraciones"]["comando"],
+                         "clarify SPEC-001")
+        # Sin plan no hay artefacto ni comando de fases posteriores.
+        self.assertIsNone(por_fase["Tareas"]["artefacto"])
+        self.assertIsNone(por_fase["Tareas"]["comando"])
+
 
 if __name__ == "__main__":
     unittest.main()
