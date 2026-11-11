@@ -39,10 +39,18 @@ def cmd_pin(args) -> int:
             print(f"⛔ tarea inexistente: {args.task}")
             return 1
         _preguntas, historial = mod_clarify._preguntas_de(raiz, spec.spec_id)
-        baseline, _parcial = asegurar_baseline(raiz, tarea)
+        baseline, registrada = asegurar_baseline(raiz, tarea)
         print(generar_pin(plan, spec, tarea, decisiones_aprobadas(historial)))
-        print(f"\nLínea base registrada: {len(baseline) - 1} archivo(s) autorizados "
-              f"+ foto del árbol (§12: toda desviación futura será visible).")
+        # `registrada` es True cuando no había foto previa y se acaba de
+        # tomar; si ya existía, se reutiliza y hay que decirlo así.
+        if registrada:
+            print(f"\nLínea base registrada: {len(baseline) - 1} archivo(s) "
+                  f"autorizados + foto del árbol (§12: toda desviación "
+                  f"futura será visible).")
+        else:
+            print(f"\nLínea base ya existente: se conservan "
+                  f"{len(baseline) - 1} archivo(s) autorizados y su foto del "
+                  f"árbol (§12: no se re-registra).")
     except (PinError, PlanError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1

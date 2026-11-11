@@ -39,6 +39,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   ejecute `analyze PLAN-999` primero» cuando el plan no existía: ahora dicen
   «plan inexistente» y el Quality Gate 4 sigue igual para los planes que sí
   existen.
+- `pin --task` decía «línea base registrada» también cuando reutilizaba la
+  que ya existía; ahora distingue las dos cosas y, al reutilizarla, aclara
+  que no se vuelve a registrar.
 - Los comandos de la CLI avisan cuando el ID no existe en vez de morir con un
   traceback: `ast`, `diff`, `historia`, `reporte`, `test`, `validate`,
   `flush`, `pin`, `recover`, `traza` y `clarify` capturaban solo el error de

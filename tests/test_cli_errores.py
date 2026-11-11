@@ -119,10 +119,19 @@ class TestPinEscribe(unittest.TestCase):
             ["pin", "PLAN-001", "--task", "TASK-001"])
         self.assertEqual(codigo, 0, salida)
         self.assertIn("📌 PIN TASK-001", salida)
+        self.assertIn("Línea base registrada", salida)
         self.assertTrue(self.pin.is_file())
         datos = json.loads(self.pin.read_text(encoding="utf-8"))
         self.assertIn("baseline", datos)
         self.assertEqual(datos["desviaciones"], [])
+
+    def test_avisa_cuando_reutiliza_la_linea_base(self):
+        """Con pin previo no se registra nada: el mensaje no debe fingirlo."""
+        codigo, salida = self._despachar(
+            ["pin", "PLAN-001", "--task", "TASK-001"])
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("Línea base ya existente", salida)
+        self.assertNotIn("Línea base registrada", salida)
 
     def test_pin_no_borra_las_desviaciones_registradas(self):
         """Escribir el pin desde el CLI habría puesto la lista en blanco."""
