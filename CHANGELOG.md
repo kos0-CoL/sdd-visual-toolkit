@@ -21,7 +21,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - `init` deja escrita la elección del cliente tras la pregunta, en su propia
   línea (`· cliente: copilot`, `· cliente: todos (…)` o `· cliente:
   ninguno`): lo tecleado en un `input()` no queda en la salida capturada y el
-  eco salía pegado a la pregunta.
+  eco salía pegado a la pregunta. No se imprime ninguna línea en blanco de
+  más: en un terminal el Enter ya abre el renglón del eco, y una captura sin
+  eco lo deja pegado, que es el precio de no ensuciar la salida interactiva.
 - `init` puede dejar los comandos del agente generados en el acto: pregunta
   por el cliente cuando hay terminal, acepta `--cliente` repetible para no
   preguntar y `--sin-comandos` para omitirlo. Sin terminal no pregunta, porque
