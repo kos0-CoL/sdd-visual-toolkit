@@ -10,6 +10,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- Las descripciones de los catorce comandos dicen también cuándo usarlos
+  («Úsalo cuando la SPEC está clara…»): en una skill es lo único que el
+  agente ve antes de decidir si la aplica.
 - `ide/PRUEBA-MANUAL.md` recorre casilla por casilla la extensión y los
   comandos de barra en VS Code, y las skills en Antigravity, con el formato
   de registro para anotar el resultado.
