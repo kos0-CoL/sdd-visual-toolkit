@@ -30,10 +30,11 @@ clic derecho que abre `PLAN-001.md` en vista previa, paleta `SDD: Estado +
 siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
 (`Arquitectura` → `PLAN-001.md`, `Especificación` → `SPEC-001.md`) y en
 `📍 Fase`, que **no aparecía** y quedó arreglado en esa misma pasada. Una
-tercera pasada comprobó el progreso y su «Cancelar»: dos casillas más, diez en
-total. El resto sigue sin marcar: el tope `timeoutMinutos`, `pin` de dos datos,
-vacíos y `Escape`, el «Cancelar» con `pytest` en marcha, estado vacío, CLI rota
-y todas las de comandos de barra (no hay sesión de Copilot en ese perfil).
+tercera pasada comprobó el progreso y su «Cancelar» —dos casillas más— y una
+cuarta midió el tope `timeoutMinutos`, que corta a 1 minuto: once en total. El
+resto sigue sin marcar: `pin` de dos datos, vacíos y `Escape`, el «Cancelar»
+con `pytest` en marcha, estado vacío, CLI rota y todas las de comandos de barra
+(no hay sesión de Copilot en ese perfil).
 
 Ojo con el estado: ejecutar comandos lo mueve. Tras `build`, la tarea actual
 deja de ser `—` y las píldoras cambian; para repetir la lista desde la línea
@@ -141,10 +142,14 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
 - [ ] Cancelar un `SDD: Correr pruebas` que tenga `pytest` en marcha: al
       cancelar, el subproceso también desaparece (comprobar en el gestor de
       procesos del sistema, no solo que la notificación se cierre).
-- [ ] Tope configurable: poner `sddToolkit.timeoutMinutos` en 1 y lanzar un
+- [x] Tope configurable: poner `sddToolkit.timeoutMinutos` en 1 y lanzar un
       comando que tarde más. A ~1 minuto se corta con `tiempo agotado` en el
       canal y la notificación de error con «Ver salida»; el proceso y sus
       hijos desaparecen. Volver a 5 al terminar.
+      *Visto*: `SDD: Correr pruebas` con `TASK-001` sobre un `pytest` de 90 s;
+      al minuto salió `SDD: test excedió 1 minuto(s) y se cortó` con `Ver
+      salida`, el clic en ese botón dejó `(tiempo agotado)` en el canal y ni el
+      `pytest` ni la CLI quedaron vivos.
 - [ ] Abrir un proyecto recién inicializado (`python3 cli/main.py --root
       /tmp/sdd-init init`) en VS Code: la vista `SDD → Fases y tareas`
       funciona sin configurar `cliPath` (lo dejó `.vscode/settings.json`) y
