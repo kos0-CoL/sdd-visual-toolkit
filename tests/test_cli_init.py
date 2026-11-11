@@ -9,12 +9,14 @@ from __future__ import annotations
 
 import contextlib
 import io
+import io
 import json
 import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 TESTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(TESTS_DIR.parent))
@@ -132,6 +134,70 @@ class TestInitMencionaLosComandos(unittest.TestCase):
             # La ruta absoluta se graba: hay que decirlo y ofrecer repetirlo.
             self.assertIn("ruta absoluta queda grabada", salida)
             self.assertIn("[ comandos ]", salida)
+
+
+class TestInitGeneraLosComandos(unittest.TestCase):
+    """`init` puede dejar las skills del agente en el acto."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.raiz = Path(tmp.name).resolve() / "proyecto"
+
+    def _init(self, *extra):
+        return _despachar(["--root", str(self.raiz), "init", *extra])
+
+    def test_con_cliente_no_pregunta(self):
+        codigo, salida = self._init("--cliente", "cursor")
+        self.assertEqual(codigo, 0, salida)
+        self.assertEqual(
+            len(list((self.raiz / ".cursor" / "commands").glob("*.md"))), 14)
+        self.assertNotIn("Cliente del agente (", salida)
+
+    def test_varios_clientes_de_una_vez(self):
+        codigo, salida = self._init("--cliente", "copilot", "--cliente", "claude")
+        self.assertEqual(codigo, 0, salida)
+        self.assertEqual(
+            len(list((self.raiz / ".github" / "prompts").glob("*.md"))), 14)
+        self.assertEqual(
+            len(list((self.raiz / ".claude" / "skills").glob("*/SKILL.md"))), 14)
+        self.assertFalse((self.raiz / ".cursor").exists())
+
+    def test_sin_terminal_no_pregunta_ni_genera(self):
+        """Desde la extensión o un script no hay a quién preguntar."""
+        codigo, salida = self._init()
+        self.assertEqual(codigo, 0, salida)
+        self.assertFalse((self.raiz / ".github").exists())
+        self.assertIn("Comandos para su agente", salida)
+
+    def test_en_terminal_pregunta_y_genera(self):
+        class Tty(io.StringIO):
+            def isatty(self):
+                return True
+
+        anterior = sys.stdin
+        sys.stdin = Tty()
+        self.addCleanup(setattr, sys, "stdin", anterior)
+        with mock.patch("builtins.input", return_value="antigravity"):
+            codigo, salida = self._init()
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("Cliente del agente (", salida)
+        self.assertEqual(
+            len(list((self.raiz / ".agents" / "skills").glob("*/SKILL.md"))),
+            14)
+
+    def test_sin_comandos_no_pregunta_aunque_haya_terminal(self):
+        class Tty(io.StringIO):
+            def isatty(self):
+                return True
+
+        anterior = sys.stdin
+        sys.stdin = Tty()
+        self.addCleanup(setattr, sys, "stdin", anterior)
+        codigo, salida = self._init("--sin-comandos")
+        self.assertEqual(codigo, 0, salida)
+        self.assertNotIn("Cliente del agente (", salida)
+        self.assertFalse((self.raiz / ".claude").exists())
 
 
 class TestInitDejaElIDEListo(unittest.TestCase):

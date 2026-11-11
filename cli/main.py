@@ -81,6 +81,39 @@ def _proyecto_superior(destino: Path) -> Path | None:
     return None
 
 
+def _clientes_de_init(args) -> list[str] | None:
+    """Clientes del agente a generar al inicializar, o `None`.
+
+    Con `--cliente` no se pregunta. Sin él solo se pregunta si hay terminal:
+    `init` también corre desde la extensión, un hook o un script, donde un
+    `input()` dejaría la ejecución colgada esperando a nadie.
+    """
+    if getattr(args, "cliente", None):
+        return list(args.cliente)
+    if getattr(args, "sin_comandos", False) or not sys.stdin.isatty():
+        return None
+    disponibles = sorted(cmd_comandos.agent_commands.CLIENTES)
+    print(f"Cliente del agente ({', '.join(disponibles)}; «todos» o vacío ="
+          " ninguno): ", end="", flush=True)
+    try:
+        respuesta = input().strip().lower()
+    except EOFError:
+        print()
+        return None
+    if not respuesta:
+        return None
+    if respuesta in ("todos", "all"):
+        return disponibles
+    elegidos = respuesta.replace(",", " ").split()
+    desconocidos = [c for c in elegidos
+                    if c not in cmd_comandos.agent_commands.CLIENTES]
+    if desconocidos:
+        print(f"· cliente(s) desconocido(s): {', '.join(desconocidos)};"
+              " no se generaron comandos de barra")
+        return None
+    return elegidos
+
+
 def cmd_init(args) -> int:
     # `--root` es la opción global de todos los comandos (la extensión de VS
     # Code la pasa siempre); init la ignoraba y creaba .specify/ en la carpeta
@@ -106,13 +139,19 @@ def cmd_init(args) -> int:
         print(f"✓ {', '.join(escritos)} (ruta del toolkit y tareas SDD)")
     for nombre in existentes:
         print(f"· {nombre} ya existía: no se tocó")
-    # Los comandos de barra son lo único que `init` no deja listo: sin ellos el
-    # agente no ve `/sdd-*`. La ruta se graba absoluta, así que hay que poder
-    # repetirlo y saber por qué.
-    print("Comandos para su agente (opcional, repetible):")
-    print(f"  {sys.executable or 'python3'} \"{cli}\" comandos --cliente copilot")
-    print("  sin --cliente escribe los cinco; la ruta absoluta queda grabada,"
-          " así que vuelva a ejecutarlo si mueve el repositorio.")
+    # Los comandos de barra son lo único que `init` no dejaba listo: sin ellos
+    # el agente no ve `/sdd-*`. Se generan aquí si el usuario ya dijo el
+    # cliente (o lo eligió en la pregunta); si no, se deja la orden a mano.
+    clientes = _clientes_de_init(args)
+    if clientes:
+        cmd_comandos.despachar(argparse.Namespace(
+            root=str(raiz), cliente=clientes, verificar=False))
+    else:
+        print("Comandos para su agente (opcional, repetible):")
+        print(f"  {sys.executable or 'python3'} \"{cli}\" comandos"
+              " --cliente copilot")
+        print("  sin --cliente escribe los cinco; la ruta absoluta queda"
+              " grabada, así que vuelva a ejecutarlo si mueve el repositorio.")
     print("¿Qué desea hacer ahora?")
     print("[ req add ]  [ status ]  [ comandos ]")
     return 0
@@ -191,6 +230,14 @@ def construir_parser() -> argparse.ArgumentParser:
     p_init = sub.add_parser("init", help="inicializar proyecto")
     p_init.add_argument("path", nargs="?", default=None,
                         help="destino (por defecto, --root o la carpeta actual)")
+    p_init.add_argument(
+        "--cliente", action="append", default=None,
+        choices=sorted(cmd_comandos.agent_commands.CLIENTES),
+        help=("repetible: genera los comandos del agente ahora mismo; "
+              "sin él se pregunta cuando hay terminal"))
+    p_init.add_argument(
+        "--sin-comandos", action="store_true",
+        help="no preguntar ni generar comandos de barra")
     p_init.set_defaults(func=cmd_init)
 
     p_req = sub.add_parser("req", help="gestionar requerimientos (RF-01)")
