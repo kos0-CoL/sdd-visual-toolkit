@@ -2,6 +2,7 @@
 
 import io
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -11,6 +12,9 @@ from pathlib import Path
 from types import SimpleNamespace as NS
 
 from core.export import documento, render  # noqa: E402
+from core.states import NODOS  # noqa: E402
+
+FIXTURE = Path(__file__).resolve().parent / "fixtures" / "estado-0.1.0"
 
 
 class TestDocumento(unittest.TestCase):
@@ -118,6 +122,34 @@ class TestExportCLI(unittest.TestCase):
         # Sin plan no hay artefacto ni comando de fases posteriores.
         self.assertIsNone(por_fase["Tareas"]["artefacto"])
         self.assertIsNone(por_fase["Tareas"]["comando"])
+
+
+class TestOrdenDelMetodo(unittest.TestCase):
+    """§21: árbol y flujo se leen en el orden del método, no del dict."""
+
+    def test_arbol_y_flujo_respetan_el_orden_de_las_fases(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name) / "proyecto"
+        shutil.copytree(FIXTURE, root)
+        esperadas = [fase for _icono, fase in NODOS]
+
+        def cli(*args):
+            r = subprocess.run(
+                [sys.executable, "cli/main.py", "--root", str(root), *args],
+                capture_output=True, text=True, cwd=Path.cwd(), input="",
+                timeout=60)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            return r.stdout
+
+        simbolos = ("○", "●", "✔", "⚠", "✘", "♻")
+        fases = [linea.strip().split(" ", 1)[1].split(":")[0]
+                 for linea in cli("arbol").splitlines()
+                 if linea.strip().startswith(simbolos)]
+        self.assertEqual(fases, esperadas)
+
+        filas = json.loads(cli("export"))["flujo"]
+        self.assertEqual([f["fase"] for f in filas], esperadas)
 
 
 if __name__ == "__main__":

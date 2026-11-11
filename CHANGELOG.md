@@ -44,6 +44,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - `clarify` desde la paleta valida el `SPEC-ID` con `clarify --list` antes de
   abrir el terminal: un ID inexistente se notifica con «Ver salida» en vez de
   quedar al fondo de la terminal, que solo se abre cuando la validación pasa.
+- `arbol` y el flujo del IDE respetan el orden §21 de las fases: la
+  recuperación aparecía antes de la implementación y las pruebas porque el
+  orden lo dictaba la inserción en el diccionario, no el método.
 - `specify` y `restricciones` avisan con `⛔` cuando el ID no existe, en vez de
   terminar con un traceback: son los dos últimos comandos que reventaban al
   escribir un identificador equivocado.
