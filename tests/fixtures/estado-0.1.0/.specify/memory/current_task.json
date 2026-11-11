@@ -1,0 +1,12 @@
+{
+  "plan_id": "PLAN-001",
+  "spec_id": "SPEC-001",
+  "fase": "implement",
+  "total_tareas": 18,
+  "ultimo_exito_indice": 0,
+  "tarea_en_curso": null,
+  "fallos_consecutivos": 0,
+  "ultimo_checkpoint": "TASK-001-SUCCESS",
+  "run_id": "f92815db7255",
+  "actualizado_en": "2026-11-11T01:09:35+00:00"
+}

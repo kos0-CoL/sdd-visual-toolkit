@@ -15,9 +15,18 @@ el cierre de `TASK-001`.
   `current_task.json`: los índices del estado.
 - `.specify/planes/PLAN-001.json` y `.specify/tareas/TASKS-PLAN-001.json`:
   plan técnico y desglose.
-- `specs/SPEC-001.json`: la SPEC aprobada.
+- `specs/SPEC-001.json` y su gemelo `SPEC-001.md`: la SPEC aprobada, en las
+  dos formas que escribe 0.1.0 —máquina y legible—.
+- `.specify/clarifications.json`: las aclaraciones de `SPEC-001` con su
+  estado, su respuesta y su historial.
 - `.specify/memory/execution_history.jsonl`: el historial, que es lo que lleva
   el tablero a la fase 🧪.
+- `.specify/memory/current_task.json`: el estado que `build` sincroniza al
+  cerrar cada tarea: plan, SPEC, fase, total, índice del último éxito, tarea
+  en curso, racha de fallos, último checkpoint y `run_id`.
+- `.specify/checkpoints/TASK-001.json`: el checkpoint durable de la tarea
+  cerrada (§13.4): fecha, SPEC, plan, fase, siguiente tarea, archivos con sus
+  hashes, pruebas y decisiones.
 - `.specify/pines/TASK-001.json`: la línea base del pin —hash, símbolos
   públicos, imports y foto del árbol— tal como la escribió 0.1.0 al empezar
   `TASK-001`.
@@ -27,17 +36,39 @@ el cierre de `TASK-001`.
 
 ## Qué se dejó fuera, y por qué
 
-`clarifications.json`, `enriquecimientos.json`, `informes.json`, `cache/`,
-`checkpoints/` y los `.md` gemelos. Tampoco están `src/` ni `tests/` del
-proyecto, que sumaban la mayor parte del peso: se materializan restaurando un
-snapshot, y por eso `rollback --restore TASK-001` funciona sobre el fixture
-recién copiado.
+`enriquecimientos.json`, `informes.json`, `cache/` y `spec_history/`.
+Tampoco están `src/` ni `tests/` del proyecto, que sumaban la mayor parte del
+peso: se materializan restaurando un snapshot, y por eso
+`rollback --restore TASK-001` funciona sobre el fixture recién copiado.
+
+Sin `enriquecimientos.json` no se puede ejercitar `specify --revise`: el
+comando busca el ENR de origen y falla antes de aplicar la revisión. Es la
+pieza que falta para cubrir ese camino.
 
 Sin esos archivos `validate` no tiene qué comparar, pero conserva la línea
 base y no la rehace. Con el snapshot 0 restaurado —el estado exacto que
 fotografió la línea base— la validación sale limpia; con el 1, que añadía
 `Caja.descuento`, avisa de un cambio de cuerpo en `src/productos.py`. Ese es
 el comportamiento de 0.1.0 y lo que la prueba comprueba.
+
+## Cómo se generaron las aclaraciones, el checkpoint y el estado
+
+Estas piezas no venían en el fixture y se reconstruyeron con el código del tag
+`v0.1.0`, que es el que fija el formato:
+
+- `clarifications.json` salió de `core.clarify.detectar` sobre `SPEC-001` con
+  sus supuestos, RNF, reglas y dependencias devueltos a «pendiente», y de
+  `responder` aplicando la misma respuesta que la SPEC ya registraba («Sí,
+  confirmado»). Al terminar, `SPEC-001.json` queda idéntico al original byte
+  a byte: el registro cuadra con lo que ya estaba escrito en la SPEC. De las
+  25 aclaraciones del ciclo original solo seis dejaron rastro (CLA-001 a
+  CLA-006); las demás no se pueden reconstruir sin inventarlas.
+- `checkpoints/TASK-001.json` es el evento `checkpoint` que ya estaba en el
+  journal, pasado por `core.checkpoints.guardar`.
+- `memory/current_task.json` lo escribió `build._sincronizar_estado` con el
+  plan, la SPEC y las tareas del fixture.
+- `specs/SPEC-001.md` y el `updated_at` del índice son los que escribió la
+  propia acción de `clarify`, no se tocaron a mano.
 
 ## Cómo se generaron el pin y los snapshots
 

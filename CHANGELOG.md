@@ -11,6 +11,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - El verificador posterior exige que el commit etiquetado tenga todos sus
   checks en verde y terminados, para que un tag sobre un commit roto no pase
   por bueno.
+- El fixture de compatibilidad de 0.1.0 incluye ya las aclaraciones, el
+  checkpoint de `TASK-001` y el estado del journal, y la prueba los ejercita
+  con la CLI actual.
 
 ### Corregido
 

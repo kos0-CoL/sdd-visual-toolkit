@@ -1,0 +1,104 @@
+{
+  "SPEC-001": {
+    "preguntas": [
+      {
+        "id": "CLA-001",
+        "kind": "supuesto",
+        "texto": "Pendiente de aclarar: Stack tecnológico sin definir (pendiente de aclaración)",
+        "contexto": "§14 Suposiciones pendientes.",
+        "tipo": "libre",
+        "opciones": [],
+        "ref": "Stack tecnológico sin definir (pendiente de aclaración)",
+        "estado": "respondida",
+        "respuesta": "Sí, confirmado"
+      },
+      {
+        "id": "CLA-002",
+        "kind": "supuesto",
+        "texto": "Pendiente de aclarar: ¿quiénes usarán el sistema? (roles y permisos)",
+        "contexto": "§14 Suposiciones pendientes.",
+        "tipo": "libre",
+        "opciones": [],
+        "ref": "¿quiénes usarán el sistema? (roles y permisos)",
+        "estado": "respondida",
+        "respuesta": "Sí, confirmado"
+      },
+      {
+        "id": "CLA-003",
+        "kind": "supuesto",
+        "texto": "Pendiente de aclarar: ¿dónde se guardan los datos hoy? (archivo, planilla, base de datos)",
+        "contexto": "§14 Suposiciones pendientes.",
+        "tipo": "libre",
+        "opciones": [],
+        "ref": "¿dónde se guardan los datos hoy? (archivo, planilla, base de datos)",
+        "estado": "respondida",
+        "respuesta": "Sí, confirmado"
+      },
+      {
+        "id": "CLA-004",
+        "kind": "rnf",
+        "texto": "¿Hay algún requerimiento no funcional (rendimiento, seguridad, disponibilidad)?",
+        "contexto": "§5 sin definir.",
+        "tipo": "libre",
+        "opciones": [],
+        "ref": "rnf",
+        "estado": "respondida",
+        "respuesta": "Sí, confirmado"
+      },
+      {
+        "id": "CLA-005",
+        "kind": "regla",
+        "texto": "¿Hay alguna regla de negocio (precios, descuentos, permisos)?",
+        "contexto": "§7 sin definir.",
+        "tipo": "libre",
+        "opciones": [],
+        "ref": "regla",
+        "estado": "respondida",
+        "respuesta": "Sí, confirmado"
+      },
+      {
+        "id": "CLA-006",
+        "kind": "dependencia",
+        "texto": "¿El sistema depende de algo externo (hardware, servicio, planilla actual)?",
+        "contexto": "§10 sin definir.",
+        "tipo": "libre",
+        "opciones": [],
+        "ref": "dependencia",
+        "estado": "respondida",
+        "respuesta": "Sí, confirmado"
+      }
+    ],
+    "historial": [
+      {
+        "pregunta": "CLA-001",
+        "respuesta": "Sí, confirmado",
+        "cambio": "CLA-001: supuesto resuelto y movido a aclarados"
+      },
+      {
+        "pregunta": "CLA-002",
+        "respuesta": "Sí, confirmado",
+        "cambio": "CLA-002: supuesto resuelto y movido a aclarados"
+      },
+      {
+        "pregunta": "CLA-003",
+        "respuesta": "Sí, confirmado",
+        "cambio": "CLA-003: supuesto resuelto y movido a aclarados"
+      },
+      {
+        "pregunta": "CLA-004",
+        "respuesta": "Sí, confirmado",
+        "cambio": "CLA-004: § actualizada con lo declarado por el humano"
+      },
+      {
+        "pregunta": "CLA-005",
+        "respuesta": "Sí, confirmado",
+        "cambio": "CLA-005: § actualizada con lo declarado por el humano"
+      },
+      {
+        "pregunta": "CLA-006",
+        "respuesta": "Sí, confirmado",
+        "cambio": "CLA-006: § actualizada con lo declarado por el humano"
+      }
+    ]
+  }
+}
