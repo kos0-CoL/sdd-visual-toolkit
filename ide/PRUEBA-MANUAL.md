@@ -45,6 +45,9 @@ La ruta de `--root` va **antes** del subcomando.
       notificación de error con `plan inexistente: PLAN-999`; su botón `Ver
       salida` abre el canal con la orden, el código y la salida completa.
       Cerrar la notificación sin pulsarlo no abre el canal.
+- [ ] Comando largo (`SDD: Correr pruebas` con `TASK-001`, o cualquiera que
+      tarde más de medio segundo): aparece una notificación de progreso con
+      la orden en curso y desaparece al terminar. Los rápidos no la muestran.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` sigue abriéndose en la terminal
       `SDD Toolkit`, porque pregunta por stdin.
 - [ ] Paleta, comando sin argumentos (`SDD: Estado + siguiente`): corre

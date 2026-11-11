@@ -104,6 +104,18 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("terminal().sendText", cuerpo)
         self.assertIn("correr(dir, argv)", cuerpo)
 
+    def test_comando_largo_muestra_progreso(self):
+        """`build` y `test` tardan: la paleta avisa en vez de esperar callada."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        corrida = re.search(r"function correr\(dir, argv.*?\n\}", fuente, re.S)
+        self.assertIsNotNone(corrida, "falta la ejecución capturada")
+        cuerpo = corrida.group(0)
+        self.assertIn("withProgress", cuerpo)
+        self.assertIn("ProgressLocation.Notification", cuerpo)
+        self.assertIn("ESPERA_PROGRESO", cuerpo)
+        # El indicador se cierra antes de notificar, en la misma devolución.
+        self.assertLess(cuerpo.index("cerrar();"), cuerpo.index("const completo"))
+
     def test_init_avisa_y_refresca(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         init = re.search(r"function inicializar\(dir\).*?\n\}", fuente, re.S)
