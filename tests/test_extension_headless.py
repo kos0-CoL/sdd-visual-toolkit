@@ -15,11 +15,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import pytest
+
 RAIZ = Path(__file__).resolve().parent.parent
 ARNES = RAIZ / "tests" / "js" / "arnes_extension.js"
 CLI = RAIZ / "cli" / "main.py"
 FIXTURE = RAIZ / "tests" / "fixtures" / "estado-0.1.0"
 NODE = shutil.which("node")
+
+# Levanta node y la CLI media docena de veces: se queda fuera del ciclo rápido
+# con `-m "not lento"`.
+pytestmark = pytest.mark.lento
 
 
 @unittest.skipUnless(NODE, "hace falta node para el arnés de la extensión")

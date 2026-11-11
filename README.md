@@ -74,6 +74,9 @@ python3 -m pip install -r requirements-dev.txt
 # 4. Verificar que todo funciona (447 tests, ~40 s; ~20 s con -n 2)
 python3 -m pytest tests/ -q
 
+#    Ciclo rápido: deja fuera el arnés de la extensión (marcado "lento")
+python3 -m pytest tests/ -q -m "not lento"
+
 # 5. Probar la CLI
 python3 cli/main.py --help
 python3 cli/main.py --version

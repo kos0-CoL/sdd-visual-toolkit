@@ -20,3 +20,6 @@ namespaces = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "lento: levanta procesos reales y tarda segundos; se deja fuera con -m 'not lento'",
+]
