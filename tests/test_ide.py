@@ -84,8 +84,10 @@ class TestManifiesto(unittest.TestCase):
         corrida = re.search(r"function correr\(dir, argv.*?\n\}", fuente, re.S)
         self.assertIsNotNone(corrida, "falta la ejecución capturada")
         cuerpo = corrida.group(0)
-        self.assertIn("execFile", cuerpo)
+        # `spawn` y no `execFile`: es el único que respeta `detached`.
+        self.assertIn("spawn(cfg().python", cuerpo)
         self.assertIn("[rutaCli(dir), '--root', dir, ...argv]", cuerpo)
+        self.assertIn("codigo !== 0", cuerpo)
         self.assertIn("reportarFallo", cuerpo)
         # El aviso ofrece la salida completa de la CLI, no solo su primera línea.
         aviso = re.search(r"function reportarFallo\(.*?\n\}", fuente, re.S)
@@ -145,7 +147,15 @@ class TestManifiesto(unittest.TestCase):
         cuerpo = corrida.group(0)
         self.assertIn("cancellable: true", cuerpo)
         self.assertIn("onCancellationRequested", cuerpo)
-        self.assertIn("hijo.kill()", cuerpo)
+        self.assertIn("matarArbol(hijo)", cuerpo)
+        self.assertIn("detached: process.platform !== 'win32'", cuerpo)
+        # El corte alcanza a los nietos: `build` corre pytest como subproceso.
+        arbol = re.search(r"function matarArbol\(hijo\).*?\n\}", fuente, re.S)
+        self.assertIsNotNone(arbol, "falta el corte del árbol de procesos")
+        corte = arbol.group(0)
+        self.assertIn("process.kill(-hijo.pid, 'SIGTERM')", corte)
+        self.assertIn("taskkill", corte)
+        self.assertIn("hijo.kill()", corte)
         corte = cuerpo.split("if (cancelado)")[1].split("}")[0]
         self.assertIn("showInformationMessage", corte)
         self.assertIn("refrescar()", corte)

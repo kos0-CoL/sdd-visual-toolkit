@@ -21,7 +21,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - Ese progreso se puede cancelar: el proceso recibe SIGTERM, el corte se
   informa como cancelación y no como fallo, lo impreso queda en el canal con
   `(cancelado)` y la vista se refresca. El estado JSON se escribe con
-  temporal y renombrado, así que un corte no lo deja truncado.
+  temporal y renombrado, así que un corte no lo deja truncado. La señal va al
+  grupo de procesos, así que también termina el `pytest` que lanza `build`
+  (en Windows, `taskkill /T`); el tope de cinco minutos corta igual.
 
 ### Corregido
 

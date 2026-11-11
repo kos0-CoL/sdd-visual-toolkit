@@ -51,6 +51,9 @@ La ruta de `--root` va **antes** del subcomando.
 - [ ] Cancelar: pulsar «Cancelar» en ese progreso. Aparece `SDD: <comando>
       cancelado`, el canal guarda lo que alcanzó a imprimir con
       `(cancelado)` y la vista se refresca; **no** sale notificación de error.
+- [ ] Cancelar un `SDD: Correr pruebas` que tenga `pytest` en marcha: al
+      cancelar, el subproceso también desaparece (comprobar en el gestor de
+      procesos del sistema, no solo que la notificación se cierre).
 - [ ] Abrir un proyecto recién inicializado (`python3 cli/main.py --root
       /tmp/sdd-init init`) en VS Code: la vista `SDD → Fases y tareas`
       funciona sin configurar `cliPath` (lo dejó `.vscode/settings.json`) y
