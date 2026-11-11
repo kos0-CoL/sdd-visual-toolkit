@@ -5,6 +5,7 @@ from __future__ import annotations
 import pathlib
 
 from cli.commands.context import _localizar
+from core.context import ContextError
 from core.report import informe, tabla
 from state import store
 
@@ -26,7 +27,7 @@ def despachar(args) -> int:
             return 1
         plan, _tarea = _localizar(raiz, args.texto)
         print(informe(raiz, plan.plan_id, args.texto))
-    except store.StoreError as error:
+    except (ContextError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0

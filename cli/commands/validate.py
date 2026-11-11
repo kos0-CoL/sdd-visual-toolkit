@@ -6,6 +6,7 @@ import pathlib
 
 from cli.commands.context import _localizar
 from cli.commands.specify import _cargar_spec
+from core.context import ContextError
 from core.journal import historial
 from core.validate import ValidateError, validar
 from state import store
@@ -30,7 +31,7 @@ def despachar(args) -> int:
                           nota=args.nota or "")
         print(reporte["resumen"])
         return 0 if reporte["veredicto"] == "VALIDADO" else 1
-    except (ValidateError, store.StoreError) as error:
+    except (ContextError, ValidateError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0

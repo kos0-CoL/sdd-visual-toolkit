@@ -19,8 +19,6 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   que cada agente lee (`.claude/skills/`, `.cursor/commands/`,
   `.github/prompts/`, `.windsurf/workflows/`, `.agents/skills/`), con la ruta
   absoluta de la CLI adentro: `/sdd-plan-gate` ejecuta `plan --gate SPEC`.
-  Todavía no incluye `pin`: `pin --task` revienta con `NameError` y entra
-  cuando eso esté arreglado.
 - El verificador posterior exige que el commit etiquetado tenga todos sus
   checks en verde y terminados, para que un tag sobre un commit roto no pase
   por bueno.
@@ -34,6 +32,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- Los comandos de la CLI avisan cuando el ID no existe en vez de morir con un
+  traceback: `ast`, `diff`, `historia`, `reporte`, `test`, `validate`,
+  `flush`, `pin`, `recover`, `traza` y `clarify` capturaban solo el error de
+  su propio módulo, no el de cargar la SPEC, el plan o la tarea.
+- `pin --task` guarda la línea base y ya no revienta con `NameError` por una
+  llamada a `_guardar_pin` que nadie importaba; tampoco borra las
+  desviaciones ya registradas.
 - `specify --revise` copiaba la SPEC a `.specify/spec_history/` antes de
   comprobar que su ENR de origen existiera: si faltaba, dejaba una copia
   huérfana y moría con un traceback. Ahora arma la revisión primero y avisa

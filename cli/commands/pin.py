@@ -16,6 +16,9 @@ from core.pin import (
     decisiones_aprobadas,
     generar_pin,
 )
+from core.plan import PlanError
+from core.spec import SpecError
+from core.tasks import TasksError
 from state import store
 
 
@@ -37,11 +40,10 @@ def cmd_pin(args) -> int:
             return 1
         _preguntas, historial = mod_clarify._preguntas_de(raiz, spec.spec_id)
         baseline, _parcial = asegurar_baseline(raiz, tarea)
-        _guardar_pin(raiz, tarea.id, {"baseline": baseline, "desviaciones": []})
         print(generar_pin(plan, spec, tarea, decisiones_aprobadas(historial)))
         print(f"\nLínea base registrada: {len(baseline) - 1} archivo(s) autorizados "
               f"+ foto del árbol (§12: toda desviación futura será visible).")
-    except (PinError, store.StoreError) as error:
+    except (PinError, PlanError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0
@@ -60,7 +62,7 @@ def cmd_pin_check(args) -> int:
             print(f"⛔ tarea inexistente: {args.check}")
             return 1
         desvs, parcial = chequear(raiz, tarea)
-    except store.StoreError as error:
+    except (PlanError, TasksError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     if parcial:
@@ -90,7 +92,7 @@ def cmd_pin_suggest(args) -> int:
         datos.append({"fecha": _ahora(), "idea": args.suggest,
                       "origen": "pin (§12.C, excluida de la implementación actual)"})
         store.escribir_json(ruta, datos)
-    except (PinError, store.StoreError) as error:
+    except (PinError, PlanError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     print(f"💡 Sugerencia registrada (no implementada): {args.suggest}")

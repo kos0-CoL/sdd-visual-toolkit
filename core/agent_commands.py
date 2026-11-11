@@ -49,6 +49,8 @@ COMANDOS: tuple[Comando, ...] = (
             "analyze", pista="PLAN-ID"),
     Comando("sdd-build", "Poner la siguiente tarea en curso",
             "build", pista="PLAN-ID"),
+    Comando("sdd-pin", "Congelar las interfaces de la tarea: línea base "
+            "y desviaciones", "pin", pista="PLAN-ID --task TASK-ID"),
     Comando("sdd-test", "Correr el arnés de pruebas de una tarea",
             "test", pista="TASK-ID"),
     Comando("sdd-traza", "Trazabilidad SPEC → test → evidencia",

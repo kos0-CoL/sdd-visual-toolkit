@@ -8,6 +8,9 @@ from cli.commands import plan as mod_plan
 from cli.commands import specify as mod_specify
 from cli.commands import tasks as mod_tasks
 from core.journal import historial
+from core.plan import PlanError
+from core.spec import SpecError
+from core.tasks import TasksError
 from core.trace import matriz
 from state import store
 
@@ -32,7 +35,7 @@ def despachar(args) -> int:
                 _info, tareas = mod_tasks._cargar_tareas(raiz, plan_id)
                 pares.append((plan, tareas))
         print(matriz(spec, pares, historial(raiz), raiz))
-    except store.StoreError as error:
+    except (PlanError, SpecError, TasksError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0

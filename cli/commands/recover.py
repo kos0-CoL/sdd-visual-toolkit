@@ -9,6 +9,7 @@ from cli.commands import specify as mod_specify
 from cli.commands import tasks as mod_tasks
 from core.journal import JournalError, leer_estado
 from core.recover import RecoverError, diagnosticar, formatear
+from core.tasks import TasksError
 from state import store
 
 
@@ -36,7 +37,7 @@ def despachar(args) -> int:
         except (store.StoreError, KeyError, AttributeError):
             spec_d = None
         print(formatear(diagnosticar(raiz, plan_id, spec_d, tareas)))
-    except (RecoverError, JournalError, store.StoreError) as error:
+    except (RecoverError, JournalError, TasksError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0

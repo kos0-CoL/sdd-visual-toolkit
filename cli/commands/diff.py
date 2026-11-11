@@ -14,8 +14,11 @@ from cli.commands import plan as mod_plan
 from cli.commands import specify as mod_specify
 from core.diffview import (analizar_fuente, comparativa,
                            comparar_estructural, fuera_de_alcance, vista)
+from core.context import ContextError
 from core.journal import historial
+from core.plan import PlanError
 from core.pin import _cargar_pin
+from core.spec import SpecError
 from core.validate import validar
 from state import store
 
@@ -109,7 +112,7 @@ def despachar(args) -> int:
             print("   🔴 %s" % r)
         for o in resultado.get("observaciones", [])[:5]:
             print("   🟡 %s" % o)
-    except store.StoreError as error:
+    except (ContextError, PlanError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0

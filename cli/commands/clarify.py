@@ -15,7 +15,7 @@ from core.clarify import (
     pendientes,
     responder,
 )
-from core.spec import Spec
+from core.spec import Spec, SpecError
 from state import store
 
 CLARIF_FILE = "clarifications.json"
@@ -101,7 +101,7 @@ def cmd_clarify_list(args) -> int:
     try:
         spec = mod_specify._cargar_spec(raiz, args.list)
         preguntas, _h = _asegurar_preguntas(raiz, spec, mod_enrich._registro_req(raiz))
-    except (ClarifyError, store.StoreError) as error:
+    except (ClarifyError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     for p in preguntas:
@@ -121,7 +121,7 @@ def _aplicar_respuesta(raiz, spec, preguntas, historial, pid: str, respuesta: st
             {"pregunta": pid, "respuesta": pregunta.respuesta, "cambio": cambio}
         )
         _persistir(raiz, spec, preguntas, historial)
-    except (ClarifyError, store.StoreError) as error:
+    except (ClarifyError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     print(f"✓ {cambio}")
@@ -135,7 +135,7 @@ def cmd_clarify_answer(args) -> int:
         preguntas, historial = _asegurar_preguntas(
             raiz, spec, mod_enrich._registro_req(raiz)
         )
-    except (ClarifyError, store.StoreError) as error:
+    except (ClarifyError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     codigo = 0
@@ -165,7 +165,7 @@ def cmd_clarify_interactivo(args) -> int:
         preguntas, historial = _asegurar_preguntas(
             raiz, spec, mod_enrich._registro_req(raiz)
         )
-    except (ClarifyError, store.StoreError) as error:
+    except (ClarifyError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     for pregunta in pendientes(preguntas):
@@ -193,7 +193,7 @@ def cmd_clarify_gate_ns(raiz, spec_id: str) -> int:
     try:
         spec = mod_specify._cargar_spec(raiz, spec_id)
         preguntas, _h = _asegurar_preguntas(raiz, spec, mod_enrich._registro_req(raiz))
-    except (ClarifyError, store.StoreError) as error:
+    except (ClarifyError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     resto = pendientes(preguntas)

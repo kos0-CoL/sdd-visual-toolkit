@@ -7,6 +7,7 @@ import pathlib
 from cli.commands.context import _localizar
 from cli.commands.pin import asegurar_baseline
 from core.astcheck import AstCheckError, comparar
+from core.context import ContextError
 from state import store
 
 
@@ -29,7 +30,7 @@ def despachar(args) -> int:
         if parcial:
             print("⚠️ sin línea base previa: verificación parcial.")
         return 0 if resultado["veredicto"] != "RECHAZADO" else 1
-    except (AstCheckError, store.StoreError) as error:
+    except (AstCheckError, ContextError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0

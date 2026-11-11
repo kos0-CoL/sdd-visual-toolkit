@@ -6,6 +6,7 @@ import pathlib
 
 from cli.commands.context import _localizar
 from cli.commands.specify import _cargar_spec
+from core.context import ContextError
 from core.harness import HarnessError, ejecutar_ciclo
 from core.journal import historial, registrar
 from state import store
@@ -57,7 +58,7 @@ def despachar(args) -> int:
                                              for c in resultado["capas"]), 3),
                    "cobertura_pct": cobertura_pct, **totales})
         return 0 if resultado["ok"] else 1
-    except (HarnessError, store.StoreError) as error:
+    except (ContextError, HarnessError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0
