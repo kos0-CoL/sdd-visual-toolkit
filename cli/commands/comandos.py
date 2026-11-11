@@ -38,11 +38,7 @@ def _verificar(raiz: pathlib.Path) -> int:
         print("· sin comandos de barra en este proyecto")
         print(f"  genérelos con: {_sugerencia()}")
         return 0
-    rotas: dict[str, int] = {}
-    for archivos in generados.values():
-        for cli in archivos.values():
-            if not pathlib.Path(cli).is_file():
-                rotas[cli] = rotas.get(cli, 0) + 1
+    rotas = agent_commands.rutas_muertas(raiz)
     if not rotas:
         print(f"🟢 COMANDOS AL DÍA: {total} archivo(s) de "
               f"{len(generados)} cliente(s); sus rutas existen")

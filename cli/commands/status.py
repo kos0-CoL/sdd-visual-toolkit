@@ -11,6 +11,7 @@ import pathlib
 
 from cli.commands import plan as mod_plan
 from cli.commands import tablero as mod_tablero
+from core import agent_commands
 from core.board import render as render_tablero
 from core.navigation import render as render_nav
 from core.navigation import sugerir
@@ -40,7 +41,24 @@ def despachar(args) -> int:
                 pass
         print()
         print(render_nav(sugerir(estado)))
+        _avisar_skills(raiz)
     except store.StoreError as error:
         print(f"⛔ {error}")
         return 1
     return 0
+
+
+def _avisar_skills(raiz) -> None:
+    """Aviso al final, no una línea por archivo: si el toolkit se movió, las
+    skills ejecutan una ruta muerta y el agente falla sin explicación."""
+    muertas = agent_commands.rutas_muertas(raiz)
+    if not muertas:
+        return
+    total = sum(muertas.values())
+    print()
+    print(f"⚠️ COMANDOS DE BARRA DESACTUALIZADOS: {total} archivo(s) apuntan "
+          "a una ruta que ya no existe")
+    for ruta, cuantos in sorted(muertas.items()):
+        print(f"   {cuantos} archivo(s) → {ruta}")
+    print("   regenere con `toolkit comandos`; `toolkit comandos --verificar` "
+          "lo detalla")

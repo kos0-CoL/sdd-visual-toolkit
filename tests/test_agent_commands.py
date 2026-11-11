@@ -237,5 +237,47 @@ class TestCLIComandos(unittest.TestCase):
         self.assertTrue(esperada.is_file())
 
 
+class TestStatusAvisaSkills(unittest.TestCase):
+    """El aviso llega solo: nadie va a acordarse de correr `--verificar`."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name) / "proyecto"
+        codigo = cli_main.main(
+            ["--root", str(self.root), "init", "--sin-comandos"])
+        self.assertEqual(codigo, 0)
+
+    def _status(self):
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = cli_main.main(["--root", str(self.root), "status"])
+        return codigo, salida.getvalue()
+
+    def test_avisa_si_la_ruta_grabada_ya_no_existe(self):
+        destino = self.root / ".github" / "prompts" / "sdd-status.prompt.md"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            'python3 "/no/existe/toolkit/cli/main.py" --root . status\n',
+            encoding="utf-8")
+        codigo, salida = self._status()
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("COMANDOS DE BARRA DESACTUALIZADOS", salida)
+        self.assertIn("/no/existe/toolkit/cli/main.py", salida)
+        self.assertIn("toolkit comandos", salida)
+
+    def test_no_avisa_sin_comandos_instalados(self):
+        codigo, salida = self._status()
+        self.assertEqual(codigo, 0, salida)
+        self.assertNotIn("DESACTUALIZADOS", salida)
+
+    def test_no_avisa_si_las_rutas_existen(self):
+        cmd_comandos.despachar(argparse.Namespace(
+            root=str(self.root), cliente=["copilot"], verificar=False))
+        codigo, salida = self._status()
+        self.assertEqual(codigo, 0, salida)
+        self.assertNotIn("DESACTUALIZADOS", salida)
+
+
 if __name__ == "__main__":
     unittest.main()
