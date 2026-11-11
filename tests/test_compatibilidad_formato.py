@@ -64,6 +64,51 @@ class TestEstadoDe010(unittest.TestCase):
         self.assertEqual(datos["api"], "1.0")
         self.assertEqual(datos["spec_id"], "SPEC-001")
 
+    def test_enriquecimiento_de_010_se_lee(self):
+        codigo, salida = ejecutar(self.raiz, "enrich", "--show", "ENR-001")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("ENR-001 (validado)", salida)
+        self.assertIn("comercio", salida)
+
+    def test_revisar_regenera_la_spec_desde_el_enriquecimiento(self):
+        codigo, salida = ejecutar(self.raiz, "specify", "--revise", "SPEC-001",
+                                  "--motivo", "Cambia el redondeo de precios")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("v1.0.1", salida)
+        spec = json.loads((self.raiz / "specs" / "SPEC-001.json").read_text(
+            encoding="utf-8"))
+        self.assertEqual(spec["version"], "1.0.1")
+        self.assertEqual(len(spec["funcionales"]), 14)
+        self.assertEqual(len(spec["entidades"]), 5)
+        self.assertEqual(len(spec["fuera_alcance"]), 4)
+        self.assertTrue((self.raiz / ".specify" / "spec_history" /
+                         "SPEC-001_v1.0.0.md").is_file())
+        indice = json.loads((self.raiz / ".specify" / "specs.json").read_text(
+            encoding="utf-8"))
+        self.assertEqual(indice["SPEC-001"]["version"], "1.0.1")
+        self.assertEqual(indice["SPEC-001"]["historial"][-1]["motivo"],
+                         "Cambia el redondeo de precios")
+
+    def test_revisar_no_conserva_lo_aclarado(self):
+        """0.1.0 re-deriva del ENR: lo aclarado vive solo en la SPEC."""
+        ejecutar(self.raiz, "specify", "--revise", "SPEC-001",
+                 "--motivo", "Cambia el redondeo de precios")
+        spec = json.loads((self.raiz / "specs" / "SPEC-001.json").read_text(
+            encoding="utf-8"))
+        self.assertEqual(
+            spec["supuestos"][0],
+            "Stack tecnológico sin definir (pendiente de aclaración)")
+        self.assertEqual(spec["funcionales"][0][2], "pendiente")
+        self.assertEqual(spec["reglas"],
+                         ["Sin reglas declaradas (pendiente de clarify)"])
+        self.assertEqual(spec["dependencias"],
+                         ["No declaradas (pendiente de plan)"])
+
+    def test_revisar_sin_motivo_falla(self):
+        codigo, salida = ejecutar(self.raiz, "specify", "--revise", "SPEC-001")
+        self.assertEqual(codigo, 1)
+        self.assertIn("motivo", salida)
+
     def test_clarify_lee_las_aclaraciones_antiguas(self):
         codigo, salida = ejecutar(self.raiz, "clarify", "--list", "SPEC-001")
         self.assertEqual(codigo, 0, salida)
@@ -117,7 +162,9 @@ class TestEstadoDe010(unittest.TestCase):
                         ["checkpoint", "--show", "TASK-001"],
                         ["checkpoint", "--list", "PLAN-001"],
                         ["journal", "--state"],
-                        ["specify", "--show", "SPEC-001"]):
+                        ["specify", "--show", "SPEC-001"],
+                        ["enrich", "--list"],
+                        ["enrich", "--show", "ENR-001"]):
             codigo, salida = ejecutar(self.raiz, *comando)
             self.assertEqual(codigo, 0, "%s: %s" % (comando, salida))
         self.assertEqual(huella(self.raiz), antes,
