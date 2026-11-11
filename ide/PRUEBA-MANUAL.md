@@ -48,8 +48,11 @@ La ruta de `--root` va **antes** del subcomando.
 - [ ] Comando largo (`SDD: Correr pruebas` con `TASK-001`, o cualquiera que
       tarde más de medio segundo): aparece una notificación de progreso con
       la orden en curso y desaparece al terminar. Los rápidos no la muestran.
-- [ ] `SDD: Aclarar SPEC` con `SPEC-001` sigue abriéndose en la terminal
-      `SDD Toolkit`, porque pregunta por stdin.
+- [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
+      Toolkit`, porque pregunta por stdin.
+- [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece
+      la notificación `SPEC inexistente: SPEC-999` y **no** se abre el
+      terminal; `Ver salida` muestra la salida de `clarify --list SPEC-999`.
 - [ ] Paleta, comando sin argumentos (`SDD: Estado + siguiente`): corre
       `status` sin preguntar.
 - [ ] Paleta, comando con argumento (`SDD: Generar / ver plan`): pide

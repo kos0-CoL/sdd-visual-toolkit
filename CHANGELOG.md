@@ -35,6 +35,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   aparece como notificación con «Ver salida», en vez de perderse al fondo de
   un terminal. `clarify` sigue en la terminal porque pregunta por stdin, y
   `init` además confirma por notificación y refresca la vista y la barra.
+- `clarify` desde la paleta valida el `SPEC-ID` con `clarify --list` antes de
+  abrir el terminal: un ID inexistente se notifica con «Ver salida» en vez de
+  quedar al fondo de la terminal, que solo se abre cuando la validación pasa.
 
 ## [0.1.5] — 2026-11-11
 
