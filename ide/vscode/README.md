@@ -14,5 +14,7 @@ que la CLI (`toolkit export`, RF-38). Sin dependencias ni build.
 
 - `sddToolkit.python` (defecto `python3`).
 - `sddToolkit.cliPath` (defecto `cli/main.py` relativo al proyecto).
+- `sddToolkit.timeoutMinutos` (defecto 5): cuánto se espera a un comando
+  antes de cortarlo, junto con sus procesos hijos.
 
 Sin `.specify/` la vista lo declara y ofrece `SDD: Inicializar proyecto`.

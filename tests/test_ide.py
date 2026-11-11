@@ -161,6 +161,16 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("refrescar()", corte)
         self.assertNotIn("reportarFallo", corte)
 
+    def test_el_tope_de_espera_se_configura(self):
+        """Cinco minutos fijos no sirven para todos: el tope es un ajuste."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("'timeoutMinutos'", fuente)
+        self.assertIn("minutos * 60000", fuente)
+        self.assertIn("cfg().timeoutMinutos", fuente)
+        manifiesto = (IDE / "package.json").read_text(encoding="utf-8")
+        self.assertIn('"sddToolkit.timeoutMinutos"', manifiesto)
+        self.assertIn('"default": 5', manifiesto)
+
     def test_el_panel_de_flujo_muestra_skill_y_artefacto(self):
         """VISUAL: el flujo va aparte de la lista de fases y fases, con su
         skill y su artefacto."""

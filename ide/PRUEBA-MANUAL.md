@@ -54,6 +54,10 @@ La ruta de `--root` va **antes** del subcomando.
 - [ ] Cancelar un `SDD: Correr pruebas` que tenga `pytest` en marcha: al
       cancelar, el subproceso también desaparece (comprobar en el gestor de
       procesos del sistema, no solo que la notificación se cierre).
+- [ ] Tope configurable: poner `sddToolkit.timeoutMinutos` en 1 y lanzar un
+      comando que tarde más. A ~1 minuto se corta con `tiempo agotado` en el
+      canal y la notificación de error con «Ver salida»; el proceso y sus
+      hijos desaparecen. Volver a 5 al terminar.
 - [ ] Abrir un proyecto recién inicializado (`python3 cli/main.py --root
       /tmp/sdd-init init`) en VS Code: la vista `SDD → Fases y tareas`
       funciona sin configurar `cliPath` (lo dejó `.vscode/settings.json`) y

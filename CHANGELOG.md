@@ -23,7 +23,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   `(cancelado)` y la vista se refresca. El estado JSON se escribe con
   temporal y renombrado, así que un corte no lo deja truncado. La señal va al
   grupo de procesos, así que también termina el `pytest` que lanza `build`
-  (en Windows, `taskkill /T`); el tope de cinco minutos corta igual.
+  (en Windows, `taskkill /T`); el tope de espera corta igual.
+- El tope de espera de la paleta es configurable en
+  `sddToolkit.timeoutMinutos` (5 por defecto): un valor inválido vuelve al
+  defecto en vez de dejar los comandos sin límite.
 
 ### Corregido
 
