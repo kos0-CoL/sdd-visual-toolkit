@@ -36,6 +36,11 @@ Ojo con el estado: ejecutar comandos lo mueve. Tras `build`, la tarea actual
 deja de ser `—` y las píldoras cambian; para repetir la lista desde la línea
 base hace falta `scripts/preparar-manual.sh --force`.
 
+Eso se vio al arrancar la pasada siguiente: `--solo-verificar` devolvió
+`⛔ arnés FAIL vista: tarea actual vacía` sobre el proyecto que la pasada en
+editor había dejado en `TASK-002`. Tras `--force`, la tabla volvió a dar seis
+`✓`, un `☐` y cero `⛔`. El orden del bloque de arriba sale de ahí.
+
 ## Preparación
 
 Se prueba sobre un proyecto ya inicializado, no sobre uno vacío (para el
@@ -68,11 +73,16 @@ La ruta de `--root` va **antes** del subcomando cuando se corre a mano.
 ### Cada pasada, en este orden
 
 ```bash
+scripts/preparar-manual.sh --force            # línea base, si la anterior ejecutó algo
 scripts/preparar-manual.sh --solo-verificar   # ¿sirve lo que ya hay?
 ```
 
 1. Un `⛔` en la tabla se arregla antes de abrir el editor: es un entorno roto,
-   no una casilla pendiente.
+   no una casilla pendiente. En la fila del arnés hay una excepción conocida:
+   si la pasada anterior ejecutó comandos, el proyecto ya no está en la línea
+   base y el arnés falla con `FAIL vista: tarea actual vacía` (espera
+   `Tarea actual: —`). Eso es estado movido, no una extensión rota: `--force`
+   lo devuelve a la línea base y la tabla vuelve a verde.
 2. Los `✓` son hechos comprobados en archivos y CLI; no autorizan a marcar una
    casilla.
 3. Los `☐` son lo que falta mirar; el arnés sale siempre así, porque el editor
