@@ -323,9 +323,15 @@ class TestVerificarPrevio(unittest.TestCase):
         self._temporal.cleanup()
 
     def escribir(self, version: str, changelog: str | None = None,
-                 notas: str | None = None) -> None:
+                 notas: str | None = None,
+                 extension: str | None = None) -> None:
         (self.raiz / "pyproject.toml").write_text(
             f'[project]\nversion = "{version}"\n', encoding="utf-8")
+        (self.raiz / "ide" / "vscode").mkdir(parents=True, exist_ok=True)
+        (self.raiz / "ide" / "vscode" / "package.json").write_text(
+            json.dumps({"name": "sdd-visual-toolkit",
+                        "version": version if extension is None else extension}),
+            encoding="utf-8")
         (self.raiz / "CHANGELOG.md").write_text(
             _changelog(version=version) if changelog is None else changelog,
             encoding="utf-8")
@@ -364,7 +370,13 @@ class TestVerificarPrevio(unittest.TestCase):
     def test_todo_correcto(self):
         resultados = self.verificar()
         self.assertEqual([m for ok, m in resultados if not ok], [])
-        self.assertEqual(len(resultados), 10)
+        self.assertEqual(len(resultados), 11)
+
+    def test_extension_con_otra_version_bloquea_el_tag(self):
+        """El `.vsix` del release se empaqueta con la versión del manifiesto."""
+        self.escribir(version="0.1.4", extension="0.1.0")
+        fallos = " ".join(self.fallos())
+        self.assertIn("ide/vscode/package.json declara 0.1.0", fallos)
 
     def test_ci_rojo_bloquea_el_tag(self):
         self.assertIn("no está verde", " ".join(self.fallos({

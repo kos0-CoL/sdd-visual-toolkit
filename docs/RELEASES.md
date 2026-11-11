@@ -17,7 +17,9 @@ las notas.
 1. `python3 -m pytest tests/ -q` en verde.
 2. CI en verde en todas las versiones soportadas, sobre el commit que se va
    a etiquetar.
-3. `version` de `pyproject.toml` actualizada.
+3. `version` de `pyproject.toml` y de `ide/vscode/package.json` actualizadas
+   y **iguales**: el `.vsix` que se adjunta al release se empaqueta con la
+   versión del manifiesto de la extensión. El paso 9 lo comprueba.
 4. `CHANGELOG.md` con la versión publicada y su fecha: las viñetas pasan de
    `[No publicado]` a la sección nueva.
 5. `docs/release-notes-vX.Y.Z.md` escrito, con sus enlaces apuntando ya al
@@ -77,6 +79,22 @@ fallo. `--verify-tag` impide que `gh` cree el tag por su cuenta si no se
 empujó: la release cuelga del tag ya verificado. Una release solo se anuncia
 cuando CI está verde y los artefactos corresponden al tag.
 
+Cada release adjunta además la extensión del IDE, empaquetada desde el mismo
+commit que el tag:
+
+```bash
+cd ide/vscode
+npx --yes @vscode/vsce package            # sdd-visual-toolkit-X.Y.Z.vsix
+cd ../..
+gh release upload vX.Y.Z "ide/vscode/sdd-visual-toolkit-X.Y.Z.vsix"
+gh release view vX.Y.Z --json assets --jq '.assets[].name'
+rm "ide/vscode/sdd-visual-toolkit-X.Y.Z.vsix"
+```
+
+El nombre del archivo sale del manifiesto, así que si no coincide con el tag
+el paso 9 no habría pasado: la versión no se escribe a mano en ningún otro
+lado. El `.vsix` no se versiona (`*.vsix` está en `.gitignore`).
+
 ## Verificar tras publicar
 
 Crear el tag no termina la release. El script del repo lo comprueba todo de
@@ -106,6 +124,10 @@ Revisa, para `vX.Y.Z`:
    los `/tree/`, otras refs y los enlaces a otro repositorio. Sin `blob` solo
    pasan las páginas de GitHub que no son ficheros (`compare`, `commits`,
    `releases`, `tags`) y el `git clone` de un bloque de código.
+
+El `.vsix` no lo revisa el script, porque las releases anteriores a v0.1.5 no
+lo adjuntan: compruebe a mano que quedó en la página, con la versión del tag
+y el nombre que genera `vsce`.
 
 `v0.1.0` es la excepción documentada: sus notas enlazaban en relativo, GitHub
 las resolvía contra la raíz del repo y las cuatro daban 404, y su tag no se

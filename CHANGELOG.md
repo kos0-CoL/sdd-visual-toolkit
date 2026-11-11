@@ -8,6 +8,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- Cada release adjunta `sdd-visual-toolkit-X.Y.Z.vsix`, la extensión del IDE
+  empaquetada con `vsce` desde el mismo commit que el tag, y el README
+  documenta ese camino de instalación en lugar de la depuración desde el
+  código.
+- La comprobación previa a etiquetar exige que `ide/vscode/package.json`
+  declare la versión del release, para que el `.vsix` no se adjunte con otro
+  número.
 - El verificador posterior exige que el commit etiquetado tenga todos sus
   checks en verde y terminados, para que un tag sobre un commit roto no pase
   por bueno.

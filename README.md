@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-348%20passed-green)
+![Tests](https://img.shields.io/badge/tests-349%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -71,7 +71,7 @@ python3 -m venv .venv && source .venv/bin/activate
 # 3. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 4. Verificar que todo funciona (348 tests, ~16 s; ~9 s con -n 2)
+# 4. Verificar que todo funciona (349 tests, ~16 s; ~9 s con -n 2)
 python3 -m pytest tests/ -q
 
 # 5. Probar la CLI
@@ -191,10 +191,26 @@ Recomendada: [ build PLAN-001 ]
 
 ## Integraciones
 
-- **VS Code (y Cursor, Windsurf, compatibles):** extensión en `ide/vscode/`
-  — paleta `SDD: …`, vista lateral de fases y tareas, barra de estado.
-  Sin dependencias ni build. Ver `ide/COMPATIBILIDAD.md` para la matriz
-  por entorno (Antigravity: pendiente de verificación en su entorno real).
+- **VS Code (y Cursor, Windsurf, compatibles):** extensión empaquetada con
+  cada release como `sdd-visual-toolkit-X.Y.Z.vsix` — paleta `SDD: …`, vista
+  lateral de fases y tareas, barra de estado. Ver `ide/COMPATIBILIDAD.md`
+  para la matriz por entorno (Antigravity: pendiente de verificación en su
+  entorno real).
+
+  Para instalarla, descargue el `.vsix` de la
+  [última release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/latest)
+  y en el editor use *Extensiones → … → Instalar desde VSIX…*; en VS Code
+  también sirve el comando
+  `code --install-extension sdd-visual-toolkit-X.Y.Z.vsix`. Requiere 1.80 o
+  superior (`engines.vscode`). Las releases anteriores a v0.1.5 no adjuntan
+  el archivo.
+
+  La extensión ejecuta la CLI en la terminal integrada en vez de
+  reimplementarla, así que hay que indicarle dónde está: `sddToolkit.cliPath`
+  (por defecto `cli/main.py` relativo al proyecto) debe apuntar al
+  `cli/main.py` de su copia del toolkit —ruta absoluta si no vive dentro del
+  proyecto— y `sddToolkit.python` al intérprete (por defecto `python3`). Sin
+  `.specify/` la vista lo declara y ofrece `SDD: Inicializar proyecto`.
 - **MCP:** `python3 mcp/server.py` expone por stdio las herramientas de
   lectura `exportar_estado`, `siguiente` y `tablero`, y las operativas
   `asignar_tarea`, `registrar_resultado` y `marcar_completada`.
@@ -215,7 +231,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (348 tests, uno o más por RF)
+tests/      Suite pytest (349 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)
