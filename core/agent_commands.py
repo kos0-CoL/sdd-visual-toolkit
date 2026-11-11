@@ -168,12 +168,30 @@ def instalados(raiz) -> dict[str, dict[Path, str]]:
             continue
         archivos: dict[Path, str] = {}
         for ruta in sorted(carpeta.rglob("*.md")):
-            match = _RUTA_CLI.search(ruta.read_text(encoding="utf-8"))
+            try:
+                contenido = ruta.read_text(encoding="utf-8")
+            except OSError:
+                continue  # un archivo ilegible no puede tumbar una consulta
+            match = _RUTA_CLI.search(contenido)
             if match:
                 archivos[ruta] = match.group(1)
         if archivos:
             encontrados[cliente] = archivos
     return encontrados
+
+
+def rutas_muertas(raiz) -> dict[str, int]:
+    """Ruta de CLI grabada → cuántos archivos la usan, si ya no existe.
+
+    Lo consume `comandos --verificar` y el aviso final de `status`: mover el
+    toolkit deja las skills apuntando a un archivo que ya no está.
+    """
+    muertas: dict[str, int] = {}
+    for archivos in instalados(raiz).values():
+        for cli in archivos.values():
+            if not Path(cli).is_file():
+                muertas[cli] = muertas.get(cli, 0) + 1
+    return muertas
 
 
 def generar(cliente: str, python: str, cli: Path) -> dict[str, str]:
