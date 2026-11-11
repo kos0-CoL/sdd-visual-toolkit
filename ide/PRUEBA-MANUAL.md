@@ -107,7 +107,9 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       archivo de `.github/prompts/` a `/tmp/toolkit-viejo/cli/main.py`,
       recargar y comprobar que `Fases y tareas` abre con
       `⚠️ Comandos de barra desactualizados: 1` y que el hijo dice cuántos
-      archivos apuntan a esa ruta. Restaurar el archivo después.
+      archivos apuntan a esa ruta. Hacer clic en `↻ Regenerar los comandos`
+      y comprobar que avisa «comandos de barra al día», que la vista se
+      refresca sin el aviso y que el archivo recuperó la ruta buena.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece

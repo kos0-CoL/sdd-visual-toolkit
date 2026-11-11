@@ -290,6 +290,12 @@ function ejecutar(cliArgs) {
     validarYTerminal(dir, argv);
     return;
   }
+  /* Regenerar los comandos de barra cambia lo que avisa la vista, así que se
+   * refresca al terminar en vez de esperar al intervalo. */
+  if (argv[0] === 'comandos') {
+    correr(dir, argv, { avisoExito: 'comandos de barra al día', refrescar: true });
+    return;
+  }
   correr(dir, argv);
 }
 
@@ -521,11 +527,15 @@ class VistaFases {
      * la vista no lee archivos generados por su cuenta. */
     const avisos = (d.avisos && d.avisos.skills) || { total: 0, rutas: [] };
     if (avisos.total > 0) {
-      const hijos = (avisos.rutas || []).map((r) =>
-        item(`${r.archivos} archivo(s) → ${r.ruta}`, null, 'warning'));
+      /* La primera fila arregla: `comandos --regenerar` reescribe solo los
+       * clientes ya instalados, con la ruta de la copia en uso. */
+      const hijos = [
+        item('↻ Regenerar los comandos', ['comandos', '--regenerar'], 'refresh'),
+      ].concat((avisos.rutas || []).map((r) =>
+        item(`${r.archivos} archivo(s) → ${r.ruta}`, null, 'warning')));
       const nodo = grupo(
         `⚠️ Comandos de barra desactualizados: ${avisos.total}`, hijos);
-      nodo.tooltip = 'Regenere con `toolkit comandos`; la ruta grabada ya no existe.';
+      nodo.tooltip = 'Clic en «Regenerar los comandos» para reescribirlos con la ruta actual.';
       raiz.unshift(nodo);
     }
     const fases = (d.arbol || []).map((n) => conArtefacto(

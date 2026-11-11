@@ -229,7 +229,9 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("Comandos de barra desactualizados", fuente)
         self.assertIn("avisos.rutas", fuente)
         self.assertIn("raiz.unshift(nodo)", fuente)
-        self.assertIn("toolkit comandos", fuente)
+        self.assertIn("'↻ Regenerar los comandos'", fuente)
+        self.assertIn("['comandos', '--regenerar']", fuente)
+        self.assertIn("avisoExito: 'comandos de barra al día'", fuente)
 
     def test_init_avisa_y_refresca(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")

@@ -237,6 +237,49 @@ class TestCLIComandos(unittest.TestCase):
         self.assertTrue(esperada.is_file())
 
 
+class TestRegenerar(unittest.TestCase):
+    """`comandos --regenerar` reescribe solo los clientes ya instalados."""
+
+    def setUp(self):
+        from core import agent_commands  # noqa: PLC0415 — solo para estas pruebas
+        self.agent_commands = agent_commands
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name) / "proyecto"
+        self.pi = (Path(agent_commands.__file__).resolve().parents[1]
+                   / "cli" / "main.py")
+
+    def _cli(self, *args):
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = cli_main.main(["--root", str(self.root), *args])
+        return codigo, salida.getvalue()
+
+    def test_reescribe_solo_lo_instalado(self):
+        self.assertEqual(self._cli("init", "--sin-comandos")[0], 0)
+        self.assertEqual(self._cli("comandos", "--cliente", "cursor")[0], 0)
+        generados = list((self.root / ".cursor" / "commands").glob("*.md"))
+        self.assertEqual(len(generados), 14)
+        for ruta in generados:
+            ruta.write_text(ruta.read_text(encoding="utf-8").replace(
+                str(self.pi), "/tmp/toolkit-viejo/cli/main.py"),
+                encoding="utf-8")
+        self.assertTrue(self.agent_commands.rutas_muertas(self.root))
+
+        codigo, salida = self._cli("comandos", "--regenerar")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("cursor", salida)
+        self.assertEqual(self.agent_commands.rutas_muertas(self.root), {})
+        for ajena in (".claude", ".github", ".windsurf", ".agents"):
+            self.assertFalse((self.root / ajena).exists(), ajena)
+
+    def test_sin_nada_instalado_avisa(self):
+        self.assertEqual(self._cli("init", "--sin-comandos")[0], 0)
+        codigo, salida = self._cli("comandos", "--regenerar")
+        self.assertEqual(codigo, 1)
+        self.assertIn("no hay comandos de barra", salida)
+
+
 class TestStatusAvisaSkills(unittest.TestCase):
     """El aviso llega solo: nadie va a acordarse de correr `--verificar`."""
 

@@ -55,7 +55,17 @@ def despachar(args) -> int:
     raiz = _raiz(args)
     if getattr(args, "verificar", False):
         return _verificar(raiz)
-    clientes = getattr(args, "cliente", None) or list(agent_commands.CLIENTES)
+    clientes = list(getattr(args, "cliente", None) or [])
+    if getattr(args, "regenerar", False):
+        # Solo los clientes que ya tienen archivos: regenerar no debe estrenar
+        # carpetas que el usuario nunca pidió.
+        clientes = sorted(agent_commands.instalados(raiz))
+        if not clientes:
+            print("⛔ no hay comandos de barra que regenerar en este proyecto")
+            print(f"  genérelos con: {_sugerencia()} --cliente copilot")
+            return 1
+    if not clientes:
+        clientes = list(agent_commands.CLIENTES)
     # El proyecto del usuario no tiene la CLI dentro: se hornea su ruta
     # absoluta, igual que la extensión necesita `sddToolkit.cliPath`.
     cli = _cli_actual()
