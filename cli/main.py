@@ -98,7 +98,7 @@ def cmd_init(args) -> int:
         raiz, Path(__file__).resolve(), sys.executable or "python3")
     print(f"🟢 PROYECTO INICIALIZADO: {raiz}")
     print("Estado:")
-    print("✓ .specify/ (estado, memoria, checkpoints, historial)")
+    print("✓ .specify/ (memoria con estado e historial, checkpoints)")
     print("✓ .specify/planes/ .specify/tareas/ .specify/informes/")
     print("✓ specs/ (SPEC-001.md y su .json)")
     if escritos:

@@ -35,6 +35,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `init` tampoco deja un `current_task.json` ni un `execution_history.jsonl`
+  en `.specify/`: el journal escribe el estado y el historial en
+  `.specify/memory/`, así que la copia de la raíz nunca se actualizaba. El
+  flujo del IDE apunta al historial real (`memory/execution_history.jsonl`).
 - `init` ya no deja `plans/` ni `tasks/` en la raíz: nadie escribía ahí,
   porque `plan`, `tasks` y `analyze` guardan bajo `.specify/`. Ahora crea
   `.specify/planes/`, `.specify/tareas/` y `.specify/informes/`, y la salida
