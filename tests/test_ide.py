@@ -222,6 +222,16 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("conArtefacto(item(`📍 Fase: ${d.fase}`", cuerpo)
         self.assertIn(".map((n) => conArtefacto(", cuerpo)
 
+    def test_el_paquete_lleva_licencia_y_lo_que_no_viaja(self):
+        """Sin LICENSE y sin .vscodeignore, `vsce` avisa en cada empaquetado."""
+        self.assertTrue((IDE / "LICENSE").is_file())
+        ignorados = (IDE / ".vscodeignore").read_text(encoding="utf-8")
+        self.assertIn(".vscodeignore", ignorados)
+        self.assertEqual(
+            Path("LICENSE").read_text(encoding="utf-8"),
+            (IDE / "LICENSE").read_text(encoding="utf-8"),
+            "la licencia de la extensión se separó de la del repo")
+
     def test_la_vista_avisa_de_skills_con_ruta_muerta(self):
         """El aviso lo calcula `export`; la extensión solo lo pinta."""
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")

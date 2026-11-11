@@ -1,0 +1,5 @@
+# El paquete es la extensión y su licencia: nada más viaja en el .vsix.
+.vscodeignore
+*.vsix
+**/.git*
+**/__pycache__
