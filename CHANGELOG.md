@@ -30,7 +30,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La paleta de VS Code muestra el resultado de `init` como notificación en
   vez de dejarlo en el terminal: cuando la CLI sale con 1 (por ejemplo, ya
   hay un proyecto por encima) el aviso se perdía al fondo y el comando
-  parecía no haber hecho nada. Al terminar refresca la vista y la barra.
+  parecía no haber hecho nada. Al terminar refresca la vista y la barra, y
+  cuando falla el aviso ofrece «Ver salida», que abre el canal `SDD Toolkit`
+  con la orden, el código y la salida completa.
 
 ## [0.1.5] — 2026-11-11
 

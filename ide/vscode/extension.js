@@ -65,6 +65,8 @@ function terminal() {
 /* Lo conecta `activate` para refrescar la vista y la barra tras cambiar el
  * estado fuera del terminal. */
 let refrescar = () => {};
+/* Canal de salida: la notificación lleva una línea y el resto cabe aquí. */
+let canal = null;
 
 /* La CLI empieza sus avisos con 🟢 o ⛔: en una notificación sobra el símbolo.
  * Van en alternancia y no en una clase: 🟢 está fuera del BMP y una clase sin
@@ -72,6 +74,16 @@ let refrescar = () => {};
 function primeraLinea(texto) {
   const linea = (texto || '').split('\n').find((l) => l.trim()) || '';
   return linea.replace(/^(?:🟢|⛔)\s*/, '').trim();
+}
+
+/* «Ver salida» de la notificación: la orden exacta y todo lo que imprimió la
+ * CLI, que es lo que hace falta para reproducir el fallo. */
+function mostrarSalida(orden, codigo, texto) {
+  if (!canal) canal = vscode.window.createOutputChannel('SDD Toolkit');
+  canal.clear();
+  canal.appendLine(`$ ${orden}   (código ${codigo})`);
+  canal.appendLine((texto || '').trim() || '(sin salida)');
+  canal.show(true);
 }
 
 /* `init` no va al terminal como el resto: si ya hay un proyecto toolkit por
@@ -84,8 +96,15 @@ function inicializar(dir) {
     { cwd: dir, timeout: 30000 }, (err, stdout, stderr) => {
       const aviso = primeraLinea(stdout) || primeraLinea(stderr);
       if (err) {
-        vscode.window.showErrorMessage(
-          'SDD: ' + (aviso || `init falló (${err.code || 'error'})`));
+        const completo = [stdout, stderr].filter(Boolean).join('\n');
+        const orden = `${python} "${cli}" --root "${dir}" init`;
+        Promise.resolve(vscode.window.showErrorMessage(
+          'SDD: ' + (aviso || `init falló (${err.code || 'error'})`),
+          'Ver salida')).then((elegido) => {
+          if (elegido === 'Ver salida') {
+            mostrarSalida(orden, err.code, completo);
+          }
+        });
         return;
       }
       refrescar();
