@@ -516,11 +516,25 @@ class VistaFases {
         .filter(Boolean).join(' · ');
       return it;
     };
+    /* Cada fila lleva su argv: `tasks` pide PLAN-ID (no el SPEC) y `reporte`
+     * exige TASK-ID o `--history PLAN-ID`. El ID de pruebas ya viene en la
+     * etiqueta; si no está, se muestra el historial del plan. El `export` solo
+     * trae `plan_id` a veces, así que se toma también de la navegación, que ya
+     * lo nombra («build PLAN-001»). */
+    const pistas = [d.plan_id, nav.recomendada]
+      .concat((nav.pildoras || []).map((p) => p && p.comando))
+      .filter(Boolean).join(' ');
+    const planId = (pistas.match(/PLAN-\d+/) || [])[0] || null;
+    const tareaDePruebas = (String(d.pruebas || '').match(/\((TASK-\d+)\)/) || [])[1];
+    const reportePruebas = tareaDePruebas
+      ? `reporte ${tareaDePruebas}`
+      : (planId ? `reporte --history ${planId}` : null);
     const raiz = [
       conArtefacto(item(`📍 Fase: ${d.fase}`, 'tablero', 'milestone'), d.fase),
-      item(`Progreso: ${d.progreso.hechas}/${d.progreso.total}`, d.spec_id ? `tasks ${d.spec_id}` : 'tablero', 'checklist'),
+      item(`Progreso: ${d.progreso.hechas}/${d.progreso.total}`,
+        planId ? `tasks --list ${planId}` : 'tablero', 'checklist'),
       item(`Tarea actual: ${d.tarea_actual || '—'}`, d.tarea_actual ? `context ${d.tarea_actual}` : 'tablero', 'play'),
-      item(`Pruebas: ${d.pruebas}`, 'reporte', 'beaker'),
+      item(`Pruebas: ${d.pruebas}`, reportePruebas || 'tablero', 'beaker'),
     ];
     if (nav.recomendada) {
       raiz.push(item(`➡ Siguiente: ${nav.recomendada}`, nav.recomendada, 'arrow-right'));

@@ -172,6 +172,19 @@ const textos = (nodos) => nodos.map((n) => n.label);
   check('vista: tarea actual vacía', etiquetas.includes('Tarea actual: —'));
   check('vista: pruebas', etiquetas.some((t) => String(t).startsWith('Pruebas: ✅ P=2 F=0 cob=100%')));
   check('vista: siguiente', etiquetas.includes('➡ Siguiente: build PLAN-001'));
+  /* Cada fila clicable lleva un argv coherente: mirar solo la etiqueta dejó
+   * pasar `tasks SPEC-001` y un `reporte` sin ID. */
+  const argvDe = (prefijo) => {
+    const nodo = raiz.find((n) => String(n.label).startsWith(prefijo));
+    return nodo && nodo.command ? String(nodo.command.arguments[0]) : null;
+  };
+  check('vista: «Progreso» pide las tareas del plan',
+    argvDe('Progreso:') === 'tasks --list PLAN-001', argvDe('Progreso:'));
+  check('vista: «Pruebas» pide el reporte de la tarea',
+    argvDe('Pruebas:') === 'reporte TASK-001', argvDe('Pruebas:'));
+  check('vista: «Tarea actual» sin tarea abre el tablero',
+    argvDe('Tarea actual:') === 'tablero', argvDe('Tarea actual:'));
+
   /* El `📍 Fase` llega con emoji (`🧪 Pruebas`) y el flujo usa el nombre
    * pelado: si no se comparan sin marcas, el clic derecho no ofrece nada. */
   const filaFase = raiz[0];
