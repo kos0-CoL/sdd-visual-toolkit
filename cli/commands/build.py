@@ -22,6 +22,7 @@ from core.journal import (
     nuevo_run_id,
     registrar,
 )
+from core.plan import PlanError
 from core.build import (
     COMPLETADA,
     BuildError,
@@ -43,6 +44,10 @@ def _raiz(args):
 
 
 def _exigir_gate4(raiz, plan_id: str) -> None:
+    # Un plan que no existe no tiene informe pendiente: decirlo así evita
+    # mandar a `analyze` con un ID que tampoco existe.
+    if plan_id not in mod_plan._indice(raiz):
+        raise PlanError(f"plan inexistente: {plan_id}")
     try:
         informe = mod_analyze._indice(raiz).get(plan_id)
     except store.StoreError as error:
@@ -144,7 +149,7 @@ def cmd_build_avanzar(args) -> int:
         print(tarjeta_pin(siguiente, spec))
         print(f"\n▶ {siguiente.id} en curso. Implemente, luego "
               f"`build {plan.plan_id} --done {siguiente.id}`.")
-    except (BuildError, store.StoreError) as error:
+    except (BuildError, PlanError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     return 0
@@ -196,7 +201,7 @@ def cmd_build_done(args) -> int:
                             args.nota or "")
             guardar_checkpoint(raiz, plan.plan_id, cp)  # RF-12: artefacto durable
         _sincronizar_estado(raiz, plan, spec, tareas)
-    except (BuildError, store.StoreError) as error:
+    except (BuildError, PlanError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     if evento["evento"] == "completada":
@@ -233,7 +238,7 @@ def cmd_build_fail(args) -> int:
                   f"Archivos restaurados ({carpeta.name}), estrategia "
                   "registrada como prohibida. Reinicie con otra solución.")
         _sincronizar_estado(raiz, plan, spec, tareas)
-    except (BuildError, store.StoreError) as error:
+    except (BuildError, PlanError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     print(f"📝 {tarea.id} fallida registrada (intento {tarea.intentos}): {args.nota}")
