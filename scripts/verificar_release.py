@@ -20,9 +20,9 @@ Comprueba en un solo comando, para una versión dada:
    a otro repositorio.
 
 Con `--previo` comprueba lo que se puede saber **antes** de crear el tag
-(tag libre, árbol limpio, `HEAD` en `origin/main`, versión y CHANGELOG en el
-árbol, `[No publicado]` vacía, notas con enlaces al tag futuro y versión
-posterior a la última etiquetada).
+(tag libre, árbol limpio, `HEAD` en `origin/main` y con el CI en verde,
+versión y CHANGELOG en el árbol, `[No publicado]` vacía, notas con enlaces al
+tag futuro y versión posterior a la última etiquetada).
 
 Uso:
 
@@ -201,6 +201,35 @@ def _tag_remoto(correr_comando: Callable[[list[str]], Salida],
                            f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}"])
 
 
+def _ci_verde(commit: str, correr_comando: Callable[[list[str]], Salida],
+              ) -> tuple[bool, str]:
+    """Todos los checks del commit terminados y en verde."""
+    corte = commit[:7] or "desconocido"
+    checks = correr_comando([
+        "gh", "api", f"repos/{{owner}}/{{repo}}/commits/{commit}/check-runs",
+        "--jq", ".check_runs | map({name, status, conclusion})"])
+    if checks.codigo != 0:
+        return False, (f"no se pudo leer el CI de {corte}: "
+                       f"{checks.stderr or checks.stdout}")
+    try:
+        corridas = json.loads(checks.stdout or "[]")
+    except json.JSONDecodeError:
+        return False, f"gh devolvió datos ilegibles sobre el CI de {corte}"
+    pendientes = [c.get("name") or "?" for c in corridas
+                  if c.get("status") != "completed"]
+    rojos = [f"{c.get('name') or '?'} ({c.get('conclusion')})"
+             for c in corridas
+             if c.get("status") == "completed"
+             and c.get("conclusion") != "success"]
+    if not corridas:
+        return False, f"el commit {corte} no tiene checks"
+    if pendientes:
+        return False, f"CI de {corte} sin terminar: {', '.join(pendientes)}"
+    if rojos:
+        return False, f"CI de {corte} no está verde: {', '.join(rojos)}"
+    return True, f"{len(corridas)} checks verdes en {corte}"
+
+
 def _notas_del_arbol(tag: str, raiz: Path) -> Salida:
     """Notas de la release leídas del árbol, para los tags legado."""
     ruta = raiz / "docs" / f"release-notes-{tag}.md"
@@ -268,6 +297,9 @@ def verificar_previo(version: str,
                       "etiquetar")
     else:
         anotar(True, "HEAD en main y sincronizado con origin")
+
+    if cabeza:
+        anotar(*_ci_verde(cabeza, correr_comando))
 
     try:
         datos = tomllib.loads(
@@ -369,35 +401,7 @@ def verificar(version: str,
            f"tag {tag} en origin coincide con el local" if en_remoto
            else f"falta el tag {tag} en origin")
 
-    corte = pelado[:7] or "desconocido"
-    checks = correr_comando([
-        "gh", "api", f"repos/{{owner}}/{{repo}}/commits/{pelado}/check-runs",
-        "--jq", ".check_runs | map({name, status, conclusion})"])
-    if checks.codigo != 0:
-        anotar(False, f"no se pudo leer el CI de {corte}: "
-                      f"{checks.stderr or checks.stdout}")
-    else:
-        try:
-            corridas = json.loads(checks.stdout or "[]")
-        except json.JSONDecodeError:
-            anotar(False, f"gh devolvió datos ilegibles sobre el CI de {corte}")
-        else:
-            pendientes = [c.get("name") or "?" for c in corridas
-                          if c.get("status") != "completed"]
-            rojos = [f"{c.get('name') or '?'} ({c.get('conclusion')})"
-                     for c in corridas
-                     if c.get("status") == "completed"
-                     and c.get("conclusion") != "success"]
-            if not corridas:
-                anotar(False, f"el commit {corte} no tiene checks")
-            elif pendientes:
-                anotar(False, f"CI de {corte} sin terminar: "
-                              f"{', '.join(pendientes)}")
-            elif rojos:
-                anotar(False, f"CI de {corte} no está verde: "
-                              f"{', '.join(rojos)}")
-            else:
-                anotar(True, f"{len(corridas)} checks verdes en {corte}")
+    anotar(*_ci_verde(pelado, correr_comando))
 
     toml = correr_comando(["git", "show", f"{tag}:pyproject.toml"])
     version_tag = _VERSION_TOML.search(toml.stdout)

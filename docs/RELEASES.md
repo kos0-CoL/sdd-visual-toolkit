@@ -43,7 +43,8 @@ las notas.
    ```
 
    Revisa que el tag esté libre en local y en `origin` (son inmutables), que
-   el árbol esté limpio, que `HEAD` sea `origin/main`, que `pyproject.toml` y
+   el árbol esté limpio, que `HEAD` sea `origin/main` y que ese commit tenga
+   todos sus checks terminados y en verde, que `pyproject.toml` y
    la primera sección con fecha del CHANGELOG coincidan con la versión, que
    `[No publicado]` quede vacía, que los enlaces del pie del CHANGELOG
    apunten a la versión nueva, que las notas existan con enlaces al tag y que
