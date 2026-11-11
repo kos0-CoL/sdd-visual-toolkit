@@ -96,11 +96,19 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       `specs/SPEC-001.md`, y un clic en Aclaraciones ejecuta `clarify
       SPEC-001`. En un proyecto vacío, las filas sin ID no ofrecen clic.
 - [ ] Clic derecho en una fase del `Flujo SDD` con artefacto: *Abrir artefacto
-      de la fase* abre `specs/SPEC-001.md` en vista previa, el plan y el
-      informe en su `.md`, y `Recuperación` revela `.specify/checkpoints` en el
-      explorador. En una fase sin ejecutar, la notificación dice qué ruta
-      falta y no abre nada. En `Enriquecimiento` o `Recuperación` sin archivo,
-      el menú no aparece.
+      de la fase* abre `specs/SPEC-001.md` en vista previa, los JSON de
+      `Enriquecimiento`, `Aclaraciones`, `Implementación` y `Pruebas` en su
+      archivo, y `Recuperación` revela `.specify/checkpoints` en el explorador.
+      En una fase sin ejecutar, la notificación dice qué ruta falta y no abre
+      nada.
+
+      **Con el fixture de 0.1.0 no se pueden probar los `.md` de plan, tareas
+      e informe**: el proyecto trae `.specify/planes/PLAN-001.json` y
+      `.specify/tareas/TASKS-PLAN-001.json` sin sus `.md`, y no tiene
+      `.specify/informes/`, así que `Arquitectura`, `Tareas` y `Análisis`
+      aparecen sin artefacto y sin clic derecho. Eso es lo correcto con el
+      estado del fixture; para probar esos tres `.md` hace falta un proyecto
+      con el flujo corrido de punta a punta.
 - [ ] Clic derecho en `SDD → Fases y tareas`: sobre `📍 Fase: …` y sobre la
       fila de esa misma fase en *Árbol de estados* aparece *Abrir artefacto de
       la fase* y abre el mismo archivo que desde el flujo; en las fases sin
@@ -110,8 +118,10 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       recargar y comprobar que `Fases y tareas` abre con
       `⚠️ Comandos de barra desactualizados: 1` y que el hijo dice cuántos
       archivos apuntan a esa ruta. Hacer clic en `↻ Regenerar los comandos`
-      y comprobar que avisa «comandos de barra al día», que la vista se
-      refresca sin el aviso y que el archivo recuperó la ruta buena.
+      y comprobar que la notificación muestra la primera línea de la CLI
+      —`SDD: 🧩 copilot: 14 comando(s) en .github/prompts/{nombre}.prompt.md`,
+      no un texto propio de la extensión—, que la vista se refresca sin el
+      aviso y que el archivo recuperó la ruta buena.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece

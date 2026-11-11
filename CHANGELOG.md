@@ -11,6 +11,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La extensión lleva su `LICENSE` (copia del del repo) y un `.vscodeignore`:
   `vsce` empaqueta solo `extension.js`, `package.json`, el `readme.md` y la
   licencia, sin avisos de archivos faltantes ni de sobrantes.
+- La checklist manual corrige dos esperados que no coincidían con el editor:
+  al regenerar los comandos la notificación muestra la primera línea de la CLI
+  (`🧩 copilot: 14 comando(s)…`), no un texto propio, y el fixture de 0.1.0 no
+  permite abrir los `.md` de plan, tareas e informe porque solo trae sus JSON y
+  no tiene `.specify/informes/`.
 - `scripts/verificar_vsix.py` revisa un `.vsix`: manifiesto y extensión
   presentes, ningún archivo vacío, sin `.vscodeignore` ni `.vsix` dentro y sin
   sobrantes en `extension/`. Antes solo se sabía abriendo el zip a mano.
