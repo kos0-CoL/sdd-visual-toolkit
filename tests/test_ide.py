@@ -88,6 +88,10 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("'--root', dir, 'init'", cuerpo)
         self.assertIn("showErrorMessage", cuerpo)
         self.assertIn("showInformationMessage", cuerpo)
+        # El aviso ofrece la salida completa de la CLI, no solo su primera línea.
+        self.assertIn("'Ver salida'", cuerpo)
+        self.assertIn("mostrarSalida", cuerpo)
+        self.assertIn("createOutputChannel", fuente)
         # El resto de comandos sigue yendo al terminal, tras el desvío de init.
         corrida = re.search(r"function ejecutar\(cliArgs\).*?\n\}", fuente, re.S)
         self.assertIsNotNone(corrida, "falta el despacho de comandos")

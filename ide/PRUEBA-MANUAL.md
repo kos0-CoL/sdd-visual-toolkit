@@ -64,7 +64,9 @@ La ruta de `--root` va **antes** del subcomando.
 - [ ] `SDD: Inicializar proyecto` con la carpeta abierta dentro de otro
       proyecto (`/tmp/sdd-manual/sub`): notificación de error con
       `YA HAY UN PROYECTO TOOLKIT POR ENCIMA: /tmp/sdd-manual` y ningún
-      `.specify/` nuevo en `sub/`.
+      `.specify/` nuevo en `sub/`. El botón `Ver salida` abre el canal
+      `SDD Toolkit` con la orden, el código y lo que imprimió la CLI;
+      cerrar la notificación sin pulsarlo no abre nada.
 - [ ] CLI rota: poner `sddToolkit.python` en algo inexistente y comprobar
       que la vista cae en `⛔ sin inicializar o CLI no disponible` y la barra
       se oculta. Restaurar el valor.
