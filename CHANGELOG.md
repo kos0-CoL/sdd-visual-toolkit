@@ -17,6 +17,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- El verificador solo miraba los enlaces `blob` de las notas y dejaba pasar
+  el resto: un relativo o un `/tree/` no lo hacían fallar. Ahora todo enlace
+  a un repositorio debe ser `blob` del tag en el repositorio propio, y se
+  rechazan los relativos, los `tree` y los que apuntan a otro repositorio.
 - Las notas de 0.1.0 enlazaban en relativo y la página de la release los
   resolvía contra la raíz del repo: los cuatro daban 404. Ahora apuntan a
   `blob/v0.1.0`, y el verificador compara esa versión con las notas del árbol

@@ -99,9 +99,12 @@ Revisa, para `vX.Y.Z`:
 5. que el cuerpo publicado es el de `docs/release-notes-vX.Y.Z.md`, sin
    contar espacios ni saltos finales: si se creó sin `--notes-file`, GitHub
    autogenera un «What's Changed» y las notas del repo no se leen;
-6. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
-   apunta al tag —no a `main`, que sigue avanzando— y que la ruta existe en
-   esa ref.
+6. que todo enlace de `docs/release-notes-vX.Y.Z.md` a un repositorio sea
+   `.../blob/<tag>/<ruta>` en este mismo repositorio, con la ruta existente
+   en esa ref —no en `main`, que sigue avanzando—: se rechazan los relativos,
+   los `/tree/`, otras refs y los enlaces a otro repositorio. Sin `blob` solo
+   pasan las páginas de GitHub que no son ficheros (`compare`, `commits`,
+   `releases`, `tags`) y el `git clone` de un bloque de código.
 
 `v0.1.0` es la excepción documentada: sus notas enlazaban en relativo, GitHub
 las resolvía contra la raíz del repo y las cuatro daban 404, y su tag no se
