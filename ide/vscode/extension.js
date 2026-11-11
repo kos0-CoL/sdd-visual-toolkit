@@ -378,6 +378,7 @@ class VistaFlujo {
     return nodo;
   }
   async getChildren() {
+    const dir = carpeta();
     const { doc, error } = await cargarDoc();
     if (!doc) {
       const it = new vscode.TreeItem('⛔ ' + error,
@@ -393,7 +394,13 @@ class VistaFlujo {
       it.tooltip = [
         fila.skill ? `skill /${fila.skill}` : 'sin skill',
         fila.artefacto || 'sin artefacto',
-      ].join(' · ');
+        fila.artefacto ? 'clic derecho: abrir el artefacto' : '',
+      ].filter(Boolean).join(' · ');
+      /* El clic normal ejecuta el comando de la fase; el secundario abre el
+       * artefacto. `_artefacto` es relativo a la raíz del proyecto. */
+      it.contextValue = fila.artefacto ? 'sddFaseConArtefacto' : 'sddFaseSinArtefacto';
+      it._artefacto = fila.artefacto || null;
+      it._raiz = dir;
       if (fila.comando) {
         it.command = {
           command: 'sdd.ejecutar',
@@ -404,6 +411,40 @@ class VistaFlujo {
       return it;
     });
   }
+}
+
+/* Clic secundario en el flujo: abre el artefacto que dejó la fase. Si la fase
+ * todavía no lo escribió se dice cuál falta; no se crea nada vacío. */
+async function abrirArtefacto(nodo) {
+  const relativo = nodo && nodo._artefacto;
+  const dir = (nodo && nodo._raiz) || carpeta();
+  if (!relativo) {
+    vscode.window.showInformationMessage('SDD: esta fase no deja artefacto.');
+    return;
+  }
+  if (!dir) {
+    vscode.window.showErrorMessage('SDD: abra una carpeta primero.');
+    return;
+  }
+  const ruta = path.isAbsolute(relativo) ? relativo : path.join(dir, relativo);
+  const uri = vscode.Uri.file(ruta);
+  let info;
+  try {
+    info = await vscode.workspace.fs.stat(uri);
+  } catch (error) {
+    vscode.window.showWarningMessage(
+      `SDD: ${relativo} todavía no existe; ejecute la fase primero.`);
+    return;
+  }
+  if (info.type === vscode.FileType.Directory) {
+    await vscode.commands.executeCommand('revealInExplorer', uri);
+    return;
+  }
+  if (/\.md$/i.test(ruta)) {
+    await vscode.commands.executeCommand('markdown.showPreview', uri);
+    return;
+  }
+  await vscode.commands.executeCommand('vscode.open', uri);
 }
 
 /* Vista lateral desde `toolkit export` (contrato RF-38). */
@@ -476,6 +517,10 @@ function activate(contexto) {
   /* Ejecutor genérico para los nodos clicables de la vista lateral. */
   contexto.subscriptions.push(
     vscode.commands.registerCommand('sdd.ejecutar', (cliArgs) => ejecutar(cliArgs))
+  );
+  /* Menú contextual del panel de flujo. */
+  contexto.subscriptions.push(
+    vscode.commands.registerCommand('sdd.abrirArtefacto', (nodo) => abrirArtefacto(nodo))
   );
   const vista = new VistaFases();
   const flujo = new VistaFlujo();

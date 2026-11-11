@@ -85,7 +85,14 @@
       {"command": "sdd.restricciones", "title": "SDD: Panel de restricciones"},
       {"command": "sdd.diff", "title": "SDD: Visual AST diff"},
       {"command": "sdd.export", "title": "SDD: Foto JSON (export)"},
-      {"command": "sdd.actualizar", "title": "SDD: Actualizar vista lateral"}
-    ]
+      {"command": "sdd.actualizar", "title": "SDD: Actualizar vista lateral"},
+      {"command": "sdd.abrirArtefacto", "title": "SDD: Abrir artefacto de la fase", "icon": "$(file-symlink-file)"}
+    ],
+    "menus": {
+      "view/item/context": [
+        {"command": "sdd.abrirArtefacto", "when": "view == sddFlujo && viewItem == sddFaseConArtefacto", "group": "inline@1"},
+        {"command": "sdd.abrirArtefacto", "when": "view == sddFlujo && viewItem == sddFaseConArtefacto", "group": "navigation@1"}
+      ]
+    }
   }
 }
