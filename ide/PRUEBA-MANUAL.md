@@ -99,9 +99,12 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       `specs/SPEC-001.md`, y un clic en Aclaraciones ejecuta `clarify
       SPEC-001`. En un proyecto vacío, las filas sin ID no ofrecen clic.
 - [ ] Clic derecho en una fase del `Flujo SDD` con artefacto: *Abrir artefacto
-      de la fase* abre `specs/SPEC-001.md` en vista previa, los JSON de
-      `Enriquecimiento`, `Aclaraciones`, `Implementación` y `Pruebas` en su
-      archivo, y `Recuperación` revela `.specify/checkpoints` en el explorador.
+      de la fase* abre `specs/SPEC-001.md` en vista previa, los `.md` de
+      `Arquitectura` (`.specify/planes/PLAN-001.md`), `Tareas`
+      (`.specify/tareas/TASKS-PLAN-001.md`) y `Análisis`
+      (`.specify/informes/INFORME-PLAN-001.md`), los JSON de `Enriquecimiento`,
+      `Aclaraciones`, `Implementación` y `Pruebas` en su archivo, y
+      `Recuperación` revela `.specify/checkpoints` en el explorador.
       En una fase sin ejecutar, la notificación dice qué ruta falta y no abre
       nada.
 

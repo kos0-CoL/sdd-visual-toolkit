@@ -216,6 +216,24 @@ const textos = (nodos) => nodos.map((n) => n.label);
   check('clic derecho: vista previa del .md',
     abierto && /SPEC-001\.md$/.test(abierto.args[0].fsPath), abierto && abierto.args[0].fsPath);
 
+  /* 3b. Los tres `.md` que materializa la preparación (§0.1.0 solo trae JSON) */
+  const nodoDe = (fase) => flujo.find((n) => String(n.label).includes(fase));
+  for (const [fase, ruta] of [
+    ['Arquitectura', '.specify/planes/PLAN-001.md'],
+    ['Tareas', '.specify/tareas/TASKS-PLAN-001.md'],
+    ['Análisis', '.specify/informes/INFORME-PLAN-001.md'],
+  ]) {
+    const nodo = nodoDe(fase);
+    check(`materializado: ${fase}`,
+      nodo && nodo._artefacto === ruta, nodo && nodo._artefacto);
+  }
+  registros.ejecutados.length = 0;
+  await registros.comandos['sdd.abrirArtefacto'](nodoDe('Arquitectura'));
+  const planMd = registros.ejecutados.find((e) => e.id === 'markdown.showPreview');
+  check('clic derecho: el plan abre su .md',
+    planMd && /PLAN-001\.md$/.test(planMd.args[0].fsPath),
+    planMd && planMd.args[0].fsPath);
+
   /* 4. Fase sin artefacto (si queda alguna): avisa y no abre nada */
   const sinArtefacto = flujo.find((n) => !n._artefacto);
   if (sinArtefacto) {

@@ -11,6 +11,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La extensión lleva su `LICENSE` (copia del del repo) y un `.vscodeignore`:
   `vsce` empaqueta solo `extension.js`, `package.json`, el `readme.md` y la
   licencia, sin avisos de archivos faltantes ni de sobrantes.
+- El arnés comprueba además que los tres `.md` que materializa la preparación
+  son el artefacto de su fase en el flujo y que el plan se abre en vista
+  previa, que es el camino que antes no se podía ejercitar con el fixture.
 - La extensión tiene arnés propio: `tests/js/arnes_extension.js` carga el
   `extension.js` real con un stub de `vscode` y `tests/test_extension_headless.py`
   lo corre contra el fixture preparado (vista, paleta, clic derecho, fallos,
