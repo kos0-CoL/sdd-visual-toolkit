@@ -6,6 +6,14 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Corregido
+
+- El clic derecho sobre `📍 Fase` en `Fases y tareas` no ofrecía *Abrir
+  artefacto de la fase*: la fila compara `🧪 Pruebas` contra las claves de
+  `flujo` (`Pruebas`) y no encontraba el artefacto. Ahora compara sin emoji,
+  tildes ni mayúsculas, y el arnés exige que esa fila traiga `contextValue`,
+  `_artefacto` y el aviso en el tooltip (43 comprobaciones).
+
 ### Añadido
 
 - La extensión lleva su `LICENSE` (copia del del repo) y un `.vscodeignore`:
@@ -16,7 +24,7 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   invocaciones a la CLI (medido: 30,2 s frente a 38,7 s). Con `-q` sin filtro
   se sigue corriendo todo, también en CI.
 - Primera pasada **dentro de un editor**: la extensión `0.1.5` en VS Code
-  1.142.0, sobre un perfil aislado, con seis casillas de 29 en verde (barra de
+  1.142.0, sobre un perfil aislado, con ocho casillas de 29 en verde (barra de
   estado y tooltip, `Fases y tareas`, `Flujo SDD` con tooltip, clic derecho a
   `Preview PLAN-001.md`, paleta `status` y fallo de `build PLAN-999`). Las demás
   siguen sin marcar y no se promueve ninguna fila a `✅ verificado`.

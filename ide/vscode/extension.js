@@ -496,11 +496,18 @@ class VistaFases {
     const nav = d.navegacion || {};
     /* El artefacto de cada fase vive en `flujo`: se reutiliza aquí para que el
      * clic derecho abra lo mismo desde las dos vistas. */
+    /* `d.fase` llega con su emoji («🧪 Pruebas») y el flujo usa el nombre
+     * pelado: se comparan sin marcas, tildes ni mayúsculas para que el clic
+     * derecho abra lo mismo desde `📍 Fase` que desde `Árbol de estados`. */
+    const sinMarca = (texto) => String(texto || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Za-z0-9 ]/g, '')
+      .replace(/\s+/g, ' ').trim().toLowerCase();
     const artefactos = new Map((d.flujo || [])
       .filter((fila) => fila.artefacto)
-      .map((fila) => [fila.fase, fila.artefacto]));
+      .map((fila) => [sinMarca(fila.fase), fila.artefacto]));
     const conArtefacto = (it, fase) => {
-      const relativo = artefactos.get(fase);
+      const relativo = artefactos.get(sinMarca(fase));
       if (!relativo) return it;
       it.contextValue = 'sddFaseConArtefacto';
       it._artefacto = relativo;

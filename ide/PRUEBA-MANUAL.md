@@ -27,7 +27,10 @@ Ese mismo día hubo una segunda pasada **dentro del editor**, sobre una instanci
 con perfil aislado. Se marcaron seis casillas de la superficie extensión —barra
 de estado con su tooltip, vista `Fases y tareas`, vista `Flujo SDD` con tooltip,
 clic derecho que abre `PLAN-001.md` en vista previa, paleta `SDD: Estado +
-siguiente` y el fallo de `build PLAN-999`—. El resto sigue sin marcar: progreso
+siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
+(`Arquitectura` → `PLAN-001.md`, `Especificación` → `SPEC-001.md`) y en
+`📍 Fase`, que **no aparecía** y quedó arreglado en esa misma pasada. El resto
+sigue sin marcar: progreso
 con «Cancelar», tope `timeoutMinutos`, `pin` de dos datos, vacíos y `Escape`,
 estado vacío, CLI rota y todas las de comandos de barra (no hay sesión de
 Copilot en ese perfil).
@@ -143,7 +146,7 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       artefacto. En un proyecto con SPEC, la fila Especificación muestra
       `specs/SPEC-001.md`, y un clic en Aclaraciones ejecuta `clarify
       SPEC-001`. En un proyecto vacío, las filas sin ID no ofrecen clic.
-- [ ] Clic derecho en una fase del `Flujo SDD` con artefacto: *Abrir artefacto
+- [x] Clic derecho en una fase del `Flujo SDD` con artefacto: *Abrir artefacto
       de la fase* abre `specs/SPEC-001.md` en vista previa, los `.md` de
       `Arquitectura` (`.specify/planes/PLAN-001.md`), `Tareas`
       (`.specify/tareas/TASKS-PLAN-001.md`) y `Análisis`
@@ -160,7 +163,7 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       renderizadores de la CLI y `analyze PLAN-001` crea el informe) sin mover
       el estado: sigue en `1/18` y `🧪 Pruebas`. Si se salta ese paso,
       `Arquitectura`, `Tareas` y `Análisis` aparecen sin artefacto.
-- [ ] Clic derecho en `SDD → Fases y tareas`: sobre `📍 Fase: …` y sobre la
+- [x] Clic derecho en `SDD → Fases y tareas`: sobre `📍 Fase: …` y sobre la
       fila de esa misma fase en *Árbol de estados* aparece *Abrir artefacto de
       la fase* y abre el mismo archivo que desde el flujo; en las fases sin
       artefacto no aparece.
