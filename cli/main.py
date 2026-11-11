@@ -68,11 +68,28 @@ def _guardar(raiz: Path, registro: RegistroRequerimientos) -> None:
     store.escribir_json(store.ruta_requerimientos(raiz), registro.to_list())
 
 
+def _proyecto_superior(destino: Path) -> Path | None:
+    """Proyecto toolkit ya inicializado por encima de `destino`, si lo hay.
+
+    `descubrir_raiz` sube hasta el `.specify/` más cercano, así que un segundo
+    estado dentro del primero dejaría dos raíces contradictorias.
+    """
+    for candidato in destino.parents:
+        if (candidato / store.SPECIFY_DIR).is_dir():
+            return candidato
+    return None
+
+
 def cmd_init(args) -> int:
     # `--root` es la opción global de todos los comandos (la extensión de VS
     # Code la pasa siempre); init la ignoraba y creaba .specify/ en la carpeta
     # actual. El path posicional, más específico, sigue mandando si se da.
-    destino = Path(args.path or getattr(args, "root", None) or ".")
+    destino = Path(args.path or getattr(args, "root", None) or ".").resolve()
+    superior = _proyecto_superior(destino)
+    if superior is not None:
+        print(f"⛔ YA HAY UN PROYECTO TOOLKIT POR ENCIMA: {superior}")
+        print("  no se crea .specify/ anidado: desde aquí ya mandan sus comandos.")
+        return 1
     raiz = store.inicializar_proyecto(destino)
     print(f"🟢 PROYECTO INICIALIZADO: {raiz}")
     print("Estado:")

@@ -23,6 +23,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   en la carpeta actual, así que `Inicializar proyecto` desde la paleta
   inicializaba una carpeta distinta de la abierta. El path posicional sigue
   mandando cuando se indica.
+- `init` se niega a crear un `.specify/` anidado cuando ya hay un proyecto
+  toolkit en una carpeta superior: los comandos suben hasta el estado más
+  cercano, así que el segundo dejaría dos raíces contradictorias. Volver a
+  inicializar el mismo proyecto sigue siendo inocuo.
 
 ## [0.1.5] — 2026-11-11
 
