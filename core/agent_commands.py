@@ -28,36 +28,54 @@ class Comando:
 
 
 # El orden es el del flujo SDD: es el que verá el usuario al tipear "/".
+#
+# Cada descripción dice qué hace y **cuándo usarlo**: en una skill es lo
+# único que el agente ve antes de decidir si la aplica (§30).
 COMANDOS: tuple[Comando, ...] = (
-    Comando("sdd", "Qué hacer ahora: tablero y próximo comando recomendado",
+    Comando("sdd", "Qué hacer ahora: tablero y próximo comando recomendado. "
+            "Úsalo al empezar o cuando no sepas qué paso toca.",
             "siguiente"),
-    Comando("sdd-status", "Estado del proyecto: fase, progreso y bloqueos",
-            "status"),
+    Comando("sdd-status", "Estado del proyecto: fase, progreso y bloqueos. "
+            "Úsalo para ver dónde está el trabajo antes de elegir el paso "
+            "siguiente.", "status"),
     # La idea va como un solo argumento: sin comillas, `enrich una idea`
     # termina en `unrecognized arguments`.
-    Comando("sdd-enrich", "Enriquecer una idea y dejarla pendiente de validar",
+    Comando("sdd-enrich", "Enriquecer una idea y dejarla pendiente de "
+            "validar. Úsalo cuando la idea cabe en una frase y hay que "
+            "convertirla en requerimientos.",
             "enrich", pista='idea entre comillas: "…"'),
-    Comando("sdd-specify", "Generar la SPEC a partir de un ENR validado",
-            "specify", pista="ENR-ID"),
-    Comando("sdd-clarify", "Responder las aclaraciones abiertas de una SPEC",
-            "clarify", pista="SPEC-ID"),
-    Comando("sdd-plan", "Generar el plan técnico de una SPEC aprobada",
-            "plan", pista="SPEC-ID"),
-    Comando("sdd-plan-gate", "Aprobar el plan y superar el Quality Gate",
-            "plan --gate", pista="PLAN-ID"),
-    Comando("sdd-tasks", "Desglosar el plan en tareas verificables",
-            "tasks", pista="PLAN-ID"),
-    Comando("sdd-analyze", "Informe de consistencia antes de implementar",
+    Comando("sdd-specify", "Generar la SPEC a partir de un ENR validado. "
+            "Úsalo cuando el requerimiento ya está aceptado y toca escribir "
+            "la especificación.", "specify", pista="ENR-ID"),
+    Comando("sdd-clarify", "Responder las aclaraciones abiertas de una "
+            "SPEC. Úsalo cuando quedan preguntas sin responder y no se "
+            "puede planificar.", "clarify", pista="SPEC-ID"),
+    Comando("sdd-plan", "Generar el plan técnico de una SPEC aprobada. "
+            "Úsalo cuando la SPEC está clara y hay que decidir arquitectura "
+            "y pasos.", "plan", pista="SPEC-ID"),
+    Comando("sdd-plan-gate", "Aprobar el plan y superar el Quality Gate. "
+            "Úsalo cuando el plan existe y falta la aprobación para "
+            "escribir tareas.", "plan --gate", pista="PLAN-ID"),
+    Comando("sdd-tasks", "Desglosar el plan en tareas verificables. Úsalo "
+            "cuando el plan está aprobado y hay que repartirlo en tareas "
+            "con prueba.", "tasks", pista="PLAN-ID"),
+    Comando("sdd-analyze", "Informe de consistencia antes de implementar. "
+            "Úsalo cuando las tareas ya existen y antes de tocar código.",
             "analyze", pista="PLAN-ID"),
-    Comando("sdd-build", "Poner la siguiente tarea en curso",
+    Comando("sdd-build", "Poner la siguiente tarea en curso. Úsalo cuando "
+            "quieres empezar o retomar la implementación de una tarea.",
             "build", pista="PLAN-ID"),
-    Comando("sdd-pin", "Congelar las interfaces de la tarea: línea base "
-            "y desviaciones", "pin", pista="PLAN-ID --task TASK-ID"),
-    Comando("sdd-test", "Correr el arnés de pruebas de una tarea",
+    Comando("sdd-pin", "Congelar las interfaces de la tarea: línea base y "
+            "desviaciones. Úsalo antes de editar archivos que otra tarea "
+            "también toca.", "pin", pista="PLAN-ID --task TASK-ID"),
+    Comando("sdd-test", "Correr el arnés de pruebas de una tarea. Úsalo "
+            "cuando la implementación está lista para medirse.",
             "test", pista="TASK-ID"),
-    Comando("sdd-traza", "Trazabilidad SPEC → test → evidencia",
+    Comando("sdd-traza", "Trazabilidad SPEC → test → evidencia. Úsalo "
+            "cuando piden demostrar qué cubre cada requerimiento.",
             "traza", pista="SPEC-ID"),
-    Comando("sdd-cierre", "Mensaje de cierre de la fase",
+    Comando("sdd-cierre", "Mensaje de cierre de la fase. Úsalo cuando la "
+            "tarea o el plan terminan y hay que entregar el resumen.",
             "cierre", pista="TASK-ID o PLAN-ID"),
 )
 

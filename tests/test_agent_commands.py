@@ -47,6 +47,14 @@ class TestCatalogo(unittest.TestCase):
             self.assertTrue(comando.descripcion.strip(), comando.nombre)
             self.assertNotIn("\n", comando.descripcion)
 
+    def test_la_descripcion_dice_cuando_usarlo(self):
+        """En una skill, la descripción es lo único que el agente ve antes de
+        decidir si la aplica: sin el «cuándo», compite a ciegas."""
+        for comando in agent_commands.COMANDOS:
+            self.assertIn("Úsalo ", comando.descripcion, comando.nombre)
+            self.assertLessEqual(len(comando.descripcion), 200,
+                                 f"demasiado larga para el menú: {comando.nombre}")
+
 
 class TestRender(unittest.TestCase):
     def test_cada_cliente_escribe_en_su_ruta(self):
@@ -105,9 +113,10 @@ class TestRender(unittest.TestCase):
         """`sdd-status` describe «Estado del proyecto: …»: el caso que rompía."""
         archivos = agent_commands.generar("claude", PYTHON, CLI)
         cabecera = archivos[".claude/skills/sdd-status/SKILL.md"].split("---\n")[1]
-        self.assertIn(
-            "description: 'Estado del proyecto: fase, progreso y bloqueos'",
-            cabecera)
+        comando = next(c for c in agent_commands.COMANDOS
+                       if c.nombre == "sdd-status")
+        self.assertIn(": ", comando.descripcion)
+        self.assertIn(f"description: '{comando.descripcion}'", cabecera)
 
     def test_cuerpo_invoca_la_cli_con_ruta_absoluta(self):
         for cliente in agent_commands.CLIENTES:

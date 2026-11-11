@@ -22,7 +22,10 @@ existían ni el protocolo MCP.
   Son catorce: `/sdd`, `/sdd-status`, `/sdd-enrich`, `/sdd-specify`,
   `/sdd-clarify`, `/sdd-plan`, `/sdd-plan-gate`, `/sdd-tasks`,
   `/sdd-analyze`, `/sdd-build`, `/sdd-pin`, `/sdd-test`, `/sdd-traza` y
-  `/sdd-cierre`, en el orden del flujo. Cada archivo repite las mismas reglas:
+  `/sdd-cierre`, en el orden del flujo. Cada descripción dice qué hace y
+  cuándo usarlo —«Úsalo cuando la SPEC está clara y hay que decidir
+  arquitectura y pasos»—, porque en una skill es lo único que el agente ve
+  antes de decidir si la aplica. Cada archivo repite además las mismas reglas:
   la salida de la CLI es la fuente de la verdad, un `⛔` o un `🔒` detienen al
   agente y el identificador que falte se pide, no se inventa.
 
