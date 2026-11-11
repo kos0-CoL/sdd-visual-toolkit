@@ -24,16 +24,16 @@ verde): no habilita ninguna casilla. El detalle de lo cubierto y de lo que
 falta está en `ide/COMPATIBILIDAD.md`.
 
 Ese mismo día hubo una segunda pasada **dentro del editor**, sobre una instancia
-con perfil aislado. Se marcaron seis casillas de la superficie extensión —barra
+con perfil aislado. Se marcaron ocho casillas de la superficie extensión —barra
 de estado con su tooltip, vista `Fases y tareas`, vista `Flujo SDD` con tooltip,
 clic derecho que abre `PLAN-001.md` en vista previa, paleta `SDD: Estado +
 siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
 (`Arquitectura` → `PLAN-001.md`, `Especificación` → `SPEC-001.md`) y en
-`📍 Fase`, que **no aparecía** y quedó arreglado en esa misma pasada. El resto
-sigue sin marcar: progreso
-con «Cancelar», tope `timeoutMinutos`, `pin` de dos datos, vacíos y `Escape`,
-estado vacío, CLI rota y todas las de comandos de barra (no hay sesión de
-Copilot en ese perfil).
+`📍 Fase`, que **no aparecía** y quedó arreglado en esa misma pasada. Una
+tercera pasada comprobó el progreso y su «Cancelar»: dos casillas más, diez en
+total. El resto sigue sin marcar: el tope `timeoutMinutos`, `pin` de dos datos,
+vacíos y `Escape`, el «Cancelar» con `pytest` en marcha, estado vacío, CLI rota
+y todas las de comandos de barra (no hay sesión de Copilot en ese perfil).
 
 Ojo con el estado: ejecutar comandos lo mueve. Tras `build`, la tarea actual
 deja de ser `—` y las píldoras cambian; para repetir la lista desde la línea
@@ -126,12 +126,18 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       notificación de error con `plan inexistente: PLAN-999`; su botón `Ver
       salida` abre el canal con la orden, el código y la salida completa.
       Cerrar la notificación sin pulsarlo no abre el canal.
-- [ ] Comando largo (`SDD: Correr pruebas` con `TASK-001`, o cualquiera que
+- [x] Comando largo (`SDD: Correr pruebas` con `TASK-001`, o cualquiera que
       tarde más de medio segundo): aparece una notificación de progreso con
       la orden en curso y desaparece al terminar. Los rápidos no la muestran.
-- [ ] Cancelar: pulsar «Cancelar» en ese progreso. Aparece `SDD: <comando>
+      *Visto*: `SDD: tablero` mostró el progreso con su orden y desapareció con
+      `(código 0)` en el canal; los clics rápidos solo escribieron ahí.
+- [x] Cancelar: pulsar «Cancelar» en ese progreso. Aparece `SDD: <comando>
       cancelado`, el canal guarda lo que alcanzó a imprimir con
       `(cancelado)` y la vista se refresca; **no** sale notificación de error.
+      *Visto* con `SDD: Correr pruebas` y `TASK-001`: el botón dice «Cancel»
+      con la IU en inglés; al pulsarlo salieron `SDD: test cancelado`, la línea
+      `(cancelado)` en el canal y ninguna notificación de error, y la vista se
+      refrescó sola.
 - [ ] Cancelar un `SDD: Correr pruebas` que tenga `pytest` en marcha: al
       cancelar, el subproceso también desaparece (comprobar en el gestor de
       procesos del sistema, no solo que la notificación se cierre).
