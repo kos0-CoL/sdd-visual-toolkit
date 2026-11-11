@@ -5,7 +5,7 @@
 'use strict';
 
 const vscode = require('vscode');
-const { execFile } = require('child_process');
+const { execFile, spawn } = require('child_process');
 const path = require('path');
 
 /* id de paleta, título, CLI y pregunta por el argumento cuando lo exige. */
@@ -123,6 +123,23 @@ function reportarFallo(orden, codigo, stdout, stderr, nombre) {
   });
 }
 
+/* Cancelar tiene que alcanzar al árbol completo: `build` lanza `pytest` como
+ * subproceso y matar solo al intérprete de la CLI lo dejaba huérfano. En
+ * POSIX el hijo abre su propio grupo (`detached`), así que la señal va a
+ * `-pid`; en Windows no hay grupos y se corta con `taskkill /T`. */
+function matarArbol(hijo) {
+  if (!hijo || !hijo.pid) return;
+  if (process.platform === 'win32') {
+    execFile('taskkill', ['/pid', String(hijo.pid), '/T', '/F'], () => {});
+    return;
+  }
+  try {
+    process.kill(-hijo.pid, 'SIGTERM');
+  } catch (error) {
+    hijo.kill();
+  }
+}
+
 /* Los comandos rápidos no deben dejar un parpadeo de progreso; a partir de
  * aquí el usuario ya está esperando y necesita saber que algo corre. */
 const ESPERA_PROGRESO = 400;
@@ -134,6 +151,7 @@ function correr(dir, argv, opciones = {}) {
   const orden = comando(dir, argv);
   let terminado = false;
   let cancelado = false;
+  let excedido = false;
   let cerrarIndicador = () => {};
   let hijo = null;
   const indicador = setTimeout(() => {
@@ -147,41 +165,70 @@ function correr(dir, argv, opciones = {}) {
         /* SIGTERM, no SIGKILL: el estado JSON se escribe con temporal +
          * renombrado, así que lo que alcance a guardar queda entero. */
         cancelado = true;
-        if (hijo) hijo.kill();
+        matarArbol(hijo);
       });
       return new Promise((listo) => { cerrarIndicador = listo; });
     });
   }, ESPERA_PROGRESO);
+  /* El tope de cinco minutos va aquí y no en las opciones de spawn para que
+   * corte también a los nietos, igual que la cancelación. */
+  const limite = setTimeout(() => {
+    excedido = true;
+    matarArbol(hijo);
+  }, 300000);
   const cerrar = () => {
     terminado = true;
     clearTimeout(indicador);
+    clearTimeout(limite);
     cerrarIndicador();
   };
-  hijo = execFile(cfg().python, [rutaCli(dir), '--root', dir, ...argv],
-    { cwd: dir, timeout: 300000 }, (err, stdout, stderr) => {
-      cerrar();
-      const completo = [stdout, stderr].filter(Boolean).join('\n');
-      if (cancelado) {
-        /* Un corte pedido por el usuario no es un fallo del comando: se dice
-         * que se canceló, se deja lo impreso en el canal y se relee el estado
-         * real, que puede haber cambiado antes de la señal. */
-        mostrarSalida(orden, 'cancelado', completo);
-        refrescar();
-        vscode.window.showInformationMessage(`SDD: ${argv[0]} cancelado`);
-        return;
-      }
-      if (err) {
-        reportarFallo(orden, err.code, stdout, stderr, argv[0]);
-        return;
-      }
-      const aviso = primeraLinea(stdout) || primeraLinea(stderr);
-      mostrarSalida(orden, 'código 0', completo);
-      if (opciones.refrescar) refrescar();
-      if (opciones.avisoExito) {
-        vscode.window.showInformationMessage(
-          'SDD: ' + (aviso || opciones.avisoExito));
-      }
-    });
+  /* `spawn` y no `execFile`: solo el primero respeta `detached` y deja al hijo
+   * como líder de su grupo, que es lo que permite alcanzar a los nietos. */
+  hijo = spawn(cfg().python, [rutaCli(dir), '--root', dir, ...argv], {
+    cwd: dir,
+    detached: process.platform !== 'win32',
+    windowsHide: true,
+  });
+  let stdout = '';
+  let stderr = '';
+  hijo.stdout.on('data', (dato) => { stdout += dato; });
+  hijo.stderr.on('data', (dato) => { stderr += dato; });
+  hijo.on('error', (error) => {
+    if (terminado) return;
+    cerrar();
+    reportarFallo(orden, 'error', stdout,
+      String(error.message || error), argv[0]);
+  });
+  hijo.on('close', (codigo) => {
+    if (terminado) return;
+    cerrar();
+    const completo = [stdout, stderr].filter(Boolean).join('\n');
+    if (cancelado) {
+      /* Un corte pedido por el usuario no es un fallo del comando: se dice
+       * que se canceló, se deja lo impreso en el canal y se relee el estado
+       * real, que puede haber cambiado antes de la señal. */
+      mostrarSalida(orden, 'cancelado', completo);
+      refrescar();
+      vscode.window.showInformationMessage(`SDD: ${argv[0]} cancelado`);
+      return;
+    }
+    if (excedido) {
+      reportarFallo(orden, 'tiempo agotado', stdout,
+        stderr || 'sin salida en cinco minutos', argv[0]);
+      return;
+    }
+    if (codigo !== 0) {
+      reportarFallo(orden, codigo, stdout, stderr, argv[0]);
+      return;
+    }
+    const aviso = primeraLinea(stdout) || primeraLinea(stderr);
+    mostrarSalida(orden, 'código 0', completo);
+    if (opciones.refrescar) refrescar();
+    if (opciones.avisoExito) {
+      vscode.window.showInformationMessage(
+        'SDD: ' + (aviso || opciones.avisoExito));
+    }
+  });
 }
 
 /* `init` es el único que además confirma con notificación y refresca: crea la
