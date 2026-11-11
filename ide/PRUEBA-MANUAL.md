@@ -58,6 +58,13 @@ La ruta de `--root` va **antes** del subcomando.
       vista muestra `⛔ sin inicializar o CLI no disponible` junto a
       `Inicializar proyecto` (la CLI responde «no hay proyecto toolkit aquí»)
       y que la barra de estado se oculta, en vez de inventar fase.
+- [ ] `SDD: Inicializar proyecto` en una carpeta vacía: aparece la
+      notificación con la ruta inicializada y la vista deja de mostrar
+      `sin inicializar` sin recargar la ventana.
+- [ ] `SDD: Inicializar proyecto` con la carpeta abierta dentro de otro
+      proyecto (`/tmp/sdd-manual/sub`): notificación de error con
+      `YA HAY UN PROYECTO TOOLKIT POR ENCIMA: /tmp/sdd-manual` y ningún
+      `.specify/` nuevo en `sub/`.
 - [ ] CLI rota: poner `sddToolkit.python` en algo inexistente y comprobar
       que la vista cae en `⛔ sin inicializar o CLI no disponible` y la barra
       se oculta. Restaurar el valor.

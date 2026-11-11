@@ -27,6 +27,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   toolkit en una carpeta superior: los comandos suben hasta el estado más
   cercano, así que el segundo dejaría dos raíces contradictorias. Volver a
   inicializar el mismo proyecto sigue siendo inocuo.
+- La paleta de VS Code muestra el resultado de `init` como notificación en
+  vez de dejarlo en el terminal: cuando la CLI sale con 1 (por ejemplo, ya
+  hay un proyecto por encima) el aviso se perdía al fondo y el comando
+  parecía no haber hecho nada. Al terminar refresca la vista y la barra.
 
 ## [0.1.5] — 2026-11-11
 
