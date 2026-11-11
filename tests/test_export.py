@@ -124,6 +124,48 @@ class TestExportCLI(unittest.TestCase):
         self.assertIsNone(por_fase["Tareas"]["comando"])
 
 
+class TestArtefactosDelFlujo(unittest.TestCase):
+    """Las rutas del panel tienen que ser las que la CLI escribe de verdad."""
+
+    def test_cada_fase_publica_su_artefacto(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name) / "proyecto"
+
+        def cli(*args):
+            r = subprocess.run(
+                [sys.executable, "cli/main.py", "--root", str(root), *args],
+                capture_output=True, text=True, cwd=Path.cwd(), input="",
+                timeout=60)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            return r.stdout
+
+        cli("init", str(root))
+        cli("enrich", "Quiero un dashboard para gestionar un kiosco.")
+        cli("enrich", "--accept", "ENR-001")
+        cli("specify", "ENR-001", "--titulo", "Kiosco")
+        cli("specify", "--approve", "SPEC-001")
+        pendientes = [linea.split()[1]
+                      for linea in cli("clarify", "--list", "SPEC-001").splitlines()
+                      if linea.strip().startswith("○")]
+        self.assertTrue(pendientes)
+        for numero, cla in enumerate(pendientes, start=1):
+            cli("clarify", "SPEC-001", "--answer", cla, "respuesta %d" % numero)
+        cli("plan", "SPEC-001")
+        cli("plan", "--gate", "PLAN-001")
+        cli("tasks", "PLAN-001")
+        cli("analyze", "PLAN-001")
+
+        por_fase = {fila["fase"]: fila
+                    for fila in json.loads(cli("export"))["flujo"]}
+        self.assertEqual(por_fase["Arquitectura"]["artefacto"],
+                         ".specify/planes/PLAN-001.md")
+        self.assertEqual(por_fase["Tareas"]["artefacto"],
+                         ".specify/tareas/TASKS-PLAN-001.md")
+        self.assertEqual(por_fase["Análisis"]["artefacto"],
+                         ".specify/informes/INFORME-PLAN-001.md")
+
+
 class TestOrdenDelMetodo(unittest.TestCase):
     """§21: árbol y flujo se leen en el orden del método, no del dict."""
 

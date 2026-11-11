@@ -47,6 +47,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - `clarify` desde la paleta valida el `SPEC-ID` con `clarify --list` antes de
   abrir el terminal: un ID inexistente se notifica con «Ver salida» en vez de
   quedar al fondo de la terminal, que solo se abre cuando la validación pasa.
+- El panel de flujo apunta a los artefactos donde la CLI los escribe de
+  verdad: `.specify/planes/PLAN-001.md`, `.specify/tareas/TASKS-PLAN-001.md`
+  y `.specify/informes/INFORME-PLAN-001.md`, en vez de rutas que no existían.
 - `arbol` y el flujo del IDE respetan el orden §21 de las fases: la
   recuperación aparecía antes de la implementación y las pruebas porque el
   orden lo dictaba la inserción en el diccionario, no el método.
