@@ -8,6 +8,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- `scripts/preparar-manual.sh` deja lista la pasada manual del IDE en un paso:
+  copia el fixture, escribe `.vscode/settings.json` con la ruta absoluta,
+  restaura `src/productos.py` del snapshot 0, genera los comandos de copilot,
+  verifica sus rutas y empaqueta el `.vsix` (`--sin-vsix` lo omite); con
+  `--destino`/`--vsix-dir` cambia las rutas y sin `--force` no borra nada.
 - Una prueba extrae las rutas que cita el LEEME del fixture de 0.1.0 y exige
   que existan, y el LEEME aclara que aquel formato era solo JSON: la CLI
   actual escribe el JSON y también el `.md` al lado.

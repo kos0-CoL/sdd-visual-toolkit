@@ -20,19 +20,29 @@ después de dejar su registro en `ide/COMPATIBILIDAD.md` según «Cómo se anota
 ## Preparación
 
 Se prueba sobre un proyecto ya inicializado, no sobre uno vacío (para el
-estado vacío hay un bloque aparte). El fixture del repo sirve:
+estado vacío hay un bloque aparte). Un solo comando deja el proyecto, los
+ajustes, las skills y el `.vsix`:
 
 ```bash
-cp -a tests/fixtures/estado-0.1.0 /tmp/sdd-manual
-python3 cli/main.py --root /tmp/sdd-manual comandos --cliente copilot
+scripts/preparar-manual.sh                         # /tmp/sdd-manual y /tmp/sdd-manual-vsix
+scripts/preparar-manual.sh --destino /tmp/x --sin-vsix
 ```
 
-Si el toolkit está instalado, `toolkit --root /tmp/sdd-manual comandos …`.
-La ruta de `--root` va **antes** del subcomando.
+Hace lo que antes se copiaba a mano: copia el fixture
+`tests/fixtures/estado-0.1.0`, escribe `.vscode/settings.json` con
+`sddToolkit.python` y la ruta absoluta a `cli/main.py`, restaura
+`src/productos.py` desde el snapshot 0 (lo que compara `validate`), genera los
+14 comandos de copilot y comprueba con `toolkit comandos --verificar` que sus
+rutas existen. Sin `--sin-vsix` empaqueta además
+`sdd-visual-toolkit-<versión>.vsix`; si el destino ya existe se niega a
+borrarlo salvo con `--force`.
+
+La ruta de `--root` va **antes** del subcomando cuando se corre a mano.
 
 ## VS Code — extensión
 
-`ide/vscode/package.json` declara `0.1.5`; usa el `.vsix` de esa release.
+`ide/vscode/package.json` declara `0.1.5`; sirve el `.vsix` de esa release o el
+que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
 
 - [ ] Instalar: `code --install-extension sdd-visual-toolkit-0.1.5.vsix`.
       Recargar la ventana.
