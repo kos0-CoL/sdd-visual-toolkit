@@ -27,33 +27,39 @@ def _notas(ref: str = TAG) -> str:
             f"- [Changelog](https://github.com/{SLUG}/blob/{ref}/CHANGELOG.md)\n")
 
 
-RELEASE = json.dumps({"tagName": TAG, "isDraft": False,
-                      "isPrerelease": False, "body": _notas()})
+def _release(ref: str = TAG, version: str = "0.1.2") -> str:
+    return json.dumps({"tagName": ref, "isDraft": False,
+                       "isPrerelease": False, "body": _notas(ref)})
 
 
-def _respuestas() -> dict[tuple[str, ...], vr.Salida]:
+RELEASE = _release()
+
+
+def _respuestas(version: str = "0.1.2") -> dict[tuple[str, ...], vr.Salida]:
+    tag = f"v{version}"
     return {
-        ("git", "rev-parse", "--verify", "--quiet", f"refs/tags/{TAG}"):
+        ("git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}"):
             _salida(stdout="abc123"),
         ("git", "cat-file", "-t", "abc123"): _salida(stdout="tag"),
-        ("git", "rev-parse", f"{TAG}^{{}}"): _salida(stdout="def456"),
-        ("git", "ls-remote", "--tags", "origin", f"refs/tags/{TAG}",
-         f"refs/tags/{TAG}^{{}}"):
-            _salida(stdout=f"abc123\trefs/tags/{TAG}\n"
-                           f"def456\trefs/tags/{TAG}^{{}}\n"),
+        ("git", "rev-parse", f"{tag}^{{}}"): _salida(stdout="def456"),
+        ("git", "ls-remote", "--tags", "origin", f"refs/tags/{tag}",
+         f"refs/tags/{tag}^{{}}"):
+            _salida(stdout=f"abc123\trefs/tags/{tag}\n"
+                           f"def456\trefs/tags/{tag}^{{}}\n"),
         CI: _salida(stdout=json.dumps([
             {"name": "tests (Python 3.12)", "status": "completed",
              "conclusion": "success"}])),
-        ("git", "show", f"{TAG}:pyproject.toml"):
-            _salida(stdout='[project]\nversion = "0.1.2"\n'),
-        ("git", "show", f"{TAG}:CHANGELOG.md"):
+        ("git", "show", f"{tag}:pyproject.toml"):
+            _salida(stdout=f'[project]\nversion = "{version}"\n'),
+        ("git", "show", f"{tag}:CHANGELOG.md"):
             _salida(stdout="## [No publicado]\n\nSin cambios.\n\n"
-                           "## [0.1.2] — 2026-11-10\n"),
-        ("gh", "release", "view", TAG, "--json",
-         "tagName,isDraft,isPrerelease,body"): _salida(stdout=RELEASE),
-        ("git", "show", f"{TAG}:docs/release-notes-{TAG}.md"):
-            _salida(stdout=_notas()),
-        ("gh", "api", f"repos/{SLUG}/contents/CHANGELOG.md?ref={TAG}",
+                           f"## [{version}] — 2026-11-10\n"),
+        ("gh", "release", "view", tag, "--json",
+         "tagName,isDraft,isPrerelease,body"):
+            _salida(stdout=_release(tag, version)),
+        ("git", "show", f"{tag}:docs/release-notes-{tag}.md"):
+            _salida(stdout=_notas(tag)),
+        ("gh", "api", f"repos/{SLUG}/contents/CHANGELOG.md?ref={tag}",
          "--jq", ".path"): _salida(stdout="CHANGELOG.md"),
         ("git", "remote", "get-url", "origin"):
             _salida(stdout=f"https://github.com/{SLUG}.git\n"),
@@ -290,6 +296,59 @@ class TestVerificarRelease(unittest.TestCase):
                 _salida(128, stderr="path does not exist")})
         self.assertFalse(resultados[-1][0])
         self.assertIn("release-notes", resultados[-1][1])
+
+
+class TestAdjuntoDelVsix(unittest.TestCase):
+    """Desde 0.1.5 la release adjunta la extensión, y el verificador lo exige."""
+
+    def verificar(self, adjuntos: vr.Salida | None, version: str = "0.1.5"):
+        respuestas = _respuestas(version)
+        if adjuntos is not None:
+            respuestas[("gh", "release", "view", f"v{version}", "--json",
+                        "assets")] = adjuntos
+        return vr.verificar(version, _correr_con(respuestas))
+
+    def fallos(self, adjuntos, version: str = "0.1.5") -> list[str]:
+        return [m for ok, m in self.verificar(adjuntos, version) if not ok]
+
+    def test_vsix_adjunto_pasa(self):
+        resultados = self.verificar(_salida(stdout=json.dumps({"assets": [
+            {"name": "sdd-visual-toolkit-0.1.5.vsix", "size": 6065}]})))
+        self.assertEqual([m for ok, m in resultados if not ok], [])
+        self.assertIn("adjunta sdd-visual-toolkit-0.1.5.vsix",
+                      " ".join(m for ok, m in resultados if ok))
+
+    def test_release_sin_vsix_falla(self):
+        fallos = self.fallos(_salida(stdout=json.dumps({"assets": []})))
+        self.assertEqual(len(fallos), 1, fallos)
+        self.assertIn("sdd-visual-toolkit-0.1.5.vsix", fallos[0])
+        self.assertIn("gh release upload v0.1.5", fallos[0])
+
+    def test_vsix_de_otra_version_no_cuenta(self):
+        fallos = self.fallos(_salida(stdout=json.dumps({"assets": [
+            {"name": "sdd-visual-toolkit-0.1.4.vsix", "size": 6065}]})))
+        self.assertEqual(len(fallos), 1, fallos)
+        self.assertIn("sdd-visual-toolkit-0.1.5.vsix", fallos[0])
+
+    def test_vsix_de_cero_bytes_no_cuenta(self):
+        fallos = self.fallos(_salida(stdout=json.dumps({"assets": [
+            {"name": "sdd-visual-toolkit-0.1.5.vsix", "size": 0}]})))
+        self.assertEqual(len(fallos), 1, fallos)
+
+    def test_adjuntos_ilegibles_fallan(self):
+        fallos = self.fallos(_salida(stdout="no es json"))
+        self.assertEqual(len(fallos), 1, fallos)
+        self.assertIn("ilegibles", fallos[0])
+
+    def test_gh_sin_respuesta_falla(self):
+        fallos = self.fallos(_salida(1, stderr="HTTP 403"))
+        self.assertEqual(len(fallos), 1, fallos)
+        self.assertIn("HTTP 403", fallos[0])
+
+    def test_antes_de_0_1_5_no_se_exige(self):
+        """Las releases anteriores no adjuntan la extensión."""
+        resultados = self.verificar(None, version="0.1.4")
+        self.assertEqual([m for ok, m in resultados if not ok], [])
 
 
 PREVIA = "v0.1.4"

@@ -6,6 +6,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Añadido
+
+- El verificador posterior exige que la release adjunte
+  `sdd-visual-toolkit-X.Y.Z.vsix` con tamaño mayor que cero desde la 0.1.5, en
+  vez de dejar ese adjunto a una revisión a mano.
+
 ## [0.1.5] — 2026-11-11
 
 ### Añadido
