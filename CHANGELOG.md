@@ -8,6 +8,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- La matriz de `ide/COMPATIBILIDAD.md` separa extensión y comandos de barra
+  por cliente, deja dicho que ninguno está probado dentro del IDE y detalla,
+  cliente por cliente, qué hay que abrir y qué anotar para cerrarlo.
 - Cada release adjunta `sdd-visual-toolkit-X.Y.Z.vsix`, la extensión del IDE
   empaquetada con `vsce` desde el mismo commit que el tag, y el README
   documenta ese camino de instalación en lugar de la depuración desde el
