@@ -64,11 +64,60 @@ class TestEstadoDe010(unittest.TestCase):
         self.assertEqual(datos["api"], "1.0")
         self.assertEqual(datos["spec_id"], "SPEC-001")
 
+    def test_clarify_lee_las_aclaraciones_antiguas(self):
+        codigo, salida = ejecutar(self.raiz, "clarify", "--list", "SPEC-001")
+        self.assertEqual(codigo, 0, salida)
+        for n in range(1, 7):
+            self.assertIn("✓ CLA-00%d" % n, salida)
+        self.assertNotIn("○ CLA-", salida)
+
+    def test_clarify_gate_pasa_con_lo_aclarado_en_010(self):
+        codigo, salida = ejecutar(self.raiz, "clarify", "SPEC-001", "--gate")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("6/6 aclaradas", salida)
+
+    def test_checkpoint_antiguo_se_lee(self):
+        codigo, salida = ejecutar(self.raiz, "checkpoint", "--show",
+                                  "TASK-001")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("PLAN-001", salida)
+        self.assertIn("TASK-002", salida)
+        self.assertIn("f54bf58d7f1f9de0", salida)
+        self.assertIn("ventas listas", salida)
+
+    def test_checkpoint_lista_el_plan(self):
+        codigo, salida = ejecutar(self.raiz, "checkpoint", "--list",
+                                  "PLAN-001")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("✅ TASK-001", salida)
+
+    def test_journal_state_se_lee(self):
+        codigo, salida = ejecutar(self.raiz, "journal", "--state")
+        self.assertEqual(codigo, 0, salida)
+        estado = json.loads(salida)
+        self.assertEqual(estado["plan_id"], "PLAN-001")
+        self.assertEqual(estado["spec_id"], "SPEC-001")
+        self.assertEqual(estado["ultimo_checkpoint"], "TASK-001-SUCCESS")
+        self.assertEqual(estado["total_tareas"], 18)
+        self.assertIsNone(estado["tarea_en_curso"])
+
+    def test_la_spec_conserva_su_gemelo_markdown(self):
+        texto = (self.raiz / "specs" / "SPEC-001.md").read_text(
+            encoding="utf-8")
+        self.assertTrue(texto.startswith("---\n"))
+        self.assertIn("spec_id: SPEC-001", texto)
+
     def test_leer_no_reescribe_el_estado(self):
         antes = huella(self.raiz)
         for comando in (["tablero"], ["status"], ["export"], ["siguiente"],
                         ["history", "TASK-001"], ["validate", "TASK-001"],
-                        ["rollback", "--list", "TASK-001"]):
+                        ["rollback", "--list", "TASK-001"],
+                        ["clarify", "--list", "SPEC-001"],
+                        ["clarify", "SPEC-001", "--gate"],
+                        ["checkpoint", "--show", "TASK-001"],
+                        ["checkpoint", "--list", "PLAN-001"],
+                        ["journal", "--state"],
+                        ["specify", "--show", "SPEC-001"]):
             codigo, salida = ejecutar(self.raiz, *comando)
             self.assertEqual(codigo, 0, "%s: %s" % (comando, salida))
         self.assertEqual(huella(self.raiz), antes,

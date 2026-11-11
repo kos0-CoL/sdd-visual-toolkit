@@ -1,0 +1,20 @@
+{
+  "fecha": "2026-11-10T22:21:48+00:00",
+  "plan": "PLAN-001",
+  "evento": "checkpoint",
+  "tarea": "TASK-001",
+  "spec": "SPEC-001",
+  "fase": "implement",
+  "proxima": "TASK-002",
+  "archivos": [
+    "src/productos.py",
+    "tests/test_productos.py"
+  ],
+  "hashes": {
+    "src/productos.py": "f54bf58d7f1f9de0",
+    "tests/test_productos.py": "b56aecacf3b3af3e"
+  },
+  "pruebas": "—",
+  "pruebas_ok": true,
+  "decisiones": "ventas listas"
+}
