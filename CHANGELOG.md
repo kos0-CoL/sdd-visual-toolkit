@@ -6,6 +6,8 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+## [0.1.5] — 2026-11-11
+
 ### Añadido
 
 - `ide/PRUEBA-MANUAL.md` recorre casilla por casilla la extensión y los
@@ -279,7 +281,8 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.4...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.5
 [0.1.4]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.4
 [0.1.3]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.3
 [0.1.2]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.2
