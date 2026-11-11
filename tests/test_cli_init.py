@@ -183,6 +183,8 @@ class TestInitGeneraLosComandos(unittest.TestCase):
         self.assertEqual(codigo, 0, salida)
         self.assertIn("Cliente del agente (", salida)
         self.assertIn("· cliente: antigravity", salida)
+        # La pregunta queda entera y el eco en su línea, no pegado.
+        self.assertIn("ninguno): \n· cliente: antigravity", salida)
         self.assertEqual(
             len(list((self.raiz / ".agents" / "skills").glob("*/SKILL.md"))),
             14)
@@ -213,7 +215,7 @@ class TestInitGeneraLosComandos(unittest.TestCase):
         with mock.patch("builtins.input", return_value=""):
             codigo, salida = self._init()
         self.assertEqual(codigo, 0, salida)
-        self.assertIn("· cliente: ninguno", salida)
+        self.assertIn("\n· cliente: ninguno (sin comandos de barra)", salida)
         self.assertFalse((self.raiz / ".claude").exists())
 
     def test_sin_comandos_no_pregunta_aunque_haya_terminal(self):

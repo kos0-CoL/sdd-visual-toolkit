@@ -16,9 +16,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - Una prueba extrae las rutas que cita el LEEME del fixture de 0.1.0 y exige
   que existan, y el LEEME aclara que aquel formato era solo JSON: la CLI
   actual escribe el JSON y también el `.md` al lado.
-- `init` deja escrita la elección del cliente tras la pregunta (`· cliente:
-  copilot`, `· cliente: todos (…)` o `· cliente: ninguno`): lo tecleado en un
-  `input()` no queda en la salida capturada.
+- `init` deja escrita la elección del cliente tras la pregunta, en su propia
+  línea (`· cliente: copilot`, `· cliente: todos (…)` o `· cliente:
+  ninguno`): lo tecleado en un `input()` no queda en la salida capturada y el
+  eco salía pegado a la pregunta.
 - `init` puede dejar los comandos del agente generados en el acto: pregunta
   por el cliente cuando hay terminal, acepta `--cliente` repetible para no
   preguntar y `--sin-comandos` para omitirlo. Sin terminal no pregunta, porque
