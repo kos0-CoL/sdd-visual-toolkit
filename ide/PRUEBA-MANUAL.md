@@ -25,6 +25,7 @@ ajustes, las skills y el `.vsix`:
 
 ```bash
 scripts/preparar-manual.sh                         # /tmp/sdd-manual y /tmp/sdd-manual-vsix
+scripts/preparar-manual.sh --instalar              # y además instala el .vsix
 scripts/preparar-manual.sh --destino /tmp/x --sin-vsix
 ```
 
@@ -35,7 +36,9 @@ Hace lo que antes se copiaba a mano: copia el fixture
 14 comandos de copilot y comprueba con `toolkit comandos --verificar` que sus
 rutas existen. Sin `--sin-vsix` empaqueta además
 `sdd-visual-toolkit-<versión>.vsix`; si el destino ya existe se niega a
-borrarlo salvo con `--force`.
+borrarlo salvo con `--force`. Con `--instalar` corre
+`code --install-extension <vsix> --force` al terminar (necesita empaquetar, así
+que no se combina con `--sin-vsix`).
 
 La ruta de `--root` va **antes** del subcomando cuando se corre a mano.
 

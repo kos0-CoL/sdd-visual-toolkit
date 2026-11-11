@@ -54,6 +54,12 @@ class TestPrepararManual(unittest.TestCase):
         self.assertIn("--force", r.stderr)
         self.assertTrue((self.destino / ".vscode" / "settings.json").is_file())
 
+    def test_instalar_exige_empaquetar_el_vsix(self):
+        r = self._preparar("--instalar")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("--instalar necesita", r.stderr)
+        self.assertFalse(self.destino.exists())
+
     def test_force_rehace_el_destino(self):
         self.assertEqual(self._preparar().returncode, 0)
         (self.destino / "basura.txt").write_text("x", encoding="utf-8")

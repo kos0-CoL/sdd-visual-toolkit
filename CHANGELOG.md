@@ -12,7 +12,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   copia el fixture, escribe `.vscode/settings.json` con la ruta absoluta,
   restaura `src/productos.py` del snapshot 0, genera los comandos de copilot,
   verifica sus rutas y empaqueta el `.vsix` (`--sin-vsix` lo omite); con
-  `--destino`/`--vsix-dir` cambia las rutas y sin `--force` no borra nada.
+  `--destino`/`--vsix-dir` cambia las rutas, sin `--force` no borra nada y
+  `--instalar` corre `code --install-extension … --force` al terminar para
+  dejar la extensión puesta de una vez.
 - Una prueba extrae las rutas que cita el LEEME del fixture de 0.1.0 y exige
   que existan, y el LEEME aclara que aquel formato era solo JSON: la CLI
   actual escribe el JSON y también el `.md` al lado.
