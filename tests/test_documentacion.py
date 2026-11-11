@@ -20,7 +20,11 @@ RAIZ = Path(__file__).resolve().parent.parent
 _BLOQUE = re.compile(r"^```.*?^```", re.MULTILINE | re.DOTALL)
 _ENLACE = re.compile(r"\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
 _DEFINICION = re.compile(r"^\[[^\]]+\]:\s*(\S+)", re.MULTILINE)
-_SIMBOLO = re.compile(r"`([\w./-]+\.py)::(\w+)`")
+# Solo rutas de paquetes del repo: si no, la prosa que cita «archivo.py::
+# símbolo» como ejemplo cuenta como referencia real.
+_SIMBOLO = re.compile(
+    r"`((?:cli|core|mcp|scripts|state|tests)/[\w./-]+\.py)::"
+    r"([A-Za-z_][A-Za-z0-9_]*)`")
 
 # Carpetas que el toolkit escribe en el proyecto del usuario, no en este repo.
 GENERADAS = (".claude/skills/", ".cursor/commands/", ".github/prompts/",
