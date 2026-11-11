@@ -77,6 +77,25 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("flag: '--task'", pin)
         self.assertIn("entrada.siguiente", fuente)
 
+    def test_init_avisa_en_el_ide(self):
+        """`init` sale con 1 si ya hay un proyecto por encima: desde la paleta
+        el aviso no puede quedarse al fondo del terminal."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        init = re.search(r"function inicializar\(dir\).*?\n\}", fuente, re.S)
+        self.assertIsNotNone(init, "falta la ejecución capturada de init")
+        cuerpo = init.group(0)
+        self.assertIn("execFile", cuerpo)
+        self.assertIn("'--root', dir, 'init'", cuerpo)
+        self.assertIn("showErrorMessage", cuerpo)
+        self.assertIn("showInformationMessage", cuerpo)
+        # El resto de comandos sigue yendo al terminal, tras el desvío de init.
+        corrida = re.search(r"function ejecutar\(cliArgs\).*?\n\}", fuente, re.S)
+        self.assertIsNotNone(corrida, "falta el despacho de comandos")
+        despacho = corrida.group(0)
+        self.assertIn("cliArgs === 'init'", despacho)
+        self.assertLess(despacho.index("cliArgs === 'init'"),
+                        despacho.index("sendText"))
+
     def test_diez_puntos_del_29_cubiertos(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         # paleta, vista lateral, estado, fases, SPEC, tareas, pruebas,

@@ -62,11 +62,47 @@ function terminal() {
   return t;
 }
 
+/* Lo conecta `activate` para refrescar la vista y la barra tras cambiar el
+ * estado fuera del terminal. */
+let refrescar = () => {};
+
+/* La CLI empieza sus avisos con 🟢 o ⛔: en una notificación sobra el símbolo.
+ * Van en alternancia y no en una clase: 🟢 está fuera del BMP y una clase sin
+ * el flag `u` solo descarta medio par sustituto, dejando un � en el mensaje. */
+function primeraLinea(texto) {
+  const linea = (texto || '').split('\n').find((l) => l.trim()) || '';
+  return linea.replace(/^(?:🟢|⛔)\s*/, '').trim();
+}
+
+/* `init` no va al terminal como el resto: si ya hay un proyecto toolkit por
+ * encima, la CLI sale con 1 y su aviso se quedaba al fondo del terminal, así
+ * que desde la paleta el comando parecía no haber hecho nada. */
+function inicializar(dir) {
+  const { python, cliPath } = cfg();
+  const cli = path.isAbsolute(cliPath) ? cliPath : path.join(dir, cliPath);
+  execFile(python, [cli, '--root', dir, 'init'],
+    { cwd: dir, timeout: 30000 }, (err, stdout, stderr) => {
+      const aviso = primeraLinea(stdout) || primeraLinea(stderr);
+      if (err) {
+        vscode.window.showErrorMessage(
+          'SDD: ' + (aviso || `init falló (${err.code || 'error'})`));
+        return;
+      }
+      refrescar();
+      vscode.window.showInformationMessage(
+        'SDD: ' + (aviso || 'proyecto inicializado'));
+    });
+}
+
 /* Acceso a la CLI desde la paleta y desde la vista lateral. */
 function ejecutar(cliArgs) {
   const dir = carpeta();
   if (!dir) {
     vscode.window.showErrorMessage('SDD: abra una carpeta primero.');
+    return;
+  }
+  if (cliArgs === 'init') {
+    inicializar(dir);
     return;
   }
   const { python, cliPath } = cfg();
@@ -219,6 +255,10 @@ function activate(contexto) {
     } else {
       barra.hide();
     }
+  };
+  refrescar = () => {
+    vista.actualizar();
+    refrescarBarra();
   };
   contexto.subscriptions.push(barra);
   refrescarBarra();
