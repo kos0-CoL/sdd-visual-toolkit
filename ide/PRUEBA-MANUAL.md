@@ -31,10 +31,11 @@ siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
 (`Arquitectura` → `PLAN-001.md`, `Especificación` → `SPEC-001.md`) y en
 `📍 Fase`, que **no aparecía** y quedó arreglado en esa misma pasada. Una
 tercera pasada comprobó el progreso y su «Cancelar» —dos casillas más— y una
-cuarta midió el tope `timeoutMinutos`, que corta a 1 minuto: once en total. El
-resto sigue sin marcar: `pin` de dos datos, vacíos y `Escape`, el «Cancelar»
-con `pytest` en marcha, estado vacío, CLI rota y todas las de comandos de barra
-(no hay sesión de Copilot en ese perfil).
+cuarta midió el tope `timeoutMinutos` y una quinta el `pin` de dos datos, el
+vacío obligatorio y `Escape`: catorce en total. El resto sigue sin marcar: el
+vacío de los comandos opcionales, el «Cancelar» con `pytest` en marcha, estado
+vacío, CLI rota y todas las de comandos de barra (no hay sesión de Copilot en
+ese perfil).
 
 Ojo con el estado: ejecutar comandos lo mueve. Tras `build`, la tarea actual
 deja de ser `—` y las píldoras cambian; para repetir la lista desde la línea
@@ -198,14 +199,23 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       `status` sin preguntar.
 - [ ] Paleta, comando con argumento (`SDD: Generar / ver plan`): pide
       `SPEC-ID`; escribir `SPEC-001` lo pasa al final del comando.
-- [ ] Comando que pide dos datos (`SDD: Spec pinning`): pregunta `PLAN-ID`,
+- [x] Comando que pide dos datos (`SDD: Spec pinning`): pregunta `PLAN-ID`,
       después `TASK-ID`, y ejecuta `pin PLAN-001 --task TASK-001`. Cancelar en
       el segundo no ejecuta nada; dejarlo vacío avisa y no ejecuta.
+      *Visto*: los dos cuadros piden `SDD: PLAN-ID` y `SDD: TASK-ID`, la
+      corrida deja `pin PLAN-001 --task TASK-001 (código 0)` en el canal, con
+      `Escape` en el segundo no se suma ninguna línea y el vacío tampoco
+      ejecuta.
 - [ ] Vacío en un comando opcional: `SDD: Generar / ver SPEC` con vacío corre
       `specify --list`; `SDD: Mensaje final de fase` con vacío corre `cierre`.
-- [ ] Vacío en un comando que exige ID: aparece
+- [x] Vacío en un comando que exige ID: aparece
       «SDD: falta el identificador pedido.» y no se ejecuta nada.
-- [ ] Cancelar con `Escape` en el cuadro de entrada: no se ejecuta nada.
+      *Visto* en el segundo cuadro de `SDD: Spec pinning`: el aviso sale y el
+      canal no suma líneas. El primer cuadro de un comando de un solo dato
+      sigue sin observar.
+- [x] Cancelar con `Escape` en el cuadro de entrada: no se ejecuta nada.
+      *Visto*: el cuadro se cierra, el canal no suma líneas y no aparece
+      ninguna notificación.
 - [ ] Volver a pulsar `SDD: Actualizar vista lateral` refresca los datos.
 - [ ] Estado vacío: abrir una carpeta sin `.specify/` y comprobar que la
       vista muestra `⛔ sin inicializar o CLI no disponible` junto a
