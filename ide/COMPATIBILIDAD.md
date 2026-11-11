@@ -9,7 +9,7 @@ y la otra no.
 
 | Entorno | Extensión | Comandos de barra |
 |---|---|---|
-| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (6 de 29 casillas)** | ✅ `.github/prompts/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **sin abrir el chat** |
+| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (8 de 29 casillas)** | ✅ `.github/prompts/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **sin abrir el chat** |
 | Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar |
 | Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar |
 | Antigravity | ⚠️ pendiente de verificación | ⚠️ `.agents/skills/`; sin probar |
@@ -99,7 +99,7 @@ nunca se inventa estado.
 | Fecha | Entorno y versión | Superficie | Resultado |
 |---|---|---|---|
 | 2026-11-11 | VS Code 1.142.0 · `sdd-toolkit.sdd-visual-toolkit@0.1.5` · arnés sin editor | extensión | ⚠️ parcial: 41/41 del arnés sobre `/tmp/sdd-manual`; no se abrió el editor |
-| 2026-11-11 | VS Code 1.142.0 · perfil aislado con la extensión `0.1.5`, proyecto `/tmp/sdd-manual` recién preparado | extensión | ⚠️ parcial: **6 de 29 casillas** — barra de estado y su tooltip, `Fases y tareas`, `Flujo SDD` con tooltip, clic derecho→`Preview PLAN-001.md`, paleta `SDD: Estado + siguiente` (canal `SDD Toolkit`, código 0) y fallo `build PLAN-999` (`⛔ SDD: plan inexistente: PLAN-999`). Faltar: progreso/«Cancelar», tope, `pin` de dos datos, vacíos y `Escape`, estado vacío, CLI rota |
+| 2026-11-11 | VS Code 1.142.0 · perfil aislado con la extensión `0.1.5`, proyecto `/tmp/sdd-manual` recién preparado | extensión | ⚠️ parcial: **6 de 29 casillas** — barra de estado y su tooltip, `Fases y tareas`, `Flujo SDD` con tooltip, clic derecho→`Preview PLAN-001.md`, paleta `SDD: Estado + siguiente` (canal `SDD Toolkit`, código 0) y fallo `build PLAN-999` (`⛔ SDD: plan inexistente: PLAN-999`), clic derecho en el flujo (`Arquitectura`→`PLAN-001.md`, `Especificación`→`SPEC-001.md`) y en `📍 Fase`. **Hallazgo**: ese último no ofrecía nada, porque la fila comparaba `🧪 Pruebas` con las claves del flujo (`Pruebas`); arreglado en la misma pasada. Faltan: progreso/«Cancelar», tope, `pin` de dos datos (solo se vio el primer cuadro), vacíos y `Escape`, estado vacío, CLI rota |
 | 2026-11-11 | VS Code 1.142.0 · proyecto `/tmp/sdd-manual` | comandos de barra | ⚠️ parcial: 14 archivos en `.github/prompts/` y `comandos --verificar` en verde; no se abrió el chat |
 
 ### Para marcar la pasada en editor

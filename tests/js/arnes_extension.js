@@ -172,6 +172,15 @@ const textos = (nodos) => nodos.map((n) => n.label);
   check('vista: tarea actual vacía', etiquetas.includes('Tarea actual: —'));
   check('vista: pruebas', etiquetas.some((t) => String(t).startsWith('Pruebas: ✅ P=2 F=0 cob=100%')));
   check('vista: siguiente', etiquetas.includes('➡ Siguiente: build PLAN-001'));
+  /* El `📍 Fase` llega con emoji (`🧪 Pruebas`) y el flujo usa el nombre
+   * pelado: si no se comparan sin marcas, el clic derecho no ofrece nada. */
+  const filaFase = raiz[0];
+  check('vista: «📍 Fase» trae el artefacto de su fase',
+    filaFase && filaFase.contextValue === 'sddFaseConArtefacto' && !!filaFase._artefacto,
+    filaFase && `${filaFase.contextValue || 'sin contextValue'} · ${filaFase._artefacto || 'sin artefacto'}`);
+  check('vista: «📍 Fase» avisa del clic derecho en el tooltip',
+    filaFase && /clic derecho: .+/.test(String(filaFase.tooltip)),
+    filaFase && filaFase.tooltip);
 
   const grupoPildoras = raiz.find((n) => n.label === 'Píldoras');
   const pildoras = grupoPildoras
