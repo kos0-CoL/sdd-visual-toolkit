@@ -41,6 +41,10 @@
         {
           "id": "sddFases",
           "name": "Fases y tareas"
+        },
+        {
+          "id": "sddFlujo",
+          "name": "Flujo SDD"
         }
       ]
     },

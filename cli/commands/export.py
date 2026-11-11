@@ -13,6 +13,7 @@ from cli.commands import arbol as mod_arbol
 from cli.commands import plan as mod_plan
 from cli.commands import tablero as mod_tablero
 from core.export import documento, render
+from core.flujo import flujo as construir_flujo
 from core.navigation import sugerir
 from state import store
 
@@ -39,7 +40,8 @@ def despachar(args) -> int:
                 pass
         nodos, transiciones = mod_arbol.nodos(raiz)
         print(render(documento(estado, nodos, transiciones,
-                               sugerir(estado))))
+                               sugerir(estado),
+                               construir_flujo(raiz, nodos, estado))))
     except store.StoreError as error:
         print(f"⛔ {error}")
         return 1

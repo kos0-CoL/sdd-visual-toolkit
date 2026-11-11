@@ -161,6 +161,19 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("refrescar()", corte)
         self.assertNotIn("reportarFallo", corte)
 
+    def test_el_panel_de_flujo_muestra_skill_y_artefacto(self):
+        """VISUAL: el flujo va aparte de la lista de fases y fases, con su
+        skill y su artefacto."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("class VistaFlujo", fuente)
+        self.assertIn("registerTreeDataProvider('sddFlujo'", fuente)
+        self.assertIn("doc.flujo", fuente)
+        self.assertIn("fila.skill", fuente)
+        self.assertIn("fila.artefacto", fuente)
+        manifiesto = (IDE / "package.json").read_text(encoding="utf-8")
+        self.assertIn('"sddFlujo"', manifiesto)
+        self.assertIn('"Flujo SDD"', manifiesto)
+
     def test_init_avisa_y_refresca(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         init = re.search(r"function inicializar\(dir\).*?\n\}", fuente, re.S)

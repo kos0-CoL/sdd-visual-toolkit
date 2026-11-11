@@ -14,7 +14,7 @@ VERSION = "1.0"
 
 
 def documento(estado: dict, nodos: list, transiciones: list,
-              navegacion: dict) -> dict:
+              navegacion: dict, flujo: list | None = None) -> dict:
     """Foto máquina del proyecto. Todo sale de artefactos reales."""
     errores = estado.get("errores") or []
     return {
@@ -35,6 +35,8 @@ def documento(estado: dict, nodos: list, transiciones: list,
         "errores": list(errores),
         "proxima": estado.get("proxima", "—"),
         "arbol": [{"fase": fase, "estado": est} for fase, est in (nodos or [])],
+        # Fase → artefacto → skill: es lo que pinta el panel de flujo del IDE.
+        "flujo": list(flujo or []),
         "transiciones": list(transiciones or [])[-12:],
         "navegacion": {
             "recomendada": (navegacion.get("recomendada") or {}).get("comando"),

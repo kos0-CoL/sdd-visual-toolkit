@@ -45,8 +45,9 @@ toolkit comandos --cliente <cliente>
 2. Comprobar que la paleta `SDD: …` ejecuta el comando y deja su salida en el
    canal `SDD Toolkit` (con notificación si falla; `clarify`, que pregunta
    por stdin, sigue en la terminal), que la vista `SDD → Fases y tareas`
-   muestra la fase y el progreso reales, y que la barra de estado aparece con
-   un proyecto y se oculta sin `.specify/`.
+   muestra la fase y el progreso reales, que `SDD → Flujo SDD` lista las
+   nueve fases con su skill y su artefacto y lanza el comando al hacer clic, y
+   que la barra de estado aparece con un proyecto y se oculta sin `.specify/`.
 3. `toolkit comandos --cliente copilot` y verificar que `/sdd-status` aparece
    al escribir `/` en el chat y devuelve la salida de la CLI tal cual.
 

@@ -47,6 +47,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - `specify` y `restricciones` avisan con `⛔` cuando el ID no existe, en vez de
   terminar con un traceback: son los dos últimos comandos que reventaban al
   escribir un identificador equivocado.
+- El IDE gana el panel **Flujo SDD**: una fila por fase con su estado, el
+  artefacto que deja y la skill que la ejecuta, y un clic que lanza el
+  comando de la fase. Los datos salen de `export`, que ahora publica `flujo`
+  (fase → artefacto → skill → comando) para cualquier adaptador.
 - `init` deja el proyecto listo para el IDE: escribe `.vscode/settings.json`
   con el intérprete y la ruta del toolkit, y `.vscode/tasks.json` con las
   tareas `SDD: …`. Al abrir la carpeta la extensión funciona sin configurar

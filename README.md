@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-398%20passed-green)
+![Tests](https://img.shields.io/badge/tests-400%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -71,7 +71,7 @@ python3 -m venv .venv && source .venv/bin/activate
 # 3. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 4. Verificar que todo funciona (398 tests, ~16 s; ~9 s con -n 2)
+# 4. Verificar que todo funciona (400 tests, ~17 s; ~9 s con -n 2)
 python3 -m pytest tests/ -q
 
 # 5. Probar la CLI
@@ -219,6 +219,12 @@ Recomendada: [ build PLAN-001 ]
   (ruta absoluta a este `cli/main.py`) y `.vscode/tasks.json` con las tareas
   `SDD: …`, recogidas por *Ejecutar tarea* en VS Code y, si las lee, en
   Antigravity. Nunca sobrescribe archivos que ya existan.
+
+  La vista **Flujo SDD** es la capa visual del método: una fila por fase con
+  su estado, el artefacto que deja (`specs/SPEC-001.md`, `planes/PLAN-001.md`,
+  `tareas/…`) y la skill que la ejecuta (`/sdd-plan`, `/sdd-test`). Con clic
+  lanza el comando de la fase cuando los datos alcanzan; si falta el ID, la
+  fila se muestra sin comando en vez de fallar.
 - **MCP:** `python3 mcp/server.py` expone por stdio las herramientas de
   lectura `exportar_estado`, `siguiente` y `tablero`, y las operativas
   `asignar_tarea`, `registrar_resultado` y `marcar_completada`.
@@ -272,7 +278,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (398 tests, uno o más por RF)
+tests/      Suite pytest (400 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)
