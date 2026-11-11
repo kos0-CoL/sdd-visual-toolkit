@@ -81,7 +81,9 @@ scripts/preparar-manual.sh --solo-verificar   # ¿sirve lo que ya hay?
 ```
 
 1. Un `⛔` en la tabla se arregla antes de abrir el editor: es un entorno roto,
-   no una casilla pendiente. En la fila del arnés hay una excepción conocida:
+   no una casilla pendiente. El comando sale con código 1 también cuando solo
+   queda un `☐`: lo pendiente de editor cuenta como fallo de salida, aunque en
+   la tabla se distinga. En la fila del arnés hay una excepción conocida:
    si la pasada anterior ejecutó comandos, el proyecto ya no está en la línea
    base y el arnés falla con `FAIL vista: tarea actual vacía` (espera
    `Tarea actual: —`). Eso es estado movido, no una extensión rota: `--force`

@@ -211,17 +211,23 @@ PY
     echo "  notificaciones y «Cancelar»."
     echo "  El arnés rompe y restaura un archivo de .github/prompts por corrida."
     echo
-    local comprobado pendiente
-    faltas="$(grep -c $'\tfallo\t' "$filas" || true)"
+    local comprobado pendiente fallos
+    fallos="$(grep -c $'\tfallo\t' "$filas" || true)"
     comprobado="$(grep -c $'\tok\t' "$filas" || true)"
     pendiente="$(grep -c $'\tpendiente\t' "$filas" || true)"
     rm -f "$filas"
+    # Lo pendiente de editor también cuenta como fallo de salida: la pasada no
+    # está hecha. En la tabla sigue siendo `☐`, para no confundir «sin mirar»
+    # con «roto».
+    faltas=$((fallos + pendiente))
     echo "Comprobado: $comprobado   ·   pendiente de editor: $pendiente" \
-        "   ·   fallos: $faltas"
+        "   ·   fallos: $fallos"
     if [ "$faltas" -eq 0 ]; then
-        echo "Entorno listo para mirar: abra VS Code en $destino y recorra la checklist."
+        echo "Entorno listo y sin pendientes: abra VS Code en $destino y recorra la checklist."
+    elif [ "$fallos" -eq 0 ]; then
+        echo "⛔ $pendiente comprobación(es) pendiente(s) de editor: el entorno sirve, la pasada no está hecha." >&2
     else
-        echo "⚠️ $faltas comprobación(es) en rojo; arregle eso antes de la pasada." >&2
+        echo "⛔ $fallos comprobación(es) en rojo y $pendiente pendiente(s) de editor; arregle lo rojo antes de la pasada." >&2
     fi
     return "$faltas"
 }
