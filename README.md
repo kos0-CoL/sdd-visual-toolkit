@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-430%20passed-green)
+![Tests](https://img.shields.io/badge/tests-432%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -71,7 +71,7 @@ python3 -m venv .venv && source .venv/bin/activate
 # 3. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 4. Verificar que todo funciona (430 tests, ~27 s; ~14 s con -n 2)
+# 4. Verificar que todo funciona (432 tests, ~27 s; ~14 s con -n 2)
 python3 -m pytest tests/ -q
 
 # 5. Probar la CLI
@@ -235,7 +235,9 @@ Recomendada: [ build PLAN-001 ]
   `.specify/informes/INFORME-PLAN-001.md`) y la skill que la ejecuta
   (`/sdd-plan`, `/sdd-test`). Si las skills instaladas apuntan a una ruta del
   toolkit que ya no existe, `Fases y tareas` abre con un aviso: cuántos
-  archivos y a qué ruta apuntan. Con clic
+  archivos y a qué ruta apuntan, y una fila `↻ Regenerar los comandos` que
+  corre `comandos --regenerar` (solo los clientes ya instalados) y refresca
+  la vista. Con clic
   lanza el comando de la fase cuando los datos alcanzan; si falta el ID, la
   fila se muestra sin comando en vez de fallar.
 - **MCP:** `python3 mcp/server.py` expone por stdio las herramientas de
@@ -254,6 +256,7 @@ comandos en la carpeta de cada cliente:
 toolkit comandos                     # los cinco clientes
 toolkit comandos --cliente cursor    # repetible; solo los que use
 toolkit comandos --verificar         # ¿siguen existiendo las rutas grabadas?
+toolkit comandos --regenerar         # reescribirlos con la ruta actual
 ```
 
 `--verificar` no escribe nada: recorre los archivos ya generados, extrae la
@@ -316,7 +319,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (430 tests, uno o más por RF)
+tests/      Suite pytest (432 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)

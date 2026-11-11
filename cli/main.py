@@ -465,6 +465,9 @@ def construir_parser() -> argparse.ArgumentParser:
     p_comandos.add_argument(
         "--verificar", action="store_true",
         help="solo revisar que las rutas grabadas sigan existiendo")
+    p_comandos.add_argument(
+        "--regenerar", action="store_true",
+        help="reescribir solo los clientes ya instalados, con la ruta actual")
     p_comandos.set_defaults(func=cmd_comandos.despachar)
 
     p_impl = sub.add_parser("implement", help="alias de build (RF-36)")

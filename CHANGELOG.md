@@ -26,6 +26,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   por el cliente cuando hay terminal, acepta `--cliente` repetible para no
   preguntar y `--sin-comandos` para omitirlo. Sin terminal no pregunta, porque
   la extensión y los scripts quedarían esperando una respuesta inexistente.
+- `toolkit comandos --regenerar` reescribe solo los clientes que ya tienen
+  archivos, con la ruta de la copia en uso; no estrena carpetas. Sin nada
+  instalado avisa y sale con código 1.
+- El aviso de skills de la vista `Fases y tareas` trae una fila «↻ Regenerar
+  los comandos» que corre `comandos --regenerar` y refresca la vista al
+  terminar, así que el aviso desaparece sin salir del IDE.
 - `export` publica `avisos.skills` con las rutas de skills que ya no existen
   (total y cuántos archivos usa cada una), y la vista `Fases y tareas` abre con
   ese aviso cuando hay alguno. La extensión no lee los archivos generados: usa
