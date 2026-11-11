@@ -19,7 +19,9 @@ el cierre de `TASK-001`.
   actual ya no lo crea ni lo lee. El estado vivo es
   `.specify/memory/current_task.json` (abajo).
 - `.specify/planes/PLAN-001.json` y `.specify/tareas/TASKS-PLAN-001.json`:
-  plan técnico y desglose.
+  plan técnico y desglose, en el formato de 0.1.0 —solo JSON—. La CLI actual
+  escribe ese JSON y además el `.md` legible al lado, igual que hace con la
+  SPEC y el informe.
 - `specs/SPEC-001.json` y su gemelo `SPEC-001.md`: la SPEC aprobada, en las
   dos formas que escribe 0.1.0 —máquina y legible—.
 - `.specify/enriquecimientos.json`: el ENR validado del que salieron los 21

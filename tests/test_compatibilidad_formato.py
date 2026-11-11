@@ -7,6 +7,7 @@ reescribe y que escribir con la versión actual no rompe lo anterior.
 """
 
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -18,6 +19,18 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "estado-0.1.0"
 CLI = RAIZ / "cli" / "main.py"
+
+
+class TestRutasDelLeeme(unittest.TestCase):
+    """El LEEME del fixture cita rutas: si una no existe, la guía engaña."""
+
+    def test_las_rutas_de_lo_incluido_existen(self):
+        texto = (FIXTURE / "LEEME.md").read_text(encoding="utf-8")
+        bloque = texto.split("## Qué incluye")[1].split("## Qué se dejó fuera")[0]
+        rutas = re.findall(r"`((?:\.specify|specs)/[^`\s]+)`", bloque)
+        self.assertGreaterEqual(len(rutas), 8)
+        for ruta in rutas:
+            self.assertTrue((FIXTURE / ruta).exists(), ruta)
 
 
 def ejecutar(raiz: Path, *argumentos: str) -> tuple[int, str]:
