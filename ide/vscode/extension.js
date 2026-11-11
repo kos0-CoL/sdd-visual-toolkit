@@ -47,7 +47,13 @@ const COMMANDS = [
 
 function cfg() {
   const c = vscode.workspace.getConfiguration('sddToolkit');
-  return { python: c.get('python', 'python3'), cliPath: c.get('cliPath', 'cli/main.py') };
+  const minutos = Number(c.get('timeoutMinutos', 5));
+  return {
+    python: c.get('python', 'python3'),
+    cliPath: c.get('cliPath', 'cli/main.py'),
+    /* Un valor absurdo en los ajustes no debe dejar sin tope a la paleta. */
+    timeoutMinutos: Number.isFinite(minutos) && minutos > 0 ? minutos : 5,
+  };
 }
 
 function carpeta() {
@@ -109,16 +115,21 @@ function mostrarSalida(orden, codigo, texto) {
 
 /* Un fallo se ve siempre igual: la primera línea en la notificación y el
  * resto detrás de «Ver salida», se haya ejecutado capturado o no. */
-function reportarFallo(orden, codigo, stdout, stderr, nombre) {
+function reportarFallo(orden, codigo, stdout, stderr, nombre, motivo = '') {
   const completo = [stdout, stderr].filter(Boolean).join('\n');
-  const aviso = primeraLinea(stdout) || primeraLinea(stderr);
+  /* `motivo` gana a la salida: en un corte por tiempo lo útil es saber que se
+   * cortó, no el fallback de una salida que está vacía. */
+  const aviso = motivo || primeraLinea(stdout) || primeraLinea(stderr);
   const mensaje = 'SDD: ' +
     (aviso || `${nombre} falló (código ${codigo || 'error'})`);
+  /* Código numérico o etiqueta («tiempo agotado»): el canal no tiene que decir
+   * «código tiempo agotado». */
+  const etiqueta = typeof codigo === 'number' ? `código ${codigo}` : codigo;
   Promise.resolve(
     vscode.window.showErrorMessage(mensaje, 'Ver salida')
   ).then((elegido) => {
     if (elegido === 'Ver salida') {
-      mostrarSalida(orden, `código ${codigo || 'error'}`, completo);
+      mostrarSalida(orden, etiqueta || 'error', completo);
     }
   });
 }
@@ -170,12 +181,14 @@ function correr(dir, argv, opciones = {}) {
       return new Promise((listo) => { cerrarIndicador = listo; });
     });
   }, ESPERA_PROGRESO);
-  /* El tope de cinco minutos va aquí y no en las opciones de spawn para que
-   * corte también a los nietos, igual que la cancelación. */
+  /* El tope va aquí y no en las opciones de spawn para que corte también a
+   * los nietos, igual que la cancelación. Es configurable
+   * (`sddToolkit.timeoutMinutos`, 5 por defecto). */
+  const minutos = cfg().timeoutMinutos;
   const limite = setTimeout(() => {
     excedido = true;
     matarArbol(hijo);
-  }, 300000);
+  }, minutos * 60000);
   const cerrar = () => {
     terminado = true;
     clearTimeout(indicador);
@@ -213,8 +226,8 @@ function correr(dir, argv, opciones = {}) {
       return;
     }
     if (excedido) {
-      reportarFallo(orden, 'tiempo agotado', stdout,
-        stderr || 'sin salida en cinco minutos', argv[0]);
+      reportarFallo(orden, 'tiempo agotado', stdout, stderr, argv[0],
+        `${argv[0]} excedió ${minutos} minuto(s) y se cortó`);
       return;
     }
     if (codigo !== 0) {

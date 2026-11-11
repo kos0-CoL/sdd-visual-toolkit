@@ -24,6 +24,12 @@
           "type": "string",
           "default": "cli/main.py",
           "description": "Ruta a cli/main.py relativa a la carpeta del proyecto."
+        },
+        "sddToolkit.timeoutMinutos": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "description": "Minutos que se espera a un comando de la paleta antes de cortarlo, con sus procesos hijos."
         }
       }
     },
