@@ -72,8 +72,12 @@ class TestPrepararManual(unittest.TestCase):
         r = self._solo_verificar()
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("Verificación de", r.stdout)
-        for linea in ("✓ ajustes", "✓ artefactos", "✓ estado", "✓ comandos"):
-            self.assertIn(linea, r.stdout)
+        self.assertIn("comprobación", r.stdout)
+        for nombre in ("ajustes", "snapshot", "artefactos", "comandos", "estado",
+                       "extensión", "arnés"):
+            self.assertRegex(r.stdout, rf"(?m)^  {nombre}\s+[✓⚠⛔]")
+        for nombre in ("ajustes", "artefactos", "estado", "comandos"):
+            self.assertRegex(r.stdout, rf"(?m)^  {nombre}\s+✓")
         self.assertIn("Casillas de ide/PRUEBA-MANUAL.md", r.stdout)
         self.assertIn("VS Code — extensión:", r.stdout)
         # No rehace nada: el archivo de más sigue donde estaba.

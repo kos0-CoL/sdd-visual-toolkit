@@ -57,6 +57,8 @@ fi
 verificar() {
     local destino="$1"
     local faltas=0
+    local filas
+    filas="$(mktemp)"
 
     if [ ! -d "$destino/.specify" ]; then
         echo "⛔ $destino no está preparado: falta .specify/" >&2
@@ -65,38 +67,42 @@ verificar() {
     fi
 
     echo "Verificación de $destino (no se rehace nada)"
-    echo
 
-    "$PYTHON" - "$RAIZ" "$destino" <<'PY' || faltas=$((faltas + 1))
+    # Cada comprobación deja una fila: nombre, estado (ok|aviso|fallo) y detalle.
+    "$PYTHON" - "$RAIZ" "$destino" >>"$filas" <<'PY'
 import json
 import subprocess
 import sys
 from pathlib import Path
 
 raiz, destino = Path(sys.argv[1]), Path(sys.argv[2])
-fallos = []
+
+
+def fila(nombre, estado, detalle):
+    print(f"{nombre}\t{estado}\t{detalle}")
+
 
 ajustes_path = destino / ".vscode" / "settings.json"
 if not ajustes_path.is_file():
-    fallos.append("⛔ ajustes     falta .vscode/settings.json")
+    fila("ajustes", "fallo", "falta .vscode/settings.json")
 else:
     ajustes = json.loads(ajustes_path.read_text(encoding="utf-8"))
     cli = Path(ajustes.get("sddToolkit.cliPath", ""))
+    python = ajustes.get("sddToolkit.python", "")
     if not cli.is_file():
-        fallos.append(f"⛔ ajustes     cliPath no existe: {cli}")
-    elif not ajustes.get("sddToolkit.python"):
-        fallos.append("⛔ ajustes     falta sddToolkit.python")
+        fila("ajustes", "fallo", f"cliPath no existe: {cli}")
+    elif not python:
+        fila("ajustes", "fallo", "falta sddToolkit.python")
     else:
-        print(f"✓ ajustes     cliPath {cli}")
-        print(f"              python {ajustes['sddToolkit.python']}"
-              f" · tope {ajustes.get('sddToolkit.timeoutMinutos')} min")
+        fila("ajustes", "ok", f"cliPath {cli} · python {python}"
+             f" · tope {ajustes.get('sddToolkit.timeoutMinutos')} min")
 
 productos = destino / "src" / "productos.py"
 snapshot = destino / ".specify" / "snapshots" / "TASK-001" / "0" / "src" / "productos.py"
 if productos.is_file():
-    print("✓ snapshot    src/productos.py presente (lo compara validate)")
+    fila("snapshot", "ok", "src/productos.py presente (lo compara validate)")
 elif snapshot.is_file():
-    fallos.append("⛔ snapshot    src/productos.py sin restaurar del snapshot 0")
+    fila("snapshot", "fallo", "src/productos.py sin restaurar del snapshot 0")
 
 esperados = {
     "Arquitectura": destino / ".specify" / "planes" / "PLAN-001.md",
@@ -105,39 +111,34 @@ esperados = {
 }
 faltan = [nombre for nombre, ruta in esperados.items() if not ruta.is_file()]
 if faltan:
-    fallos.append("⛔ artefactos  sin .md: " + ", ".join(faltan)
-                  + " (el clic derecho de esas fases no se puede probar)")
+    fila("artefactos", "fallo", "sin .md: " + ", ".join(faltan)
+         + " (el clic derecho de esas fases no se puede probar)")
 else:
-    print("✓ artefactos  plan, tareas e informe con su .md")
-
-prompts = sorted((destino / ".github" / "prompts").glob("*.prompt.md"))
-if prompts:
-    print(f"✓ comandos    .github/prompts/: {len(prompts)} archivo(s)")
-else:
-    fallos.append("⛔ comandos    .github/prompts/ vacío o ausente")
+    fila("artefactos", "ok", "plan, tareas e informe con su .md")
 
 proceso = subprocess.run(
     [sys.executable, str(raiz / "cli" / "main.py"), "--root", str(destino), "export"],
     capture_output=True, text=True)
 if proceso.returncode != 0:
     ultimo = (proceso.stderr.strip().splitlines() or ["sin mensaje"])[-1]
-    fallos.append(f"⛔ estado      export falló: {ultimo}")
+    fila("estado", "fallo", f"export falló: {ultimo}")
 else:
     datos = json.loads(proceso.stdout)
     progreso = datos["progreso"]
-    print(f"✓ estado      {datos['fase']} · {progreso['hechas']}/{progreso['total']}"
-          f" · siguiente {datos['navegacion']['recomendada']}")
+    detalle = (f"{datos['fase']} · {progreso['hechas']}/{progreso['total']}"
+               f" · siguiente {datos['navegacion']['recomendada']}")
     sin = [fase["fase"] for fase in datos["flujo"] if not fase.get("artefacto")]
     if sin:
-        print(f"  · fases sin artefacto: {', '.join(sin)}")
-
-for fallo in fallos:
-    print(fallo, file=sys.stderr)
-raise SystemExit(1 if fallos else 0)
+        detalle += f" · sin artefacto: {', '.join(sin)}"
+    fila("estado", "ok", detalle)
 PY
 
-    if ! "$PYTHON" "$RAIZ/cli/main.py" --root "$destino" comandos --verificar; then
-        faltas=$((faltas + 1))
+    local detalle
+    if detalle="$("$PYTHON" "$RAIZ/cli/main.py" --root "$destino" comandos --verificar 2>&1)"; then
+        printf 'comandos\tok\t%s\n' "$(printf '%s\n' "$detalle" | tail -1 \
+            | sed 's/^🟢 COMANDOS AL DÍA: //')" >>"$filas"
+    else
+        printf 'comandos\tfallo\t%s\n' "$(printf '%s\n' "$detalle" | tail -1)" >>"$filas"
     fi
 
     if command -v code >/dev/null 2>&1; then
@@ -145,12 +146,13 @@ PY
         ident="$(code --list-extensions --show-versions 2>/dev/null \
             | grep -i '^sdd-toolkit\.' || true)"
         if [ -n "$ident" ]; then
-            echo "✓ extensión    $ident"
+            printf 'extensión\tok\t%s\n' "$ident" >>"$filas"
         else
-            echo "⚠️ extensión    no instalada: instale el .vsix y recargue la ventana"
+            printf 'extensión\taviso\tno instalada: instale el .vsix y recargue la ventana\n' \
+                >>"$filas"
         fi
     else
-        echo "⚠️ extensión    sin comando code; no se puede comprobar"
+        printf 'extensión\taviso\tsin comando code; no se puede comprobar\n' >>"$filas"
     fi
 
     if command -v node >/dev/null 2>&1; then
@@ -158,19 +160,32 @@ PY
         salida="$(mktemp)"
         if node "$RAIZ/tests/js/arnes_extension.js" "$RAIZ" "$destino" "$PYTHON" \
                 >"$salida" 2>&1; then
-            echo "✓ arnés        $(tail -1 "$salida")"
-            echo "               (rompe y restaura un archivo de .github/prompts)"
+            printf 'arnés\tok\t%s\n' "$(tail -1 "$salida")" >>"$filas"
         else
-            faltas=$((faltas + 1))
-            echo "⛔ arnés        falló:" >&2
-            grep -E '^FAIL' "$salida" >&2 || tail -3 "$salida" >&2
+            printf 'arnés\tfallo\t%s\n' \
+                "$(grep -E '^FAIL' "$salida" | head -1 || tail -1 "$salida")" >>"$filas"
         fi
         rm -f "$salida"
     else
-        echo "⚠️ arnés        sin node; la vista no se puede ejercitar sin editor"
+        printf 'arnés\taviso\tsin node; la vista no se puede ejercitar sin editor\n' \
+            >>"$filas"
     fi
 
-    echo
+    "$PYTHON" - "$filas" <<'PY'
+import sys
+from pathlib import Path
+
+filas = [linea.split("\t")
+         for linea in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines() if linea]
+marca = {"ok": "✓", "aviso": "⚠️", "fallo": "⛔"}
+ancho = max(len(fila[0]) for fila in filas)
+print()
+print(f"  {'comprobación'.ljust(ancho)}  resultado")
+for nombre, estado, detalle in filas:
+    print(f"  {nombre.ljust(ancho)}  {marca[estado]} {detalle}")
+print()
+PY
+
     echo "Casillas de ide/PRUEBA-MANUAL.md que este entorno deja ejercitar:"
     "$PYTHON" - "$RAIZ" <<'PY'
 import sys
@@ -192,7 +207,10 @@ PY
     echo "  /tmp/sdd-manual/sub y las skills de Antigravity."
     echo "  Necesitan ojos en el editor: pintado, tooltips, menú contextual,"
     echo "  notificaciones y «Cancelar»."
+    echo "  El arnés rompe y restaura un archivo de .github/prompts por corrida."
     echo
+    faltas="$(grep -c $'\tfallo\t' "$filas" || true)"
+    rm -f "$filas"
     if [ "$faltas" -eq 0 ]; then
         echo "Entorno listo: abra VS Code en $destino y recorra la checklist."
     else
