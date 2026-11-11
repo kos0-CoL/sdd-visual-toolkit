@@ -2,9 +2,9 @@
 
 Los enlaces de las notas de release son URL absolutas a `blob/<tag>` y los
 revisa `scripts/verificar_release.py`; aquí se cubre lo otro: los enlaces
-relativos de los documentos del repo y las referencias `ruta.py::símbolo` de
-los documentos de remediación, que se rompen en silencio cuando el código se
-mueve.
+relativos de los documentos del repo, las referencias `ruta.py::símbolo` de
+los documentos de remediación y las rutas del repo citadas como código en la
+prosa, que se rompen en silencio cuando el código se mueve.
 """
 
 from __future__ import annotations
@@ -25,6 +25,20 @@ _DEFINICION = re.compile(r"^\[[^\]]+\]:\s*(\S+)", re.MULTILINE)
 _SIMBOLO = re.compile(
     r"`((?:cli|core|mcp|scripts|state|tests)/[\w./-]+\.py)::"
     r"([A-Za-z_][A-Za-z0-9_]*)`")
+
+# Rutas del repo citadas en la prosa como código: `cli/main.py`,
+# `tests/test_ide.py`. Solo se revisan las que empiezan por una carpeta de
+# este repo o son un archivo de la raíz; `specs/`, `.specify/`, `src/` y las
+# rutas absolutas son del proyecto del usuario y no existen aquí.
+_CITA = re.compile(r"`([^`\n]+)`")
+_CARPETAS_REPO = ("cli/", "core/", "ide/", "mcp/", "scripts/", "state/",
+                  "tests/", "docs/")
+_ARCHIVOS_REPO = ("README.md", "CHANGELOG.md", "CONTRIBUTING.md",
+                  "CODE_OF_CONDUCT.md", "SECURITY.md", "LICENSE",
+                  "pyproject.toml", "requirements-dev.txt")
+# Marcas de que el texto no es una ruta concreta: huecos, comodines o
+# versiones de plantilla (`docs/release-notes-vX.Y.Z.md`).
+_NO_ES_RUTA = re.compile(r"[<>{}*…\s]|::|^[./~]|X\.Y\.Z|\.\.\.")
 
 # Carpetas que el toolkit escribe en el proyecto del usuario, no en este repo.
 GENERADAS = (".claude/skills/", ".cursor/commands/", ".github/prompts/",
@@ -95,6 +109,27 @@ class TestReferenciasASimbolos(unittest.TestCase):
                               f"{ruta.relative_to(RAIZ)} cita "
                               f"{archivo}::{simbolo}, que ya no está")
         self.assertGreater(revisados, 3, "no se encontró ninguna referencia")
+
+
+class TestRutasCitadas(unittest.TestCase):
+    """`cli/main.py` citado en la prosa tiene que seguir estando."""
+
+    def test_las_rutas_citadas_existen(self):
+        revisadas = 0
+        for ruta in documentos():
+            for cita in _CITA.findall(_sin_bloques(ruta)):
+                candidato = cita.strip()
+                if _NO_ES_RUTA.search(candidato):
+                    continue
+                if not (candidato.startswith(_CARPETAS_REPO) or
+                        candidato in _ARCHIVOS_REPO):
+                    continue
+                revisadas += 1
+                self.assertTrue(
+                    (RAIZ / candidato).exists(),
+                    f"{ruta.relative_to(RAIZ)} cita {candidato}, que no existe")
+        self.assertGreater(revisadas, 100,
+                           "la revisión no encontró rutas: ¿cambió el formato?")
 
 
 if __name__ == "__main__":

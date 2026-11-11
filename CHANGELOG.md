@@ -38,9 +38,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   regenerarlos si el toolkit cambia de sitio; los pasos sugeridos incluyen
   `[ comandos ]`.
 - Una prueba recorre los documentos del repo y falla si un enlace relativo
-  apunta a una ruta que no existe o si un documento cita `archivo.py::símbolo`
-  y ese símbolo ya no está; los bloques de código y las carpetas que el
-  toolkit escribe en el proyecto del usuario quedan fuera.
+  apunta a una ruta que no existe, si un documento cita `archivo.py::símbolo`
+  y ese símbolo ya no está, o si la prosa cita como código una ruta del repo
+  —«`cli/main.py`», «`tests/test_ide.py`»— que ya no existe; los bloques de
+  código y las carpetas que el toolkit escribe en el proyecto del usuario
+  quedan fuera.
 - El verificador posterior exige que la release adjunte
   `sdd-visual-toolkit-X.Y.Z.vsix` con tamaño mayor que cero desde la 0.1.5, en
   vez de dejar ese adjunto a una revisión a mano.
