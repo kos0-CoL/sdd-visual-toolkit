@@ -11,6 +11,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La extensión lleva su `LICENSE` (copia del del repo) y un `.vscodeignore`:
   `vsce` empaqueta solo `extension.js`, `package.json`, el `readme.md` y la
   licencia, sin avisos de archivos faltantes ni de sobrantes.
+- `scripts/verificar_vsix.py` revisa un `.vsix`: manifiesto y extensión
+  presentes, ningún archivo vacío, sin `.vscodeignore` ni `.vsix` dentro y sin
+  sobrantes en `extension/`. Antes solo se sabía abriendo el zip a mano.
 - `scripts/preparar-manual.sh` deja lista la pasada manual del IDE en un paso:
   copia el fixture, escribe `.vscode/settings.json` con la ruta absoluta,
   restaura `src/productos.py` del snapshot 0, genera los comandos de copilot,

@@ -35,8 +35,10 @@ Hace lo que antes se copiaba a mano: copia el fixture
 `src/productos.py` desde el snapshot 0 (lo que compara `validate`), genera los
 14 comandos de copilot y comprueba con `toolkit comandos --verificar` que sus
 rutas existen. Sin `--sin-vsix` empaqueta además
-`sdd-visual-toolkit-<versión>.vsix`; si el destino ya existe se niega a
-borrarlo salvo con `--force`. Con `--instalar` corre
+`sdd-visual-toolkit-<versión>.vsix`, falla si `vsce` deja algún `WARNING` y
+comprueba con `scripts/verificar_vsix.py` que el paquete lleve la extensión, el
+manifiesto, el `readme.md` y la licencia, sin archivos vacíos ni sobrantes; si
+el destino ya existe se niega a borrarlo salvo con `--force`. Con `--instalar` corre
 `code --install-extension <vsix> --force` al terminar (necesita empaquetar, así
 que no se combina con `--sin-vsix`).
 

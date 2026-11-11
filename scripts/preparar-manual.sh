@@ -106,8 +106,25 @@ PY
 )"
     mkdir -p "$VSIX_DIR"
     VSIX="$VSIX_DIR/sdd-visual-toolkit-$VERSION.vsix"
-    ( cd "$RAIZ/ide/vscode" && npx --yes @vscode/vsce package \
-        --out "$VSIX" --allow-missing-repository >/dev/null )
+    LOG="$(mktemp)"
+    # Se guarda la salida para poder enseñarla: un aviso de `vsce` avisa de un
+    # paquete mal armado, y silenciarlo sería empeorarlo.
+    if ! ( cd "$RAIZ/ide/vscode" && npx --yes @vscode/vsce package \
+            --out "$VSIX" --allow-missing-repository >"$LOG" 2>&1 ); then
+        cat "$LOG" >&2
+        rm -f "$LOG"
+        echo "⛔ falló el empaquetado del .vsix" >&2
+        exit 1
+    fi
+    if grep -q "WARNING" "$LOG"; then
+        grep "WARNING" "$LOG" >&2
+        rm -f "$LOG"
+        echo "⛔ el empaquetado dejó avisos; revíselos antes de instalar" >&2
+        exit 1
+    fi
+    rm -f "$LOG"
+    # Y el contenido: un `.vsix` con la extensión vacía instala y no arranca.
+    "$PYTHON" "$RAIZ/scripts/verificar_vsix.py" "$VSIX"
     echo "✓ .vsix: $VSIX"
     echo "  (empaquetado desde esta copia, no desde la release)"
 fi
