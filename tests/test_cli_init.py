@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
 import os
 import sys
 import tempfile
@@ -92,6 +93,48 @@ class TestInitNoAnida(unittest.TestCase):
         codigo, salida = _despachar(["init", str(self.base)])
         self.assertEqual(codigo, 0, salida)
         self.assertEqual(nota.read_text(encoding="utf-8"), "mia")
+
+
+class TestInitDejaElIDEListo(unittest.TestCase):
+    """Al abrir la carpeta, la capa visual ya sabe qué ejecutar (§29)."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.raiz = Path(tmp.name).resolve() / "proyecto"
+        codigo, salida = _despachar(["--root", str(self.raiz), "init"])
+        self.assertEqual(codigo, 0, salida)
+
+    def _json(self, nombre):
+        ruta = self.raiz / ".vscode" / nombre
+        return json.loads(ruta.read_text(encoding="utf-8"))
+
+    def test_la_extension_sabe_que_ejecutar(self):
+        ajustes = self._json("settings.json")
+        cli = Path(ajustes["sddToolkit.cliPath"])
+        self.assertTrue(cli.is_absolute(), ajustes)
+        self.assertEqual(cli.name, "main.py")
+        self.assertTrue(cli.is_file())
+        self.assertTrue(ajustes["sddToolkit.python"])
+
+    def test_las_tareas_apuntan_al_workspace(self):
+        tareas = self._json("tasks.json")["tasks"]
+        por_etiqueta = {tarea["label"]: tarea for tarea in tareas}
+        self.assertIn("SDD: estado", por_etiqueta)
+        self.assertEqual(por_etiqueta["SDD: estado"]["args"][-1], "status")
+        for tarea in tareas:
+            self.assertIn("--root", tarea["args"])
+            self.assertIn("${workspaceFolder}", tarea["args"])
+            self.assertEqual(tarea["options"]["cwd"], "${workspaceFolder}")
+
+    def test_no_toca_un_settings_que_ya_existe(self):
+        destino = self.raiz / ".vscode" / "settings.json"
+        mio = '{"editor.tabSize": 2}\n'
+        destino.write_text(mio, encoding="utf-8")
+        codigo, salida = _despachar(["--root", str(self.raiz), "init"])
+        self.assertEqual(codigo, 0, salida)
+        self.assertEqual(destino.read_text(encoding="utf-8"), mio)
+        self.assertIn("ya existía", salida)
 
 
 if __name__ == "__main__":

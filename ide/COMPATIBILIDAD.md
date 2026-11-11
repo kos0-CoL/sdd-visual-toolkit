@@ -39,8 +39,9 @@ toolkit comandos --cliente <cliente>
 ### VS Code
 
 1. Instalar el `.vsix` de la última release (*Extensiones → … → Instalar
-   desde VSIX…*) y configurar `sddToolkit.cliPath` con la ruta absoluta a
-   `cli/main.py`.
+   desde VSIX…*). `toolkit init` ya deja `sddToolkit.cliPath` y
+   `sddToolkit.python` en `.vscode/settings.json`; en proyectos creados antes,
+   configúrelos a mano con la ruta absoluta a `cli/main.py`.
 2. Comprobar que la paleta `SDD: …` ejecuta el comando y deja su salida en el
    canal `SDD Toolkit` (con notificación si falla; `clarify`, que pregunta
    por stdin, sigue en la terminal), que la vista `SDD → Fases y tareas`
@@ -68,6 +69,9 @@ toolkit comandos --cliente <cliente>
 ### Antigravity
 
 1. `toolkit comandos --cliente antigravity`; quedan en `.agents/skills/`.
+   `toolkit init` deja además las tareas `SDD: …` en `.vscode/tasks.json`: si
+   Antigravity lee las tareas de VS Code, aparecen sin instalar nada (sin
+   verificar).
    No se generan *workflows*: ese mecanismo está deprecado y la migración es
    hacia skills.
 2. Aquí no hay comandos de barra: el agente ve las skills por nombre y

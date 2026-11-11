@@ -51,6 +51,10 @@ La ruta de `--root` va **antes** del subcomando.
 - [ ] Cancelar: pulsar «Cancelar» en ese progreso. Aparece `SDD: <comando>
       cancelado`, el canal guarda lo que alcanzó a imprimir con
       `(cancelado)` y la vista se refresca; **no** sale notificación de error.
+- [ ] Abrir un proyecto recién inicializado (`python3 cli/main.py --root
+      /tmp/sdd-init init`) en VS Code: la vista `SDD → Fases y tareas`
+      funciona sin configurar `cliPath` (lo dejó `.vscode/settings.json`) y
+      *Terminal → Ejecutar tarea* lista las tareas `SDD: …`.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece
