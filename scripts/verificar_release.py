@@ -17,7 +17,10 @@ Comprueba en un solo comando, para una versión dada:
 6. que cada enlace de las notas a un repositorio de GitHub sea
    `.../blob/<tag>/<ruta>` en este mismo repositorio y que la ruta exista en
    esa ref: se rechazan los relativos, los `/tree/`, otras refs y los enlaces
-   a otro repositorio.
+   a otro repositorio;
+7. desde `v0.1.5`, que la release adjunte `sdd-visual-toolkit-X.Y.Z.vsix`:
+   es la extensión que se instala desde la página y se sube a mano, así que
+   un release sin el adjunto no está terminado.
 
 Con `--previo` comprueba lo que se puede saber **antes** de crear el tag
 (tag libre, árbol limpio, `HEAD` en `origin/main` y con el CI en verde,
@@ -69,6 +72,10 @@ _TAG_VERSION = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 # 404. El tag es inmutable y las notas del árbol ya se corrigieron, así que esa
 # versión se compara con el árbol y no con la copia del tag.
 NOTAS_DEL_ARBOL = {"v0.1.0"}
+
+# Primera release que adjunta la extensión empaquetada. Las anteriores no la
+# llevan, así que no se les puede exigir el adjunto.
+PRIMERA_CON_VSIX = (0, 1, 5)
 
 
 @dataclass(frozen=True)
@@ -253,6 +260,27 @@ def _vinetas_sin_publicar(changelog: str) -> list[str]:
 
 def _tupla(version: str) -> tuple[int, ...]:
     return tuple(int(parte) for parte in version.split("."))
+
+
+def _adjuntos(correr_comando: Callable[[list[str]], Salida], tag: str,
+              version: str) -> tuple[bool, str]:
+    """La release tiene que llevar el `.vsix` que se instala desde la página."""
+    esperado = f"sdd-visual-toolkit-{version}.vsix"
+    consulta = correr_comando(["gh", "release", "view", tag, "--json",
+                               "assets"])
+    if consulta.codigo != 0:
+        return False, (f"no se pudieron leer los adjuntos de {tag}: "
+                       f"{consulta.stderr or consulta.stdout}")
+    try:
+        adjuntos = json.loads(consulta.stdout).get("assets") or []
+        tamanos = {a.get("name"): int(a.get("size") or 0) for a in adjuntos}
+    except (json.JSONDecodeError, AttributeError, TypeError, ValueError):
+        return False, f"gh devolvió datos ilegibles sobre los adjuntos de {tag}"
+    if tamanos.get(esperado, 0) > 0:
+        return True, f"release {tag} adjunta {esperado}"
+    return False, (f"a la release {tag} le falta {esperado} (o pesa 0): "
+                   f"súbalo con `gh release upload {tag} "
+                   f"ide/vscode/{esperado}`")
 
 
 def verificar_previo(version: str,
@@ -451,6 +479,8 @@ def verificar(version: str,
                    if not borrador and not previa
                    else f"release {tag} sin publicar (borrador={borrador}, "
                         f"previa={previa})")
+            if _tupla(version) >= PRIMERA_CON_VSIX:
+                anotar(*(_adjuntos(correr_comando, tag, version)))
 
     if tag in NOTAS_DEL_ARBOL:
         notas = _notas_del_arbol(tag, raiz)

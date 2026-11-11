@@ -123,11 +123,11 @@ Revisa, para `vX.Y.Z`:
    en esa ref —no en `main`, que sigue avanzando—: se rechazan los relativos,
    los `/tree/`, otras refs y los enlaces a otro repositorio. Sin `blob` solo
    pasan las páginas de GitHub que no son ficheros (`compare`, `commits`,
-   `releases`, `tags`) y el `git clone` de un bloque de código.
-
-El `.vsix` no lo revisa el script, porque las releases anteriores a v0.1.5 no
-lo adjuntan: compruebe a mano que quedó en la página, con la versión del tag
-y el nombre que genera `vsce`.
+   `releases`, `tags`) y el `git clone` de un bloque de código;
+7. desde `v0.1.5`, que la release adjunte `sdd-visual-toolkit-X.Y.Z.vsix` con
+   tamaño mayor que cero: el adjunto se sube a mano y uno olvidado deja la
+   página sin la extensión. Las versiones anteriores del formato no lo
+   llevaban, así que a esas no se les exige.
 
 `v0.1.0` es la excepción documentada: sus notas enlazaban en relativo, GitHub
 las resolvía contra la raíz del repo y las cuatro daban 404, y su tag no se
