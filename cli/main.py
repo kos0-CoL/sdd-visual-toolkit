@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from cli.commands import enrich as cmd_enrich  # noqa: E402
 from cli.commands import clarify as cmd_clarify  # noqa: E402
+from cli.commands import comandos as cmd_comandos  # noqa: E402
 from cli.commands import investigar as cmd_investigar  # noqa: E402
 from cli.commands import instrucciones as cmd_instrucciones  # noqa: E402
 from cli.commands import hooks as cmd_hooks  # noqa: E402
@@ -359,6 +360,15 @@ def construir_parser() -> argparse.ArgumentParser:
     p_export = sub.add_parser("export",
                               help="foto JSON para IDE/MCP (RF-38)")
     p_export.set_defaults(func=cmd_export.despachar)
+
+    p_comandos = sub.add_parser(
+        "comandos", help="comandos de barra para agentes (§31)")
+    p_comandos.add_argument(
+        "--cliente", action="append", default=None,
+        choices=sorted(cmd_comandos.agent_commands.CLIENTES),
+        help=("repetible: claude|cursor|copilot|windsurf|antigravity; "
+              "sin él, todos"))
+    p_comandos.set_defaults(func=cmd_comandos.despachar)
 
     p_impl = sub.add_parser("implement", help="alias de build (RF-36)")
     p_impl.add_argument("texto", nargs="?", default=None, help="PLAN-ID")
