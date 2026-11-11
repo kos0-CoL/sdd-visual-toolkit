@@ -69,7 +69,10 @@ def _guardar(raiz: Path, registro: RegistroRequerimientos) -> None:
 
 
 def cmd_init(args) -> int:
-    destino = Path(args.path or ".")
+    # `--root` es la opción global de todos los comandos (la extensión de VS
+    # Code la pasa siempre); init la ignoraba y creaba .specify/ en la carpeta
+    # actual. El path posicional, más específico, sigue mandando si se da.
+    destino = Path(args.path or getattr(args, "root", None) or ".")
     raiz = store.inicializar_proyecto(destino)
     print(f"🟢 PROYECTO INICIALIZADO: {raiz}")
     print("Estado:")
@@ -151,7 +154,8 @@ def construir_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="comando", required=True)
 
     p_init = sub.add_parser("init", help="inicializar proyecto")
-    p_init.add_argument("path", nargs="?", default=None)
+    p_init.add_argument("path", nargs="?", default=None,
+                        help="destino (por defecto, --root o la carpeta actual)")
     p_init.set_defaults(func=cmd_init)
 
     p_req = sub.add_parser("req", help="gestionar requerimientos (RF-01)")
