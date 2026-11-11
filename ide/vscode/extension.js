@@ -107,6 +107,22 @@ function mostrarSalida(orden, codigo, texto) {
   canal.show(true);
 }
 
+/* Un fallo se ve siempre igual: la primera línea en la notificación y el
+ * resto detrás de «Ver salida», se haya ejecutado capturado o no. */
+function reportarFallo(orden, codigo, stdout, stderr, nombre) {
+  const completo = [stdout, stderr].filter(Boolean).join('\n');
+  const aviso = primeraLinea(stdout) || primeraLinea(stderr);
+  const mensaje = 'SDD: ' +
+    (aviso || `${nombre} falló (código ${codigo || 'error'})`);
+  Promise.resolve(
+    vscode.window.showErrorMessage(mensaje, 'Ver salida')
+  ).then((elegido) => {
+    if (elegido === 'Ver salida') {
+      mostrarSalida(orden, codigo || 'error', completo);
+    }
+  });
+}
+
 /* Los comandos rápidos no deben dejar un parpadeo de progreso; a partir de
  * aquí el usuario ya está esperando y necesita saber que algo corre. */
 const ESPERA_PROGRESO = 400;
@@ -136,20 +152,12 @@ function correr(dir, argv, opciones = {}) {
   execFile(cfg().python, [rutaCli(dir), '--root', dir, ...argv],
     { cwd: dir, timeout: 300000 }, (err, stdout, stderr) => {
       cerrar();
-      const completo = [stdout, stderr].filter(Boolean).join('\n');
-      const aviso = primeraLinea(stdout) || primeraLinea(stderr);
       if (err) {
-        const mensaje = 'SDD: ' +
-          (aviso || `${argv[0]} falló (código ${err.code || 'error'})`);
-        Promise.resolve(
-          vscode.window.showErrorMessage(mensaje, 'Ver salida')
-        ).then((elegido) => {
-          if (elegido === 'Ver salida') {
-            mostrarSalida(orden, err.code || 'error', completo);
-          }
-        });
+        reportarFallo(orden, err.code, stdout, stderr, argv[0]);
         return;
       }
+      const completo = [stdout, stderr].filter(Boolean).join('\n');
+      const aviso = primeraLinea(stdout) || primeraLinea(stderr);
       mostrarSalida(orden, 0, completo);
       if (opciones.refrescar) refrescar();
       if (opciones.avisoExito) {
@@ -168,6 +176,26 @@ function inicializar(dir) {
   });
 }
 
+/* `clarify` pregunta por stdin, así que corre en el terminal; pero un SPEC-ID
+ * inexistente falla antes de preguntar nada y ese ⛔ se perdía al fondo. Se
+ * valida con `--list`, que solo lee, y el terminal se abre si pasa. */
+function validarYTerminal(dir, argv) {
+  const orden = comando(dir, argv);
+  if (argv.length < 2) {
+    terminal().sendText(orden);
+    return;
+  }
+  execFile(cfg().python,
+    [rutaCli(dir), '--root', dir, argv[0], '--list', argv[1]],
+    { cwd: dir, timeout: 300000 }, (err, stdout, stderr) => {
+      if (!err) {
+        terminal().sendText(orden);
+        return;
+      }
+      reportarFallo(orden, err.code, stdout, stderr, argv[0]);
+    });
+}
+
 /* Acceso a la CLI desde la paleta y desde la vista lateral. `cliArgs` llega
  * como array (texto libre con espacios) o como la orden que trae `export`. */
 function ejecutar(cliArgs) {
@@ -182,7 +210,7 @@ function ejecutar(cliArgs) {
     return;
   }
   if (INTERACTIVOS.has(argv[0])) {
-    terminal().sendText(comando(dir, argv));
+    validarYTerminal(dir, argv);
     return;
   }
   correr(dir, argv);

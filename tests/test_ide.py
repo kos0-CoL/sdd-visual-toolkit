@@ -86,11 +86,30 @@ class TestManifiesto(unittest.TestCase):
         cuerpo = corrida.group(0)
         self.assertIn("execFile", cuerpo)
         self.assertIn("[rutaCli(dir), '--root', dir, ...argv]", cuerpo)
-        self.assertIn("showErrorMessage", cuerpo)
+        self.assertIn("reportarFallo", cuerpo)
         # El aviso ofrece la salida completa de la CLI, no solo su primera línea.
-        self.assertIn("'Ver salida'", cuerpo)
-        self.assertIn("mostrarSalida", cuerpo)
+        aviso = re.search(r"function reportarFallo\(.*?\n\}", fuente, re.S)
+        self.assertIsNotNone(aviso, "falta el aviso de fallo")
+        cuerpo_aviso = aviso.group(0)
+        self.assertIn("showErrorMessage", cuerpo_aviso)
+        self.assertIn("'Ver salida'", cuerpo_aviso)
+        self.assertIn("mostrarSalida", cuerpo_aviso)
         self.assertIn("createOutputChannel", fuente)
+
+    def test_clarify_valida_antes_de_abrir_el_terminal(self):
+        """`clarify` es interactivo, pero un SPEC-ID inexistente falla antes:
+        ese ⛔ tiene que notificarse y no abrir el terminal."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        validador = re.search(r"function validarYTerminal\(dir, argv\).*?\n\}",
+                              fuente, re.S)
+        self.assertIsNotNone(validador, "falta la validación previa de clarify")
+        cuerpo = validador.group(0)
+        self.assertIn("'--list', argv[1]", cuerpo)
+        self.assertIn("terminal().sendText(orden)", cuerpo)
+        self.assertIn("reportarFallo", cuerpo)
+        despacho = re.search(r"function ejecutar\(cliArgs\).*?\n\}", fuente, re.S)
+        self.assertIsNotNone(despacho, "falta el despacho de comandos")
+        self.assertIn("validarYTerminal(dir, argv)", despacho.group(0))
 
     def test_solo_clarify_va_al_terminal(self):
         """`clarify` pregunta por stdin: el resto se puede capturar."""
@@ -101,8 +120,10 @@ class TestManifiesto(unittest.TestCase):
         self.assertIsNotNone(despacho, "falta el despacho de comandos")
         cuerpo = despacho.group(0)
         self.assertIn("INTERACTIVOS.has(argv[0])", cuerpo)
-        self.assertIn("terminal().sendText", cuerpo)
+        self.assertIn("validarYTerminal(dir, argv)", cuerpo)
         self.assertIn("correr(dir, argv)", cuerpo)
+        # El terminal se abre desde la validación, no desde el despacho.
+        self.assertIn("terminal().sendText(orden)", fuente)
 
     def test_comando_largo_muestra_progreso(self):
         """`build` y `test` tardan: la paleta avisa en vez de esperar callada."""
