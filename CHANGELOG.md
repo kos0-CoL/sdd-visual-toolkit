@@ -8,6 +8,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- `init` puede dejar los comandos del agente generados en el acto: pregunta
+  por el cliente cuando hay terminal, acepta `--cliente` repetible para no
+  preguntar y `--sin-comandos` para omitirlo. Sin terminal no pregunta, porque
+  la extensión y los scripts quedarían esperando una respuesta inexistente.
 - `toolkit comandos --verificar` revisa lo ya generado sin reescribirlo: saca
   la ruta absoluta que lleva cada archivo y falla si ya no existe, indicando
   cuántos archivos apuntan a ella, dónde está este toolkit y la orden para
