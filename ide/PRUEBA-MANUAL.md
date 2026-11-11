@@ -23,6 +23,19 @@ La pasada del 2026-11-11 se hizo **sin editor** (arnés headless, 41/41 en
 verde): no habilita ninguna casilla. El detalle de lo cubierto y de lo que
 falta está en `ide/COMPATIBILIDAD.md`.
 
+Ese mismo día hubo una segunda pasada **dentro del editor**, sobre una instancia
+con perfil aislado. Se marcaron seis casillas de la superficie extensión —barra
+de estado con su tooltip, vista `Fases y tareas`, vista `Flujo SDD` con tooltip,
+clic derecho que abre `PLAN-001.md` en vista previa, paleta `SDD: Estado +
+siguiente` y el fallo de `build PLAN-999`—. El resto sigue sin marcar: progreso
+con «Cancelar», tope `timeoutMinutos`, `pin` de dos datos, vacíos y `Escape`,
+estado vacío, CLI rota y todas las de comandos de barra (no hay sesión de
+Copilot en ese perfil).
+
+Ojo con el estado: ejecutar comandos lo mueve. Tras `build`, la tarea actual
+deja de ser `—` y las píldoras cambian; para repetir la lista desde la línea
+base hace falta `scripts/preparar-manual.sh --force`.
+
 ## Preparación
 
 Se prueba sobre un proyecto ya inicializado, no sobre uno vacío (para el
@@ -72,17 +85,19 @@ scripts/preparar-manual.sh --solo-verificar   # ¿sirve lo que ya hay?
 `ide/vscode/package.json` declara `0.1.5`; sirve el `.vsix` de esa release o el
 que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
 
-- [ ] Instalar: `code --install-extension sdd-visual-toolkit-0.1.5.vsix`.
-      Recargar la ventana.
-- [ ] Abrir `/tmp/sdd-manual` como carpeta.
+- [x] Instalar: `code --install-extension sdd-visual-toolkit-0.1.5.vsix`.
+      Recargar la ventana. *(2026-11-11: instalada en un perfil aislado; el
+      registro de la extensión muestra `onStartupFinished`.)*
+- [x] Abrir `/tmp/sdd-manual` como carpeta. *(2026-11-11: título de la ventana
+      `sdd-manual`.)*
 - [ ] Ajustar `sddToolkit.cliPath` con la ruta absoluta a `cli/main.py`
       del repo. El valor por defecto es relativa al proyecto y el fixture
       no trae la CLI.
-- [ ] Recargar y mirar la barra de estado: el icono, `SDD: <fase>` a la
+- [x] Recargar y mirar la barra de estado: el icono, `SDD: <fase>` a la
       izquierda,
       con tooltip «Siguiente: …». Si no aparece, revisar la salida de la
       extensión.
-- [ ] Vista `SDD → Fases y tareas`. Con el fixture debe leerse: fase
+- [x] Vista `SDD → Fases y tareas`. Con el fixture debe leerse: fase
       `🧪 Pruebas`, `Progreso: 1/18`, `Tarea actual: —`,
       `Pruebas: ✅ P=2 F=0 cob=100% (TASK-001)`,
       `➡ Siguiente: build PLAN-001`, un grupo `Píldoras` con cuatro entradas
@@ -92,7 +107,7 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       Recuperación pendientes). Cualquier diferencia es un hallazgo.
 - [ ] Clic en un nodo con comando: corre ese comando y su salida aparece en
       el canal `SDD Toolkit`. Clic en una píldora bloqueada: no pasa nada.
-- [ ] Fallo visible: `SDD: Implementar (build)` con `PLAN-999` muestra una
+- [x] Fallo visible: `SDD: Implementar (build)` con `PLAN-999` muestra una
       notificación de error con `plan inexistente: PLAN-999`; su botón `Ver
       salida` abre el canal con la orden, el código y la salida completa.
       Cerrar la notificación sin pulsarlo no abre el canal.
@@ -113,7 +128,7 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       /tmp/sdd-init init`) en VS Code: la vista `SDD → Fases y tareas`
       funciona sin configurar `cliPath` (lo dejó `.vscode/settings.json`) y
       *Terminal → Ejecutar tarea* lista las tareas `SDD: …`.
-- [ ] Vista `SDD → Flujo SDD`: nueve fases en orden, cada una con su estado
+- [x] Vista `SDD → Flujo SDD`: nueve fases en orden, cada una con su estado
       a la derecha y, al pasar el mouse, la skill (`skill /sdd-plan`) y el
       artefacto. En un proyecto con SPEC, la fila Especificación muestra
       `specs/SPEC-001.md`, y un clic en Aclaraciones ejecuta `clarify

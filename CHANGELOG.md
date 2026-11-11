@@ -15,6 +15,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   `pyproject.toml`: `pytest -m "not lento"` deja fuera el arnés y sus catorce
   invocaciones a la CLI (medido: 30,2 s frente a 38,7 s). Con `-q` sin filtro
   se sigue corriendo todo, también en CI.
+- Primera pasada **dentro de un editor**: la extensión `0.1.5` en VS Code
+  1.142.0, sobre un perfil aislado, con seis casillas de 29 en verde (barra de
+  estado y tooltip, `Fases y tareas`, `Flujo SDD` con tooltip, clic derecho a
+  `Preview PLAN-001.md`, paleta `status` y fallo de `build PLAN-999`). Las demás
+  siguen sin marcar y no se promueve ninguna fila a `✅ verificado`.
 - `ide/COMPATIBILIDAD.md` deja una plantilla prellenada con los datos del
   entorno (versión, proyecto, sistema, fecha) para que la pasada en editor sea
   escribir lo observado y cambiar tres filas, sin tocar la tabla a mano.
