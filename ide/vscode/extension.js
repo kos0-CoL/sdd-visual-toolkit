@@ -65,8 +65,13 @@ function terminal() {
 /* Lo conecta `activate` para refrescar la vista y la barra tras cambiar el
  * estado fuera del terminal. */
 let refrescar = () => {};
-/* Canal de salida: la notificación lleva una línea y el resto cabe aquí. */
+/* Canal de salida: hace de consola de la paleta y conserva lo que imprimió
+ * la CLI, que ya no corre en un terminal. */
 let canal = null;
+
+/* Comandos que preguntan por stdin: solo tienen sentido en un terminal, donde
+ * se puede escribir la respuesta. `clarify` sin `--answer` es ese caso. */
+const INTERACTIVOS = new Set(['clarify']);
 
 /* La CLI empieza sus avisos con 🟢 o ⛔: en una notificación sobra el símbolo.
  * Van en alternancia y no en una clase: 🟢 está fuera del BMP y una clase sin
@@ -76,57 +81,89 @@ function primeraLinea(texto) {
   return linea.replace(/^(?:🟢|⛔)\s*/, '').trim();
 }
 
-/* «Ver salida» de la notificación: la orden exacta y todo lo que imprimió la
- * CLI, que es lo que hace falta para reproducir el fallo. */
+/* Argumento tal como se escribiría a mano: con comillas si lleva espacios. */
+function citar(argumento) {
+  return /\s/.test(argumento) ? `"${argumento}"` : argumento;
+}
+
+function rutaCli(dir) {
+  const { cliPath } = cfg();
+  return path.isAbsolute(cliPath) ? cliPath : path.join(dir, cliPath);
+}
+
+/* Orden completa, para mostrarla y poder copiarla tal cual. */
+function comando(dir, argv) {
+  return [cfg().python, citar(rutaCli(dir)), '--root', citar(dir),
+    ...argv.map(citar)].join(' ');
+}
+
+/* «Ver salida» de la notificación y consola de los comandos: la orden exacta
+ * con su código y todo lo que imprimió la CLI. Se acumula como un terminal. */
 function mostrarSalida(orden, codigo, texto) {
   if (!canal) canal = vscode.window.createOutputChannel('SDD Toolkit');
-  canal.clear();
   canal.appendLine(`$ ${orden}   (código ${codigo})`);
   canal.appendLine((texto || '').trim() || '(sin salida)');
+  canal.appendLine('');
   canal.show(true);
 }
 
-/* `init` no va al terminal como el resto: si ya hay un proyecto toolkit por
- * encima, la CLI sale con 1 y su aviso se quedaba al fondo del terminal, así
- * que desde la paleta el comando parecía no haber hecho nada. */
-function inicializar(dir) {
-  const { python, cliPath } = cfg();
-  const cli = path.isAbsolute(cliPath) ? cliPath : path.join(dir, cliPath);
-  execFile(python, [cli, '--root', dir, 'init'],
-    { cwd: dir, timeout: 30000 }, (err, stdout, stderr) => {
+/* La paleta ejecuta capturando la salida: así el código de salida llega al
+ * IDE y un fallo se ve como notificación con la salida a un clic, en vez de
+ * quedar al fondo de un terminal que nadie mira. */
+function correr(dir, argv, opciones = {}) {
+  const orden = comando(dir, argv);
+  execFile(cfg().python, [rutaCli(dir), '--root', dir, ...argv],
+    { cwd: dir, timeout: 300000 }, (err, stdout, stderr) => {
+      const completo = [stdout, stderr].filter(Boolean).join('\n');
       const aviso = primeraLinea(stdout) || primeraLinea(stderr);
       if (err) {
-        const completo = [stdout, stderr].filter(Boolean).join('\n');
-        const orden = `${python} "${cli}" --root "${dir}" init`;
-        Promise.resolve(vscode.window.showErrorMessage(
-          'SDD: ' + (aviso || `init falló (${err.code || 'error'})`),
-          'Ver salida')).then((elegido) => {
+        const mensaje = 'SDD: ' +
+          (aviso || `${argv[0]} falló (código ${err.code || 'error'})`);
+        Promise.resolve(
+          vscode.window.showErrorMessage(mensaje, 'Ver salida')
+        ).then((elegido) => {
           if (elegido === 'Ver salida') {
-            mostrarSalida(orden, err.code, completo);
+            mostrarSalida(orden, err.code || 'error', completo);
           }
         });
         return;
       }
-      refrescar();
-      vscode.window.showInformationMessage(
-        'SDD: ' + (aviso || 'proyecto inicializado'));
+      mostrarSalida(orden, 0, completo);
+      if (opciones.refrescar) refrescar();
+      if (opciones.avisoExito) {
+        vscode.window.showInformationMessage(
+          'SDD: ' + (aviso || opciones.avisoExito));
+      }
     });
 }
 
-/* Acceso a la CLI desde la paleta y desde la vista lateral. */
+/* `init` es el único que además confirma con notificación y refresca: crea la
+ * estructura y la vista tiene que reflejarlo. */
+function inicializar(dir) {
+  correr(dir, ['init'], {
+    avisoExito: 'proyecto inicializado',
+    refrescar: true,
+  });
+}
+
+/* Acceso a la CLI desde la paleta y desde la vista lateral. `cliArgs` llega
+ * como array (texto libre con espacios) o como la orden que trae `export`. */
 function ejecutar(cliArgs) {
   const dir = carpeta();
   if (!dir) {
     vscode.window.showErrorMessage('SDD: abra una carpeta primero.');
     return;
   }
-  if (cliArgs === 'init') {
+  const argv = Array.isArray(cliArgs) ? cliArgs : cliArgs.trim().split(/\s+/);
+  if (argv[0] === 'init') {
     inicializar(dir);
     return;
   }
-  const { python, cliPath } = cfg();
-  const cli = path.isAbsolute(cliPath) ? cliPath : path.join(dir, cliPath);
-  terminal().sendText(`${python} "${cli}" --root "${dir}" ${cliArgs}`);
+  if (INTERACTIVOS.has(argv[0])) {
+    terminal().sendText(comando(dir, argv));
+    return;
+  }
+  correr(dir, argv);
 }
 
 /* `null` si se canceló, para distinguirlo de un campo vacío. */
@@ -137,20 +174,22 @@ async function pedir(texto) {
 
 async function pedirYCorrer(entrada) {
   if (!entrada.prompt) {
-    ejecutar(entrada.cli);
+    ejecutar([entrada.cli]);
     return;
   }
   const valor = await pedir(entrada.prompt);
   if (valor === null) return; // cancelado
   if (!valor) {
     if (entrada.opcional) {
-      ejecutar(entrada.cli + (entrada.siVacio ? ' ' + entrada.siVacio : ''));
+      ejecutar(entrada.siVacio
+        ? [entrada.cli, entrada.siVacio] : [entrada.cli]);
       return;
     }
     vscode.window.showErrorMessage('SDD: falta el identificador pedido.');
     return;
   }
-  let orden = `${entrada.cli} ${valor}`;
+  /* Array y no cadena: el texto libre de `enrich` lleva espacios. */
+  const argv = [entrada.cli, valor];
   if (entrada.siguiente) {
     const extra = await pedir(entrada.siguiente.prompt);
     if (extra === null) return; // cancelado
@@ -158,9 +197,9 @@ async function pedirYCorrer(entrada) {
       vscode.window.showErrorMessage('SDD: falta el identificador pedido.');
       return;
     }
-    orden += ` ${entrada.siguiente.flag} ${extra}`;
+    argv.push(entrada.siguiente.flag, extra);
   }
-  ejecutar(orden);
+  ejecutar(argv);
 }
 
 /* Vista lateral desde `toolkit export` (contrato RF-38). */

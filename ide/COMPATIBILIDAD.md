@@ -41,10 +41,11 @@ toolkit comandos --cliente <cliente>
 1. Instalar el `.vsix` de la última release (*Extensiones → … → Instalar
    desde VSIX…*) y configurar `sddToolkit.cliPath` con la ruta absoluta a
    `cli/main.py`.
-2. Comprobar que la paleta `SDD: …` ejecuta el comando en la terminal
-   `SDD Toolkit`, que la vista `SDD → Fases y tareas` muestra la fase y el
-   progreso reales, y que la barra de estado aparece con un proyecto y se
-   oculta sin `.specify/`.
+2. Comprobar que la paleta `SDD: …` ejecuta el comando y deja su salida en el
+   canal `SDD Toolkit` (con notificación si falla; `clarify`, que pregunta
+   por stdin, sigue en la terminal), que la vista `SDD → Fases y tareas`
+   muestra la fase y el progreso reales, y que la barra de estado aparece con
+   un proyecto y se oculta sin `.specify/`.
 3. `toolkit comandos --cliente copilot` y verificar que `/sdd-status` aparece
    al escribir `/` en el chat y devuelve la salida de la CLI tal cual.
 
