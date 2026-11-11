@@ -157,6 +157,22 @@ def _proyecto_completo(base: Path) -> Path:
     return root
 
 
+# Lo que las guías prometen de cada artefacto —que la SPEC va aprobada, que el
+# plan deriva de ella, que los informes traen su veredicto— se busca en el
+# archivo real: existir no basta si viene vacío o con otro formato.
+_PROMESAS_DE_CONTENIDO = (
+    ("specs/SPEC-001.md", ("spec_id: SPEC-001", "status: approved")),
+    (".specify/planes/PLAN-001.md",
+     ("plan_id: PLAN-001", "spec: SPEC-001", "# PLAN-001")),
+    (".specify/tareas/TASKS-PLAN-001.md",
+     ("plan: PLAN-001", "## TASK-001")),
+    (".specify/informes/INFORME-PLAN-001.md",
+     ("plan: PLAN-001", "# Informe de consistencia", "Hallazgos:")),
+    (".specify/INSTRUCCIONES.md",
+     ("# Instrucciones del agente", "## 1. Reglas del motor")),
+)
+
+
 class TestRutasDelProyecto(unittest.TestCase):
     """`.specify/planes/PLAN-001.md` tiene que ser lo que el flujo escribe."""
 
@@ -180,6 +196,13 @@ class TestRutasDelProyecto(unittest.TestCase):
                     "no escribe")
         self.assertGreaterEqual(revisadas, 12,
                                 "la revisión no encontró rutas del proyecto")
+
+    def test_el_contenido_prometido_esta_en_los_artefactos(self):
+        for relativa, promesas in _PROMESAS_DE_CONTENIDO:
+            texto = (self.raiz / relativa).read_text(encoding="utf-8")
+            for promesa in promesas:
+                self.assertIn(promesa, texto,
+                              f"{relativa} no contiene {promesa!r}")
 
     def test_las_que_se_crean_a_pedido_estan_en_el_codigo(self):
         fuentes = "".join(

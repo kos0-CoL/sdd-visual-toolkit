@@ -67,6 +67,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   las que solo se crean a pedido (`.specify/hooks/`, `.specify/spec_history/`,
   `.specify/sugerencias/`) se buscan en el código. La primera corrida encontró
   que el filtro inicial descartaba todo `.specify/…` por el punto; ya corregido.
+- La misma corrida comprueba el **contenido** prometido en esos artefactos: la
+  SPEC va `status: approved`, el plan deriva de la SPEC, las tareas listan
+  `TASK-001`, el informe trae su veredicto y las instrucciones sus reglas.
 - El verificador posterior exige que la release adjunte
   `sdd-visual-toolkit-X.Y.Z.vsix` con tamaño mayor que cero desde la 0.1.5, en
   vez de dejar ese adjunto a una revisión a mano.
