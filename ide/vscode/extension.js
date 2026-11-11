@@ -517,6 +517,17 @@ class VistaFases {
     if (pills.length) raiz.push(grupo('Píldoras', pills));
     const bloqueos = (nav.bloqueos || []).map((b) => item(`⛔ ${b}`, null, 'error'));
     if (bloqueos.length) raiz.push(grupo('Bloqueos', bloqueos));
+    /* Aviso de skills desactualizadas: lo calcula la CLI en `export`, así que
+     * la vista no lee archivos generados por su cuenta. */
+    const avisos = (d.avisos && d.avisos.skills) || { total: 0, rutas: [] };
+    if (avisos.total > 0) {
+      const hijos = (avisos.rutas || []).map((r) =>
+        item(`${r.archivos} archivo(s) → ${r.ruta}`, null, 'warning'));
+      const nodo = grupo(
+        `⚠️ Comandos de barra desactualizados: ${avisos.total}`, hijos);
+      nodo.tooltip = 'Regenere con `toolkit comandos`; la ruta grabada ya no existe.';
+      raiz.unshift(nodo);
+    }
     const fases = (d.arbol || []).map((n) => conArtefacto(
       item(`${n.estado === 'completado' ? '✅' : n.estado === 'en progreso' ? '🔄' : '○'} ${n.fase}`, 'arbol', 'circle-outline'),
       n.fase));

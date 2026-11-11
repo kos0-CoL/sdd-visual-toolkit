@@ -222,6 +222,15 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("conArtefacto(item(`📍 Fase: ${d.fase}`", cuerpo)
         self.assertIn(".map((n) => conArtefacto(", cuerpo)
 
+    def test_la_vista_avisa_de_skills_con_ruta_muerta(self):
+        """El aviso lo calcula `export`; la extensión solo lo pinta."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("d.avisos && d.avisos.skills", fuente)
+        self.assertIn("Comandos de barra desactualizados", fuente)
+        self.assertIn("avisos.rutas", fuente)
+        self.assertIn("raiz.unshift(nodo)", fuente)
+        self.assertIn("toolkit comandos", fuente)
+
     def test_init_avisa_y_refresca(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         init = re.search(r"function inicializar\(dir\).*?\n\}", fuente, re.S)

@@ -23,6 +23,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   por el cliente cuando hay terminal, acepta `--cliente` repetible para no
   preguntar y `--sin-comandos` para omitirlo. Sin terminal no pregunta, porque
   la extensión y los scripts quedarían esperando una respuesta inexistente.
+- `export` publica `avisos.skills` con las rutas de skills que ya no existen
+  (total y cuántos archivos usa cada una), y la vista `Fases y tareas` abre con
+  ese aviso cuando hay alguno. La extensión no lee los archivos generados: usa
+  lo que ya calcula la CLI.
 - `toolkit status` avisa al final cuando las skills instaladas apuntan a una
   ruta del toolkit que ya no existe: total de archivos, rutas muertas y cómo
   regenerarlas. Sin comandos instalados o con rutas vivas no añade nada a la
