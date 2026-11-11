@@ -6,6 +6,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Añadido
+
+- El verificador posterior exige que el commit etiquetado tenga todos sus
+  checks en verde y terminados, para que un tag sobre un commit roto no pase
+  por bueno.
+
 ### Corregido
 
 - Las notas de 0.1.0 enlazaban en relativo y la página de la release los

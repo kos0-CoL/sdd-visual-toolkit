@@ -7,12 +7,14 @@ Comprueba en un solo comando, para una versión dada:
    ambos apuntan al mismo objeto;
 2. que ese tag contiene la versión en `pyproject.toml` y como primera
    entrada con fecha del CHANGELOG;
-3. que la release de GitHub no quedó en borrador ni marcada como previa;
-4. que el cuerpo de la release es el de `docs/release-notes-vX.Y.Z.md` —sin
+3. que el commit etiquetado tiene todos sus checks en verde y terminados,
+   para que un tag sobre un commit roto no pase por bueno;
+4. que la release de GitHub no quedó en borrador ni marcada como previa;
+5. que el cuerpo de la release es el de `docs/release-notes-vX.Y.Z.md` —sin
    contar espacios ni saltos finales— y no un texto autogenerado (para los
    tags de `NOTAS_DEL_ARBOL` ese archivo se lee del árbol: su tag conserva
    notas que la página rompe y no se puede corregir);
-5. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
+6. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
    apunta al tag y que la ruta existe en esa ref.
 
 Con `--previo` comprueba lo que se puede saber **antes** de crear el tag
@@ -271,6 +273,36 @@ def verificar(version: str,
            and pelado_remoto == pelado,
            f"tag {tag} en origin coincide con el local" if en_remoto
            else f"falta el tag {tag} en origin")
+
+    corte = pelado[:7] or "desconocido"
+    checks = correr_comando([
+        "gh", "api", f"repos/{{owner}}/{{repo}}/commits/{pelado}/check-runs",
+        "--jq", ".check_runs | map({name, status, conclusion})"])
+    if checks.codigo != 0:
+        anotar(False, f"no se pudo leer el CI de {corte}: "
+                      f"{checks.stderr or checks.stdout}")
+    else:
+        try:
+            corridas = json.loads(checks.stdout or "[]")
+        except json.JSONDecodeError:
+            anotar(False, f"gh devolvió datos ilegibles sobre el CI de {corte}")
+        else:
+            pendientes = [c.get("name") or "?" for c in corridas
+                          if c.get("status") != "completed"]
+            rojos = [f"{c.get('name') or '?'} ({c.get('conclusion')})"
+                     for c in corridas
+                     if c.get("status") == "completed"
+                     and c.get("conclusion") != "success"]
+            if not corridas:
+                anotar(False, f"el commit {corte} no tiene checks")
+            elif pendientes:
+                anotar(False, f"CI de {corte} sin terminar: "
+                              f"{', '.join(pendientes)}")
+            elif rojos:
+                anotar(False, f"CI de {corte} no está verde: "
+                              f"{', '.join(rojos)}")
+            else:
+                anotar(True, f"{len(corridas)} checks verdes en {corte}")
 
     toml = correr_comando(["git", "show", f"{tag}:pyproject.toml"])
     version_tag = _VERSION_TOML.search(toml.stdout)

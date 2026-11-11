@@ -14,6 +14,8 @@ from scripts import verificar_release as vr
 
 TAG = "v0.1.2"
 SLUG = "kos0-CoL/sdd-visual-toolkit"
+CI = ("gh", "api", "repos/{owner}/{repo}/commits/def456/check-runs",
+      "--jq", ".check_runs | map({name, status, conclusion})")
 
 
 def _salida(codigo: int = 0, stdout: str = "", stderr: str = "") -> vr.Salida:
@@ -39,6 +41,9 @@ def _respuestas() -> dict[tuple[str, ...], vr.Salida]:
          f"refs/tags/{TAG}^{{}}"):
             _salida(stdout=f"abc123\trefs/tags/{TAG}\n"
                            f"def456\trefs/tags/{TAG}^{{}}\n"),
+        CI: _salida(stdout=json.dumps([
+            {"name": "tests (Python 3.12)", "status": "completed",
+             "conclusion": "success"}])),
         ("git", "show", f"{TAG}:pyproject.toml"):
             _salida(stdout='[project]\nversion = "0.1.2"\n'),
         ("git", "show", f"{TAG}:CHANGELOG.md"):
@@ -69,7 +74,36 @@ class TestVerificarRelease(unittest.TestCase):
     def test_todo_correcto(self):
         resultados = self.verificar()
         self.assertEqual([mensaje for ok, mensaje in resultados if not ok], [])
-        self.assertEqual(len(resultados), 7)
+        self.assertEqual(len(resultados), 8)
+
+    def test_ci_rojo_falla(self):
+        resultados = self.verificar({CI: _salida(stdout=json.dumps([
+            {"name": "tests (Python 3.12)", "status": "completed",
+             "conclusion": "failure"}]))})
+        fallos = [mensaje for ok, mensaje in resultados if not ok]
+        self.assertEqual(len(fallos), 1)
+        self.assertIn("no está verde", fallos[0])
+        self.assertIn("tests (Python 3.12) (failure)", fallos[0])
+
+    def test_ci_sin_terminar_falla(self):
+        resultados = self.verificar({CI: _salida(stdout=json.dumps([
+            {"name": "tests (Python 3.12)", "status": "in_progress",
+             "conclusion": None}]))})
+        fallos = [mensaje for ok, mensaje in resultados if not ok]
+        self.assertEqual(len(fallos), 1)
+        self.assertIn("sin terminar", fallos[0])
+
+    def test_ci_sin_checks_falla(self):
+        resultados = self.verificar({CI: _salida(stdout="[]")})
+        fallos = [mensaje for ok, mensaje in resultados if not ok]
+        self.assertEqual(len(fallos), 1)
+        self.assertIn("no tiene checks", fallos[0])
+
+    def test_ci_ilegible_falla(self):
+        resultados = self.verificar({CI: _salida(1, stderr="HTTP 404")})
+        fallos = [mensaje for ok, mensaje in resultados if not ok]
+        self.assertEqual(len(fallos), 1)
+        self.assertIn("HTTP 404", fallos[0])
 
     def test_sin_tag_local_se_detiene(self):
         resultados = self.verificar({
@@ -98,15 +132,15 @@ class TestVerificarRelease(unittest.TestCase):
         resultados = self.verificar({
             ("git", "show", f"{TAG}:pyproject.toml"):
                 _salida(stdout='version = "0.1.1"\n')})
-        self.assertFalse(resultados[2][0])
-        self.assertIn("0.1.1", resultados[2][1])
+        self.assertFalse(resultados[3][0])
+        self.assertIn("0.1.1", resultados[3][1])
 
     def test_changelog_sin_la_version(self):
         resultados = self.verificar({
             ("git", "show", f"{TAG}:CHANGELOG.md"):
                 _salida(stdout="## [0.1.1] — 2026-11-10\n")})
-        self.assertFalse(resultados[3][0])
-        self.assertIn("0.1.1", resultados[3][1])
+        self.assertFalse(resultados[4][0])
+        self.assertIn("0.1.1", resultados[4][1])
 
     def test_release_en_borrador(self):
         resultados = self.verificar({
@@ -115,16 +149,16 @@ class TestVerificarRelease(unittest.TestCase):
                 _salida(stdout=json.dumps({"tagName": TAG, "isDraft": True,
                                            "isPrerelease": False,
                                            "body": _notas()}))})
-        self.assertFalse(resultados[4][0])
-        self.assertIn("sin publicar", resultados[4][1])
+        self.assertFalse(resultados[5][0])
+        self.assertIn("sin publicar", resultados[5][1])
 
     def test_release_inexistente(self):
         resultados = self.verificar({
             ("gh", "release", "view", TAG, "--json",
              "tagName,isDraft,isPrerelease,body"):
                 _salida(1, stderr="release not found")})
-        self.assertFalse(resultados[4][0])
-        self.assertIn("release not found", resultados[4][1])
+        self.assertFalse(resultados[5][0])
+        self.assertIn("release not found", resultados[5][1])
 
     def test_cuerpo_autogenerado_por_github(self):
         resultados = self.verificar({

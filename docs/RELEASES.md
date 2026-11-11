@@ -93,11 +93,13 @@ Revisa, para `vX.Y.Z`:
    apuntan al mismo objeto;
 2. que ese tag contiene la versión en `pyproject.toml` y como primera
    entrada con fecha del CHANGELOG;
-3. que la release no quedó en borrador ni marcada como previa;
-4. que el cuerpo publicado es el de `docs/release-notes-vX.Y.Z.md`, sin
+3. que el commit etiquetado tiene todos sus checks en verde y terminados: un
+   tag sobre un commit con el CI rojo no pasa, y tampoco uno sin checks;
+4. que la release no quedó en borrador ni marcada como previa;
+5. que el cuerpo publicado es el de `docs/release-notes-vX.Y.Z.md`, sin
    contar espacios ni saltos finales: si se creó sin `--notes-file`, GitHub
    autogenera un «What's Changed» y las notas del repo no se leen;
-5. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
+6. que cada enlace `.../blob/<ref>/<ruta>` de `docs/release-notes-vX.Y.Z.md`
    apunta al tag —no a `main`, que sigue avanzando— y que la ruta existe en
    esa ref.
 
