@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-349%20passed-green)
+![Tests](https://img.shields.io/badge/tests-365%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -71,7 +71,7 @@ python3 -m venv .venv && source .venv/bin/activate
 # 3. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 4. Verificar que todo funciona (349 tests, ~16 s; ~9 s con -n 2)
+# 4. Verificar que todo funciona (365 tests, ~16 s; ~9 s con -n 2)
 python3 -m pytest tests/ -q
 
 # 5. Probar la CLI
@@ -145,7 +145,7 @@ ejecutable, marca lo bloqueado (🔒) y pide aprobación donde el SPEC la exige.
 | Seguridad/continuidad | `journal`, `recover`, `checkpoint`, `rollback`, `hooks` |
 | Verificación | `ast`, `validate`, `test`, `reporte`, `diff` |
 | Trazabilidad | `traza`, `historia` (alias `history`), `restricciones`, `req`, `specs list` |
-| Integración | `export`, `instrucciones` |
+| Integración | `export`, `instrucciones`, `comandos` |
 
 Detalles útiles:
 
@@ -218,6 +218,39 @@ Recomendada: [ build PLAN-001 ]
   `tarea_abierta`, `tarea_cerrada` y `sugerencia`
   (env `SDD_EVENTO/PLAN/TAREA/RESULTADO/SUGERENCIA/ROOT`).
 
+### Comandos de barra para agentes
+
+El agente solo ve lo que está en su workspace, así que el toolkit escribe los
+comandos en la carpeta de cada cliente:
+
+```bash
+toolkit comandos                     # los cinco clientes
+toolkit comandos --cliente cursor    # repetible; solo los que use
+```
+
+| Cliente | Destino | Se invoca con |
+|---|---|---|
+| Claude Code | `.claude/skills/<nombre>/SKILL.md` | `/sdd-status` |
+| Cursor | `.cursor/commands/<nombre>.md` | `/sdd-status` |
+| Copilot (VS Code) | `.github/prompts/<nombre>.prompt.md` | `/sdd-status` |
+| Windsurf | `.windsurf/workflows/<nombre>.md` | `/sdd-status` |
+| Antigravity | `.agents/skills/<nombre>/SKILL.md` | `/sdd-status` |
+
+Son trece, uno por paso del flujo: `/sdd` (qué sigue) y luego `-enrich`,
+`-specify`, `-clarify`, `-plan`, `-plan-gate`, `-tasks`, `-analyze`, `-build`,
+`-test`, `-traza` y `-cierre`.
+
+Cada archivo ejecuta la CLI con su ruta absoluta y `--root .`, y le pide al
+agente dos cosas: mostrar la salida tal cual y detenerse en los `⛔` y `🔒`.
+El estado lo mueve la CLI, no el agente. Como la ruta se escribe al generar,
+hay que volver a correrlo si el toolkit cambia de sitio.
+
+Los formatos son los que documenta cada cliente, pero los archivos no se
+probaron todavía dentro de Cursor, Copilot, Windsurf ni Antigravity: la
+matriz de `ide/COMPATIBILIDAD.md` sigue siendo la que manda. Una salvedad
+concreta: Cursor no pasa argumentos al comando, así que el archivo le pide al
+agente que los reciba en el chat y los añada al final.
+
 ## Testing adaptativo
 
 El arnés respeta el repo: `package.json`+scripts.test → `npm test`,
@@ -231,7 +264,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (349 tests, uno o más por RF)
+tests/      Suite pytest (365 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)

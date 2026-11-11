@@ -15,6 +15,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La comprobación previa a etiquetar exige que `ide/vscode/package.json`
   declare la versión del release, para que el `.vsix` no se adjunte con otro
   número.
+- `toolkit comandos` escribe los comandos de barra del flujo en la carpeta
+  que cada agente lee (`.claude/skills/`, `.cursor/commands/`,
+  `.github/prompts/`, `.windsurf/workflows/`, `.agents/skills/`), con la ruta
+  absoluta de la CLI adentro: `/sdd-plan-gate` ejecuta `plan --gate SPEC`.
+  Todavía no incluye `pin`: `pin --task` revienta con `NameError` y entra
+  cuando eso esté arreglado.
 - El verificador posterior exige que el commit etiquetado tenga todos sus
   checks en verde y terminados, para que un tag sobre un commit roto no pase
   por bueno.
