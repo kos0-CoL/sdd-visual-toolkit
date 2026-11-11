@@ -12,7 +12,8 @@ que la CLI (`toolkit export`, RF-38). Sin dependencias ni build.
 4. En `SDD → Flujo SDD`, el clic normal ejecuta el comando de la fase y el
    **clic derecho abre el artefacto** que dejó (`.md` en vista previa, JSON
    en el editor, carpetas en el explorador). Si la fase aún no lo escribió,
-   avisa en vez de abrir un archivo vacío.
+   avisa en vez de abrir un archivo vacío. En `SDD → Fases y tareas` el mismo
+   clic derecho funciona sobre la fase actual y sobre el árbol de estados.
 
 ## Configuración
 

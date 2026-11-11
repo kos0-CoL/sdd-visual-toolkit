@@ -488,8 +488,23 @@ class VistaFases {
     }
     const d = this.doc;
     const nav = d.navegacion || {};
+    /* El artefacto de cada fase vive en `flujo`: se reutiliza aquí para que el
+     * clic derecho abra lo mismo desde las dos vistas. */
+    const artefactos = new Map((d.flujo || [])
+      .filter((fila) => fila.artefacto)
+      .map((fila) => [fila.fase, fila.artefacto]));
+    const conArtefacto = (it, fase) => {
+      const relativo = artefactos.get(fase);
+      if (!relativo) return it;
+      it.contextValue = 'sddFaseConArtefacto';
+      it._artefacto = relativo;
+      it._raiz = carpeta();
+      it.tooltip = [it.tooltip, `clic derecho: ${relativo}`]
+        .filter(Boolean).join(' · ');
+      return it;
+    };
     const raiz = [
-      item(`📍 Fase: ${d.fase}`, 'tablero', 'milestone'),
+      conArtefacto(item(`📍 Fase: ${d.fase}`, 'tablero', 'milestone'), d.fase),
       item(`Progreso: ${d.progreso.hechas}/${d.progreso.total}`, d.spec_id ? `tasks ${d.spec_id}` : 'tablero', 'checklist'),
       item(`Tarea actual: ${d.tarea_actual || '—'}`, d.tarea_actual ? `context ${d.tarea_actual}` : 'tablero', 'play'),
       item(`Pruebas: ${d.pruebas}`, 'reporte', 'beaker'),
@@ -502,7 +517,9 @@ class VistaFases {
     if (pills.length) raiz.push(grupo('Píldoras', pills));
     const bloqueos = (nav.bloqueos || []).map((b) => item(`⛔ ${b}`, null, 'error'));
     if (bloqueos.length) raiz.push(grupo('Bloqueos', bloqueos));
-    const fases = (d.arbol || []).map((n) => item(`${n.estado === 'completado' ? '✅' : n.estado === 'en progreso' ? '🔄' : '○'} ${n.fase}`, 'arbol', 'circle-outline'));
+    const fases = (d.arbol || []).map((n) => conArtefacto(
+      item(`${n.estado === 'completado' ? '✅' : n.estado === 'en progreso' ? '🔄' : '○'} ${n.fase}`, 'arbol', 'circle-outline'),
+      n.fase));
     if (fases.length) raiz.push(grupo('Árbol de estados', fases));
     return raiz;
   }

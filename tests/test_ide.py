@@ -208,10 +208,19 @@ class TestManifiesto(unittest.TestCase):
         comandos = {c["command"] for c in manifiesto["contributes"]["commands"]}
         self.assertIn("sdd.abrirArtefacto", comandos)
         menu = manifiesto["contributes"]["menus"]["view/item/context"]
-        self.assertTrue(any(m["command"] == "sdd.abrirArtefacto"
-                            and "view == sddFlujo" in m["when"]
-                            and "sddFaseConArtefacto" in m["when"]
-                            for m in menu))
+        for vista in ("sddFlujo", "sddFases"):
+            self.assertTrue(any(m["command"] == "sdd.abrirArtefacto"
+                                and "view == %s" % vista in m["when"]
+                                and "sddFaseConArtefacto" in m["when"]
+                                for m in menu), vista)
+        # La vista de fases reutiliza el artefacto que publica el flujo.
+        fases = re.search(r"class VistaFases.*?\n\}", fuente, re.S)
+        self.assertIsNotNone(fases, "falta la vista de fases")
+        cuerpo = fases.group(0)
+        self.assertIn("(d.flujo || [])", cuerpo)
+        self.assertIn("conArtefacto", cuerpo)
+        self.assertIn("conArtefacto(item(`📍 Fase: ${d.fase}`", cuerpo)
+        self.assertIn(".map((n) => conArtefacto(", cuerpo)
 
     def test_init_avisa_y_refresca(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")

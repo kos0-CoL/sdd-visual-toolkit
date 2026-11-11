@@ -73,6 +73,10 @@ La ruta de `--root` va **antes** del subcomando.
       explorador. En una fase sin ejecutar, la notificación dice qué ruta
       falta y no abre nada. En `Enriquecimiento` o `Recuperación` sin archivo,
       el menú no aparece.
+- [ ] Clic derecho en `SDD → Fases y tareas`: sobre `📍 Fase: …` y sobre la
+      fila de esa misma fase en *Árbol de estados* aparece *Abrir artefacto de
+      la fase* y abre el mismo archivo que desde el flujo; en las fases sin
+      artefacto no aparece.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece
