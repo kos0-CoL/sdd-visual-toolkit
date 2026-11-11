@@ -113,7 +113,7 @@ def cmd_specify(args) -> int:
             "historial": [],
         }
         _guardar_indice(raiz, indice)
-    except (SpecError, store.StoreError) as error:
+    except (EnriquecimientoError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     mostrar_resumen(spec)

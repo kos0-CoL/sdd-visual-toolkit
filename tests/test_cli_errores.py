@@ -43,6 +43,9 @@ CASOS = [
     (["build", "PLAN-999", "--done", "TASK-001"],
      "plan inexistente: PLAN-999"),
     (["implement", "PLAN-999"], "plan inexistente: PLAN-999"),
+    (["specify", "XXX-999"], "enriquecimiento inexistente: XXX-999"),
+    (["restricciones", "SPEC-999"], "SPEC inexistente: SPEC-999"),
+    (["restricciones", "TASK-999"], "tarea inexistente: TASK-999"),
 ]
 
 
