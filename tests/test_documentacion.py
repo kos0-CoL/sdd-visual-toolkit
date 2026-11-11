@@ -3,14 +3,18 @@
 Los enlaces de las notas de release son URL absolutas a `blob/<tag>` y los
 revisa `scripts/verificar_release.py`; aquí se cubre lo otro: los enlaces
 relativos de los documentos del repo, las referencias `ruta.py::símbolo` de
-los documentos de remediación y las rutas del repo citadas como código en la
-prosa, que se rompen en silencio cuando el código se mueve.
+los documentos de remediación, las rutas del repo citadas como código en la
+prosa y las rutas del proyecto del usuario (`specs/…`, `.specify/…`), que se
+rompen en silencio cuando el código o el flujo cambian.
 """
 
 from __future__ import annotations
 
 import ast
 import re
+import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -109,6 +113,83 @@ class TestReferenciasASimbolos(unittest.TestCase):
                               f"{ruta.relative_to(RAIZ)} cita "
                               f"{archivo}::{simbolo}, que ya no está")
         self.assertGreater(revisados, 3, "no se encontró ninguna referencia")
+
+
+# Rutas del proyecto del usuario: existen en el árbol que el toolkit escribe,
+# no en este repo. Se comprueban contra una corrida real, no contra la prosa.
+# Aquí el punto inicial es legítimo (`.specify/…`), a diferencia de _NO_ES_RUTA.
+_CITA_PROYECTO = re.compile(r"`((?:\.specify|specs)/[^`\s]*)`")
+_NO_ES_RUTA_PROYECTO = re.compile(r"[<>{}*…\s]|::|^[~/]|X\.Y\.Z|\.\.\.")
+# Documentadas, pero solo existen si la persona las crea (un hook, una revisión
+# de la SPEC, una sugerencia). Ahí se exige que la CLI las conozca.
+_SOLO_A_PEDIDO = (".specify/hooks/", ".specify/spec_history/",
+                  ".specify/sugerencias/")
+
+
+def _correr(cli: list[str], *args: str) -> str:
+    proceso = subprocess.run([*cli, *args], capture_output=True, text=True,
+                             cwd=RAIZ, input="", timeout=120)
+    if proceso.returncode != 0:
+        raise AssertionError(
+            f"{' '.join(args)} falló: {proceso.stdout}{proceso.stderr}")
+    return proceso.stdout
+
+
+def _proyecto_completo(base: Path) -> Path:
+    """Proyecto con todo lo que escribe una corrida normal del flujo."""
+    root = base / "proyecto"
+    cli = [sys.executable, str(RAIZ / "cli" / "main.py"), "--root", str(root)]
+    _correr(cli, "init", "--sin-comandos")
+    _correr(cli, "enrich", "Quiero un dashboard para gestionar un kiosco")
+    _correr(cli, "enrich", "--accept", "ENR-001")
+    _correr(cli, "specify", "ENR-001", "--titulo", "Kiosco")
+    _correr(cli, "specify", "--approve", "SPEC-001")
+    abiertas = [linea.split()[1]
+                for linea in _correr(cli, "clarify", "--list", "SPEC-001")
+                .splitlines() if linea.startswith("○")]
+    for numero, clarificacion in enumerate(abiertas, 1):
+        _correr(cli, "clarify", "SPEC-001", "--answer", clarificacion,
+                f"respuesta {numero}")
+    for paso in (("plan", "SPEC-001"), ("plan", "--gate", "PLAN-001"),
+                 ("tasks", "PLAN-001"), ("analyze", "PLAN-001"),
+                 ("build", "PLAN-001"), ("instrucciones", "--guardar")):
+        _correr(cli, *paso)
+    return root
+
+
+class TestRutasDelProyecto(unittest.TestCase):
+    """`.specify/planes/PLAN-001.md` tiene que ser lo que el flujo escribe."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls._tmp = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls._tmp.cleanup)
+        cls.raiz = _proyecto_completo(Path(cls._tmp.name))
+
+    def test_las_rutas_citadas_las_escribe_la_corrida(self):
+        revisadas = 0
+        for documento in documentos():
+            for cita in _CITA_PROYECTO.findall(_sin_bloques(documento)):
+                if (_NO_ES_RUTA_PROYECTO.search(cita)
+                        or cita in _SOLO_A_PEDIDO):
+                    continue
+                revisadas += 1
+                self.assertTrue(
+                    (self.raiz / cita.rstrip("/")).exists(),
+                    f"{documento.relative_to(RAIZ)} cita {cita}, que la CLI "
+                    "no escribe")
+        self.assertGreaterEqual(revisadas, 12,
+                                "la revisión no encontró rutas del proyecto")
+
+    def test_las_que_se_crean_a_pedido_estan_en_el_codigo(self):
+        fuentes = "".join(
+            archivo.read_text(encoding="utf-8")
+            for carpeta in ("cli", "core", "state")
+            for archivo in (RAIZ / carpeta).rglob("*.py"))
+        for cita in _SOLO_A_PEDIDO:
+            nombre = cita.rstrip("/").rsplit("/", 1)[-1]
+            self.assertIn(nombre, fuentes,
+                          f"ninguna parte de la CLI menciona {cita}")
 
 
 class TestRutasCitadas(unittest.TestCase):

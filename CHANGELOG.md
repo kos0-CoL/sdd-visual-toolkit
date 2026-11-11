@@ -50,6 +50,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   —«`cli/main.py`», «`tests/test_ide.py`»— que ya no existe; los bloques de
   código y las carpetas que el toolkit escribe en el proyecto del usuario
   quedan fuera.
+- Otra prueba levanta un proyecto real (de `init` a `instrucciones --guardar`)
+  y exige que cada ruta del proyecto citada en las guías —`specs/SPEC-001.md`,
+  `.specify/planes/PLAN-001.md`, `.specify/cache/analisis.json`…— exista ahí;
+  las que solo se crean a pedido (`.specify/hooks/`, `.specify/spec_history/`,
+  `.specify/sugerencias/`) se buscan en el código. La primera corrida encontró
+  que el filtro inicial descartaba todo `.specify/…` por el punto; ya corregido.
 - El verificador posterior exige que la release adjunte
   `sdd-visual-toolkit-X.Y.Z.vsix` con tamaño mayor que cero desde la 0.1.5, en
   vez de dejar ese adjunto a una revisión a mano.
