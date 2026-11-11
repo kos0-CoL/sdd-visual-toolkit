@@ -34,6 +34,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `init` ya no deja `plans/` ni `tasks/` en la raíz: nadie escribía ahí,
+  porque `plan`, `tasks` y `analyze` guardan bajo `.specify/`. Ahora crea
+  `.specify/planes/`, `.specify/tareas/` y `.specify/informes/`, y la salida
+  de la instalación nombra esas rutas en vez de las vacías.
 - `init` respeta `--root`, la opción global que usan los demás comandos y que
   la extensión de VS Code pasa siempre; antes la ignoraba y creaba `.specify/`
   en la carpeta actual, así que `Inicializar proyecto` desde la paleta

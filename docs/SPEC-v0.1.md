@@ -1545,15 +1545,15 @@ proyecto-del-usuario/
 ├── .specify/
 │   ├── memory/
 │   ├── checkpoints/
+│   ├── planes/
+│   ├── tareas/
+│   ├── informes/
 │   ├── current_task.json
 │   └── execution_history.jsonl
 │
 ├── specs/
 │   ├── SPEC-001.md
 │   └── SPEC-002.md
-│
-├── plans/
-├── tasks/
 │
 └── src/
 ```

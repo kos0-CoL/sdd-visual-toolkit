@@ -99,7 +99,8 @@ def cmd_init(args) -> int:
     print(f"🟢 PROYECTO INICIALIZADO: {raiz}")
     print("Estado:")
     print("✓ .specify/ (estado, memoria, checkpoints, historial)")
-    print("✓ specs/ plans/ tasks/")
+    print("✓ .specify/planes/ .specify/tareas/ .specify/informes/")
+    print("✓ specs/ (SPEC-001.md y su .json)")
     if escritos:
         print(f"✓ {', '.join(escritos)} (ruta del toolkit y tareas SDD)")
     for nombre in existentes:

@@ -37,8 +37,12 @@ def inicializar_proyecto(raiz: Path) -> Path:
     specify = raiz / SPECIFY_DIR
     (specify / "memory").mkdir(parents=True, exist_ok=True)
     (specify / "checkpoints").mkdir(parents=True, exist_ok=True)
-    for sub in ("specs", "plans", "tasks"):
-        (raiz / sub).mkdir(exist_ok=True)
+    (raiz / "specs").mkdir(exist_ok=True)
+    # Solo donde los comandos escriben de verdad: `specify` deja la SPEC en
+    # specs/, y `plan`, `tasks` y `analyze` escriben bajo .specify/. Antes se
+    # creaban plans/ y tasks/ en la raíz, que nadie llegaba a usar.
+    for sub in ("planes", "tareas", "informes"):
+        (specify / sub).mkdir(exist_ok=True)
     for nombre, contenido in (
         ("current_task.json", {"current_spec": None, "current_phase": None}),
         ("execution_history.jsonl", ""),
