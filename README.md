@@ -223,8 +223,9 @@ Recomendada: [ build PLAN-001 ]
   Antigravity. Nunca sobrescribe archivos que ya existan.
 
   En una terminal, `init` pregunta por el cliente del agente y deja sus
-  comandos generados en el acto, dejando escrita la elección (`· cliente:
-  copilot`); `--cliente copilot` (repetible) lo hace sin preguntar y
+  comandos generados en el acto, dejando escrita la elección en su propia
+  línea (`· cliente: copilot`); `--cliente copilot` (repetible) lo hace sin
+  preguntar y
   `--sin-comandos` lo omite. Sin terminal —extensión, hook o script— no
   pregunta e imprime la orden para hacerlo después.
 

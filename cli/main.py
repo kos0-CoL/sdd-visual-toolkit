@@ -100,6 +100,9 @@ def _clientes_de_init(args) -> list[str] | None:
     except EOFError:
         print()
         return None
+    # En su propia línea: lo tecleado no siempre queda en la salida capturada
+    # (pty, CI), y ahí el eco salía pegado a la pregunta.
+    print()
     # La elección se deja escrita: en un registro o una captura, lo tecleado
     # en el prompt no aparece y no se sabría qué se generó.
     if not respuesta:
