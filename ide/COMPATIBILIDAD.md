@@ -101,6 +101,30 @@ nunca se inventa estado.
 | 2026-11-11 | VS Code 1.142.0 · `sdd-toolkit.sdd-visual-toolkit@0.1.5` · arnés sin editor | extensión | ⚠️ parcial: 41/41 del arnés sobre `/tmp/sdd-manual`; no se abrió el editor |
 | 2026-11-11 | VS Code 1.142.0 · proyecto `/tmp/sdd-manual` | comandos de barra | ⚠️ parcial: 14 archivos en `.github/prompts/` y `comandos --verificar` en verde; no se abrió el chat |
 
+### Para marcar la pasada en editor
+
+Plantilla con los datos del entorno ya levantado: lo único que falta es escribir
+lo que se vea. Los valores salen de `scripts/preparar-manual.sh --solo-verificar`.
+
+```
+Entorno y versión:   VS Code 1.142.0 (`sdd-toolkit.sdd-visual-toolkit@0.1.5`)
+Superficie:          extensión | comandos de barra
+Proyecto:            /tmp/sdd-manual (fixture 0.1.0, 9/9 fases con artefacto)
+Sistema:             Linux (Wayland), `code --version` 1.142.0
+Fecha:               2026-11-11
+Resultado:           ⚠️ parcial — aquí va lo observado
+Fallos:              casilla, comando, mensaje obtenido, mensaje esperado
+```
+
+Al cerrar una superficie, tres cambios y ningún otro:
+
+1. su fila del registro pasa de `⚠️ parcial` a `✅ verificado (…, 2026-11-11)`;
+2. la celda correspondiente de «Estado» pierde `sin prueba manual` y la nombra;
+3. las casillas de `ide/PRUEBA-MANUAL.md` se marcan una por una.
+
+Mientras no haya una sola casilla marcada, esta plantilla no se usa: queda aquí
+como la edición pendiente, no como un resultado.
+
 ### Pasada del 2026-11-11 sin editor (arnés headless)
 
 Se preparó `/tmp/sdd-manual` con `scripts/preparar-manual.sh --instalar` —fixture
