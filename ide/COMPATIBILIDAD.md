@@ -28,7 +28,8 @@ pero eso es «compatible por diseño», no una prueba.
 
 ## Qué falta para cerrarlo
 
-Cada entorno se cierra igual: generar, abrir, mirar y anotar. Generar los
+Cada entorno se cierra igual: generar, abrir, mirar y anotar. `ide/PRUEBA-MANUAL.md`
+tiene la lista casilla por casilla de VS Code y Antigravity. Generar los
 comandos una vez en el proyecto:
 
 ```bash

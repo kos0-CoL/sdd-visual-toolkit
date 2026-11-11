@@ -8,6 +8,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- `ide/PRUEBA-MANUAL.md` recorre casilla por casilla la extensión y los
+  comandos de barra en VS Code, y las skills en Antigravity, con el formato
+  de registro para anotar el resultado.
 - La matriz de `ide/COMPATIBILIDAD.md` separa extensión y comandos de barra
   por cliente, deja dicho que ninguno está probado dentro del IDE y detalla,
   cliente por cliente, qué hay que abrir y qué anotar para cerrarlo.
