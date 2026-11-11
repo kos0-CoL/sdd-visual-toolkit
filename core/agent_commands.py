@@ -13,6 +13,7 @@ la verdad: el agente no reemplaza el estado por un resumen de memoria.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -148,6 +149,31 @@ def _frontmatter(comando: Comando, cliente: str) -> str:
         lineas.append(f"agent: {_escalar('agent')}")
     lineas.append("---")
     return "\n".join(lineas)
+
+
+# La ruta horneada en el cuerpo: `{python} "{cli}" --root . {argv}`.
+_RUTA_CLI = re.compile(r'"([^"]*cli[\\/]main\.py)" --root \.')
+
+
+def instalados(raiz) -> dict[str, dict[Path, str]]:
+    """Cliente → {archivo generado: ruta de CLI que lleva grabada}.
+
+    Sirve para revisar lo ya escrito sin volver a generarlo: la ruta absoluta
+    queda dentro del archivo, así que si el toolkit se movió hay que saberlo.
+    """
+    encontrados: dict[str, dict[Path, str]] = {}
+    for cliente, plantilla in CLIENTES.items():
+        carpeta = Path(raiz) / plantilla.split("{nombre}")[0]
+        if not carpeta.is_dir():
+            continue
+        archivos: dict[Path, str] = {}
+        for ruta in sorted(carpeta.rglob("*.md")):
+            match = _RUTA_CLI.search(ruta.read_text(encoding="utf-8"))
+            if match:
+                archivos[ruta] = match.group(1)
+        if archivos:
+            encontrados[cliente] = archivos
+    return encontrados
 
 
 def generar(cliente: str, python: str, cli: Path) -> dict[str, str]:

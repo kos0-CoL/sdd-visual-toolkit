@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import sys
 import tempfile
 import unittest
@@ -163,7 +165,7 @@ class TestCLIComandos(unittest.TestCase):
         self._tmp.cleanup()
 
     def _ns(self, **kw):
-        base = {"root": str(self.root), "cliente": None}
+        base = {"root": str(self.root), "cliente": None, "verificar": False}
         base.update(kw)
         return argparse.Namespace(**base)
 
@@ -187,6 +189,44 @@ class TestCLIComandos(unittest.TestCase):
         despues = (self.root / ".claude" / "skills" / "sdd" / "SKILL.md"
                    ).read_text(encoding="utf-8")
         self.assertEqual(antes, despues)
+
+    def _generar_con(self, cli: Path, cliente: str = "claude") -> None:
+        for relativa, contenido in agent_commands.generar(
+                cliente, PYTHON, cli).items():
+            destino = self.root / relativa
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            destino.write_text(contenido, encoding="utf-8")
+
+    def test_verificar_avisa_cuando_la_ruta_ya_no_existe(self):
+        """Si el toolkit se movió, el agente ejecutaría un archivo muerto."""
+        fantasma = Path("/no/existe/toolkit/cli/main.py")
+        self._generar_con(fantasma)
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = cmd_comandos.despachar(self._ns(verificar=True))
+        self.assertEqual(codigo, 1)
+        texto = salida.getvalue()
+        self.assertIn(str(fantasma), texto)
+        self.assertIn("ya no existe", texto)
+        self.assertIn("regenere con", texto)
+        self.assertIn(str(cmd_comandos._cli_actual()), texto)
+
+    def test_verificar_esta_al_dia_tras_generar(self):
+        cmd_comandos.despachar(self._ns())
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = cmd_comandos.despachar(self._ns(verificar=True))
+        self.assertEqual(codigo, 0)
+        texto = salida.getvalue()
+        self.assertIn("AL DÍA", texto)
+        self.assertIn("cliente(s)", texto)
+
+    def test_verificar_sin_comandos_no_falla(self):
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = cmd_comandos.despachar(self._ns(verificar=True))
+        self.assertEqual(codigo, 0)
+        self.assertIn("sin comandos de barra", salida.getvalue())
 
     def test_apunta_a_la_cli_de_esta_instalacion(self):
         cmd_comandos.despachar(self._ns(cliente=["windsurf"]))

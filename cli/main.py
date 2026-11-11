@@ -407,6 +407,9 @@ def construir_parser() -> argparse.ArgumentParser:
         choices=sorted(cmd_comandos.agent_commands.CLIENTES),
         help=("repetible: claude|cursor|copilot|windsurf|antigravity; "
               "sin él, todos"))
+    p_comandos.add_argument(
+        "--verificar", action="store_true",
+        help="solo revisar que las rutas grabadas sigan existiendo")
     p_comandos.set_defaults(func=cmd_comandos.despachar)
 
     p_impl = sub.add_parser("implement", help="alias de build (RF-36)")
