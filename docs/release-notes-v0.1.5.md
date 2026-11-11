@@ -61,6 +61,9 @@ existían ni el protocolo MCP.
 
 ## Corregido
 
+- **La paleta de `pin` pedía solo el plan**: `pin` es por tarea, así que desde
+  VS Code respondía «indique PLAN-ID y --task, o use --check/--suggest». Ahora
+  pregunta los dos identificadores y ejecuta `pin PLAN-001 --task TASK-001`.
 - **Once comandos morían con un traceback** cuando el ID no existía: `ast`,
   `diff`, `historia`, `reporte`, `test`, `validate`, `flush`, `pin`,
   `recover`, `traza` y `clarify` solo capturaban el error de su módulo, no el

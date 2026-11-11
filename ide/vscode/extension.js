@@ -26,7 +26,10 @@ const COMMANDS = [
   { id: 'sdd.build', cli: 'build', prompt: 'PLAN-ID' },
   { id: 'sdd.test', cli: 'test', prompt: 'TASK-ID' },
   { id: 'sdd.validate', cli: 'validate', prompt: 'TASK-ID' },
-  { id: 'sdd.pin', cli: 'pin', prompt: 'PLAN-ID' },
+  /* El pin es por tarea: con un solo campo respondía «indique PLAN-ID y
+   * --task» desde la paleta. */
+  { id: 'sdd.pin', cli: 'pin', prompt: 'PLAN-ID',
+    siguiente: { prompt: 'TASK-ID', flag: '--task' } },
   { id: 'sdd.journal', cli: 'journal', prompt: 'PLAN-ID' },
   { id: 'sdd.recover', cli: 'recover', prompt: 'PLAN-ID' },
   { id: 'sdd.checkpoint', cli: 'checkpoint', prompt: 'TASK-ID o PLAN-ID' },
@@ -71,15 +74,20 @@ function ejecutar(cliArgs) {
   terminal().sendText(`${python} "${cli}" --root "${dir}" ${cliArgs}`);
 }
 
+/* `null` si se canceló, para distinguirlo de un campo vacío. */
+async function pedir(texto) {
+  const valor = await vscode.window.showInputBox({ prompt: 'SDD: ' + texto });
+  return valor === undefined ? null : (valor || '').trim();
+}
+
 async function pedirYCorrer(entrada) {
   if (!entrada.prompt) {
     ejecutar(entrada.cli);
     return;
   }
-  const valor = await vscode.window.showInputBox({ prompt: 'SDD: ' + entrada.prompt });
-  if (valor === undefined) return; // cancelado
-  const texto = (valor || '').trim();
-  if (!texto) {
+  const valor = await pedir(entrada.prompt);
+  if (valor === null) return; // cancelado
+  if (!valor) {
     if (entrada.opcional) {
       ejecutar(entrada.cli + (entrada.siVacio ? ' ' + entrada.siVacio : ''));
       return;
@@ -87,7 +95,17 @@ async function pedirYCorrer(entrada) {
     vscode.window.showErrorMessage('SDD: falta el identificador pedido.');
     return;
   }
-  ejecutar(`${entrada.cli} ${texto}`);
+  let orden = `${entrada.cli} ${valor}`;
+  if (entrada.siguiente) {
+    const extra = await pedir(entrada.siguiente.prompt);
+    if (extra === null) return; // cancelado
+    if (!extra) {
+      vscode.window.showErrorMessage('SDD: falta el identificador pedido.');
+      return;
+    }
+    orden += ` ${entrada.siguiente.flag} ${extra}`;
+  }
+  ejecutar(orden);
 }
 
 /* Vista lateral desde `toolkit export` (contrato RF-38). */

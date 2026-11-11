@@ -17,14 +17,6 @@ python3 cli/main.py --root /tmp/sdd-manual comandos --cliente copilot
 Si el toolkit está instalado, `toolkit --root /tmp/sdd-manual comandos …`.
 La ruta de `--root` va **antes** del subcomando.
 
-## Defecto conocido antes de empezar
-
-`SDD: Spec pinning` pregunta solo `PLAN-ID`, pero `pin` necesita también
-`--task TASK-ID`: desde la paleta responderá
-`⛔ indique PLAN-ID y --task, o use --check/--suggest`. No es un fallo del
-checklist; anótalo como defecto del puente y sigue. Llamada a mano con
-`--task`, la CLI funciona.
-
 ## VS Code — extensión
 
 `ide/vscode/package.json` declara `0.1.5`; usa el `.vsix` de esa release.
@@ -53,6 +45,9 @@ checklist; anótalo como defecto del puente y sigue. Llamada a mano con
       `status` sin preguntar.
 - [ ] Paleta, comando con argumento (`SDD: Generar / ver plan`): pide
       `SPEC-ID`; escribir `SPEC-001` lo pasa al final del comando.
+- [ ] Comando que pide dos datos (`SDD: Spec pinning`): pregunta `PLAN-ID`,
+      después `TASK-ID`, y ejecuta `pin PLAN-001 --task TASK-001`. Cancelar en
+      el segundo no ejecuta nada; dejarlo vacío avisa y no ejecuta.
 - [ ] Vacío en un comando opcional: `SDD: Generar / ver SPEC` con vacío corre
       `specify --list`; `SDD: Mensaje final de fase` con vacío corre `cierre`.
 - [ ] Vacío en un comando que exige ID: aparece

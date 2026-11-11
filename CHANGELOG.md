@@ -40,6 +40,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- La paleta `SDD: Spec pinning` pedía solo el plan, pero `pin` es por tarea:
+  desde VS Code respondía «indique PLAN-ID y --task». Ahora pide también el
+  identificador de la tarea y ejecuta `pin PLAN-001 --task TASK-001`.
 - Los comandos de barra se escribían con el frontmatter roto cuando la
   descripción llevaba «: »: 12 de los 56 archivos no eran YAML válido y el
   cliente podía no cargar el comando. Los valores van entre comillas simples.

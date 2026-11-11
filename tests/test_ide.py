@@ -66,6 +66,17 @@ class TestManifiesto(unittest.TestCase):
         # La paleta registrada en JS existe en el manifiesto (más 2 internos).
         self.assertTrue(en_js <= (en_json | {"sdd.ejecutar", "sdd.actualizar"}))
 
+    def test_pin_pide_plan_y_tarea(self):
+        """`pin` es por tarea: con un solo campo la paleta respondía ⛔."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        entrada = re.search(r"\{ id: 'sdd\.pin'.*?\}", fuente, re.S)
+        self.assertIsNotNone(entrada)
+        pin = entrada.group(0)
+        self.assertIn("prompt: 'PLAN-ID'", pin)
+        self.assertIn("TASK-ID", pin)
+        self.assertIn("flag: '--task'", pin)
+        self.assertIn("entrada.siguiente", fuente)
+
     def test_diez_puntos_del_29_cubiertos(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         # paleta, vista lateral, estado, fases, SPEC, tareas, pruebas,
