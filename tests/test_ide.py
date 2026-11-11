@@ -184,6 +184,35 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn('"sddFlujo"', manifiesto)
         self.assertIn('"Flujo SDD"', manifiesto)
 
+    def test_clic_secundario_abre_el_artefacto(self):
+        """El artefacto de la fase se abre desde el panel, sin buscar la ruta."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("it.contextValue = fila.artefacto ? 'sddFaseConArtefacto' : 'sddFaseSinArtefacto'",
+                      fuente)
+        self.assertIn("it._artefacto = fila.artefacto", fuente)
+        abrir = re.search(r"async function abrirArtefacto\(nodo\).*?\n\}",
+                          fuente, re.S)
+        self.assertIsNotNone(abrir, "falta abrir el artefacto de la fase")
+        cuerpo = abrir.group(0)
+        self.assertIn("nodo._artefacto", cuerpo)
+        self.assertIn("path.join(dir, relativo)", cuerpo)
+        self.assertIn("fs.stat(uri)", cuerpo)
+        self.assertIn("todavía no existe", cuerpo)
+        self.assertIn("FileType.Directory", cuerpo)
+        self.assertIn("revealInExplorer", cuerpo)
+        self.assertIn("markdown.showPreview", cuerpo)
+        self.assertIn("vscode.open", cuerpo)
+        self.assertIn("registerCommand('sdd.abrirArtefacto'", fuente)
+        manifiesto = json.loads((IDE / "package.json").read_text(
+            encoding="utf-8"))
+        comandos = {c["command"] for c in manifiesto["contributes"]["commands"]}
+        self.assertIn("sdd.abrirArtefacto", comandos)
+        menu = manifiesto["contributes"]["menus"]["view/item/context"]
+        self.assertTrue(any(m["command"] == "sdd.abrirArtefacto"
+                            and "view == sddFlujo" in m["when"]
+                            and "sddFaseConArtefacto" in m["when"]
+                            for m in menu))
+
     def test_init_avisa_y_refresca(self):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         init = re.search(r"function inicializar\(dir\).*?\n\}", fuente, re.S)

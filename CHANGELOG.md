@@ -24,6 +24,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   temporal y renombrado, así que un corte no lo deja truncado. La señal va al
   grupo de procesos, así que también termina el `pytest` que lanza `build`
   (en Windows, `taskkill /T`); el tope de espera corta igual.
+- En el panel `Flujo SDD`, el clic derecho sobre una fase abre su artefacto:
+  los `.md` en vista previa, el JSON en el editor y las carpetas en el
+  explorador. Si la fase todavía no lo escribió, avisa cuál falta en vez de
+  abrir un archivo vacío; las fases sin artefacto no ofrecen el menú.
 - El tope de espera de la paleta es configurable en
   `sddToolkit.timeoutMinutos` (5 por defecto): un valor inválido vuelve al
   defecto en vez de dejar los comandos sin límite.

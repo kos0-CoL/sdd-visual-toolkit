@@ -67,6 +67,12 @@ La ruta de `--root` va **antes** del subcomando.
       artefacto. En un proyecto con SPEC, la fila Especificación muestra
       `specs/SPEC-001.md`, y un clic en Aclaraciones ejecuta `clarify
       SPEC-001`. En un proyecto vacío, las filas sin ID no ofrecen clic.
+- [ ] Clic derecho en una fase del `Flujo SDD` con artefacto: *Abrir artefacto
+      de la fase* abre `specs/SPEC-001.md` en vista previa, el plan y el
+      informe en su `.md`, y `Recuperación` revela `.specify/checkpoints` en el
+      explorador. En una fase sin ejecutar, la notificación dice qué ruta
+      falta y no abre nada. En `Enriquecimiento` o `Recuperación` sin archivo,
+      el menú no aparece.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
 - [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece

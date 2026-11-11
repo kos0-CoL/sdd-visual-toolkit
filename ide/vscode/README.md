@@ -9,6 +9,10 @@ que la CLI (`toolkit export`, RF-38). Sin dependencias ni build.
 2. `Ejecutar → Iniciar depuración` (host de extensión).
 3. En la ventana nueva, abra un proyecto con `.specify/` y use la
    paleta (`SDD: …`) o la vista `SDD → Fases y tareas`.
+4. En `SDD → Flujo SDD`, el clic normal ejecuta el comando de la fase y el
+   **clic derecho abre el artefacto** que dejó (`.md` en vista previa, JSON
+   en el editor, carpetas en el explorador). Si la fase aún no lo escribió,
+   avisa en vez de abrir un archivo vacío.
 
 ## Configuración
 
