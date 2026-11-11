@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from core.states import NODOS
+
 # fase → (skill, plantilla del artefacto). `{spec}` y `{plan}` se rellenan con
 # los identificadores reales del proyecto; sin ellos la plantilla no casa y el
 # artefacto queda declarado como inexistente.
@@ -26,6 +28,9 @@ FASES = (
 )
 
 DATOS = {fase: (skill, plantilla) for fase, skill, plantilla in FASES}
+# §21: el flujo se lee en el orden del método, no en el de inserción del dict
+# del árbol (donde la recuperación se asigna antes que la implementación).
+ORDEN = {fase: indice for indice, (_icono, fase) in enumerate(NODOS)}
 
 
 def _comandos(spec: str, plan: str, tarea: str) -> dict[str, str | None]:
@@ -69,4 +74,5 @@ def flujo(raiz, nodos, estado: dict) -> list[dict]:
             "artefacto": artefacto,
             "comando": comandos.get(fase),
         })
+    filas.sort(key=lambda fila: ORDEN.get(fila["fase"], len(ORDEN)))
     return filas

@@ -44,6 +44,11 @@ def _criticas(raiz, plan_id: str) -> int | None:
                if isinstance(i, dict) and i.get("severidad") == "crítica")
 
 
+def _en_orden(nod: dict[str, str]) -> list[tuple[str, str]]:
+    """§21: las fases en el orden del árbol, no en el de inserción del dict."""
+    return [(fase, nod[fase]) for _icono, fase in NODOS if fase in nod]
+
+
 def nodos(raiz) -> tuple[list[tuple[str, str]], list[str]]:
     """(nodos, transiciones) desde artefactos reales."""
     estado = mod_tablero.recopilar(raiz)
@@ -71,7 +76,7 @@ def nodos(raiz) -> tuple[list[tuple[str, str]], list[str]]:
         nod.update({f: "pendiente" for f in
                     ("Arquitectura", "Tareas", "Análisis",
                      "Implementación", "Pruebas", "Recuperación")})
-        return ([(f, nod[f]) for f in nod], [])
+        return (_en_orden(nod), [])
     plan_id = sorted(p for p, _i in planes)[-1]
     plan = mod_plan._cargar_plan(raiz, plan_id)
     nod["Arquitectura"] = ("completado" if plan.status == "validado"
@@ -84,7 +89,7 @@ def nodos(raiz) -> tuple[list[tuple[str, str]], list[str]]:
         nod.update({f: "pendiente" for f in
                     ("Tareas", "Análisis", "Implementación", "Pruebas",
                      "Recuperación")})
-        return ([(f, nod[f]) for f in nod], [])
+        return (_en_orden(nod), [])
     hechas = sum(1 for t in tareas if t.estado == "completada")
     nod["Tareas"] = ("completado" if hechas == len(tareas)
                      else "en progreso")
@@ -96,7 +101,7 @@ def nodos(raiz) -> tuple[list[tuple[str, str]], list[str]]:
     if not eventos:
         nod.update({f: "pendiente" for f in
                     ("Implementación", "Pruebas", "Recuperación")})
-        return ([(f, nod[f]) for f in nod], [])
+        return (_en_orden(nod), [])
     tipos = {e.get("evento") for e in eventos}
     nod["Recuperación"] = ("recuperado" if "rollback" in tipos
                            else "pendiente")
@@ -131,7 +136,7 @@ def nodos(raiz) -> tuple[list[tuple[str, str]], list[str]]:
         elif tipo == "checkpoint":
             transiciones.append("%s → 🔖 hito: %s" % (
                 e.get("fecha", "?"), e.get("tarea", "?")))
-    return ([(f, nod[f]) for f in nod], transiciones)
+    return (_en_orden(nod), transiciones)
 
 
 def despachar(args) -> int:
