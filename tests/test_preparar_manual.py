@@ -75,9 +75,14 @@ class TestPrepararManual(unittest.TestCase):
         self.assertIn("comprobación", r.stdout)
         for nombre in ("ajustes", "snapshot", "artefactos", "comandos", "estado",
                        "extensión", "arnés"):
-            self.assertRegex(r.stdout, rf"(?m)^  {nombre}\s+[✓⚠⛔]")
+            self.assertRegex(r.stdout, rf"(?m)^  {nombre}\s+[✓☐⚠⛔]")
         for nombre in ("ajustes", "artefactos", "estado", "comandos"):
             self.assertRegex(r.stdout, rf"(?m)^  {nombre}\s+✓")
+        # El arnés se separa: pasa en el stub, pero el editor no lo vio.
+        self.assertRegex(r.stdout, r"(?m)^  arnés\s+(☐|⚠️)")
+        self.assertNotRegex(r.stdout, r"(?m)^  arnés\s+✓")
+        self.assertIn("☐ pendiente de editor", r.stdout)
+        self.assertIn("pendiente de editor:", r.stdout)
         self.assertIn("Casillas de ide/PRUEBA-MANUAL.md", r.stdout)
         self.assertIn("VS Code — extensión:", r.stdout)
         # No rehace nada: el archivo de más sigue donde estaba.

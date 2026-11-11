@@ -160,7 +160,8 @@ PY
         salida="$(mktemp)"
         if node "$RAIZ/tests/js/arnes_extension.js" "$RAIZ" "$destino" "$PYTHON" \
                 >"$salida" 2>&1; then
-            printf 'arnés\tok\t%s\n' "$(tail -1 "$salida")" >>"$filas"
+            printf 'arnés\tpendiente\t%s en el stub; el editor no lo vio\n' \
+                "$(tail -1 "$salida")" >>"$filas"
         else
             printf 'arnés\tfallo\t%s\n' \
                 "$(grep -E '^FAIL' "$salida" | head -1 || tail -1 "$salida")" >>"$filas"
@@ -177,12 +178,13 @@ from pathlib import Path
 
 filas = [linea.split("\t")
          for linea in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines() if linea]
-marca = {"ok": "✓", "aviso": "⚠️", "fallo": "⛔"}
+marca = {"ok": "✓", "pendiente": "☐", "aviso": "⚠️", "fallo": "⛔"}
 ancho = max(len(fila[0]) for fila in filas)
 print()
 print(f"  {'comprobación'.ljust(ancho)}  resultado")
 for nombre, estado, detalle in filas:
     print(f"  {nombre.ljust(ancho)}  {marca[estado]} {detalle}")
+print("  ✓ comprobado · ☐ pendiente de editor · ⚠️ aviso · ⛔ fallo")
 print()
 PY
 
@@ -209,10 +211,15 @@ PY
     echo "  notificaciones y «Cancelar»."
     echo "  El arnés rompe y restaura un archivo de .github/prompts por corrida."
     echo
+    local comprobado pendiente
     faltas="$(grep -c $'\tfallo\t' "$filas" || true)"
+    comprobado="$(grep -c $'\tok\t' "$filas" || true)"
+    pendiente="$(grep -c $'\tpendiente\t' "$filas" || true)"
     rm -f "$filas"
+    echo "Comprobado: $comprobado   ·   pendiente de editor: $pendiente" \
+        "   ·   fallos: $faltas"
     if [ "$faltas" -eq 0 ]; then
-        echo "Entorno listo: abra VS Code en $destino y recorra la checklist."
+        echo "Entorno listo para mirar: abra VS Code en $destino y recorra la checklist."
     else
         echo "⚠️ $faltas comprobación(es) en rojo; arregle eso antes de la pasada." >&2
     fi
