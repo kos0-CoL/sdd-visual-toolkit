@@ -11,8 +11,13 @@ el cierre de `TASK-001`.
 
 ## Qué incluye
 
-- `.specify/specs.json`, `planes.json`, `tareas.json`, `requerimientos.json`,
-  `current_task.json`: los índices del estado.
+- `.specify/specs.json`, `planes.json`, `tareas.json` y
+  `requerimientos.json`: los índices del estado.
+- `.specify/current_task.json`: legado de 0.1.0. `init` lo sembraba con
+  `current_spec` y `current_phase` en `null` y nadie lo volvía a tocar; se
+  conserva porque el fixture reproduce lo que escribió el tag, pero la CLI
+  actual ya no lo crea ni lo lee. El estado vivo es
+  `.specify/memory/current_task.json` (abajo).
 - `.specify/planes/PLAN-001.json` y `.specify/tareas/TASKS-PLAN-001.json`:
   plan técnico y desglose.
 - `specs/SPEC-001.json` y su gemelo `SPEC-001.md`: la SPEC aprobada, en las
