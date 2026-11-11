@@ -7,13 +7,15 @@ Esto es lo que hay que abrir para pasar cada superficie de «escrito» a
 ## Estado de esta lista (2026-11-11)
 
 **Ninguna casilla está marcada: no se ejecutó nada en un editor real.** Las
-pruebas automáticas cubren la estructura de lo que el editor carga, y eso no
-convierte ninguna superficie en verificada (§47). Una casilla se marca solo
+pruebas automáticas cubren la estructura de lo que el editor carga y —con el
+arnés de `tests/js/arnes_extension.js`— los caminos del código contra un
+proyecto real, y eso no convierte ninguna superficie en verificada (§47): sigue
+haciendo falta ver el editor. Una casilla se marca solo
 después de dejar su registro en `ide/COMPATIBILIDAD.md` según «Cómo se anota».
 
 | Bloque | Qué cubren los tests (no es prueba de editor) | En editor real |
 |---|---|---|
-| VS Code — extensión | `tests/test_ide.py` (manifiesto, paleta, vistas, canal, cancelación, tope, clic derecho) · `tests/test_cli_init.py::TestInitDejaElIDEListo` (`.vscode/settings.json` y `tasks.json`) · `tests/test_export.py` (contrato del que lee la vista) | sin probar |
+| VS Code — extensión | `tests/test_ide.py` (manifiesto, paleta, vistas, canal, cancelación, tope, clic derecho) · `tests/test_extension_headless.py` y `tests/js/arnes_extension.js` (el `extension.js` con un stub de `vscode` contra un proyecto real) · `tests/test_cli_init.py::TestInitDejaElIDEListo` (`.vscode/settings.json` y `tasks.json`) · `tests/test_export.py` (contrato del que lee la vista) | sin probar |
 | VS Code — comandos de barra | `tests/test_agent_commands.py` (los catorce, formato por cliente y ruta absoluta en el cuerpo) | sin probar |
 | Antigravity | lo anterior, más `tests/test_compatibilidad_formato.py` y la matriz de la extensión | sin probar |
 

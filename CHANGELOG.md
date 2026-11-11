@@ -11,6 +11,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La extensión lleva su `LICENSE` (copia del del repo) y un `.vscodeignore`:
   `vsce` empaqueta solo `extension.js`, `package.json`, el `readme.md` y la
   licencia, sin avisos de archivos faltantes ni de sobrantes.
+- La extensión tiene arnés propio: `tests/js/arnes_extension.js` carga el
+  `extension.js` real con un stub de `vscode` y `tests/test_extension_headless.py`
+  lo corre contra el fixture preparado (vista, paleta, clic derecho, fallos,
+  aviso de skills, estado vacío y CLI rota). Si no hay `node`, se salta.
 - `scripts/materializar_md.py` reescribe los `.md` de plan y tareas a partir
   de sus JSON con los renderizadores de la CLI, sin tocar el estado: el fixture
   de 0.1.0 solo trae los JSON (`plan --force` movería el proyecto a
