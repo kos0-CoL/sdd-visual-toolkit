@@ -223,8 +223,10 @@ Recomendada: [ build PLAN-001 ]
   Antigravity. Nunca sobrescribe archivos que ya existan.
 
   La vista **Flujo SDD** es la capa visual del método: una fila por fase con
-  su estado, el artefacto que deja (`specs/SPEC-001.md`, `planes/PLAN-001.md`,
-  `tareas/…`) y la skill que la ejecuta (`/sdd-plan`, `/sdd-test`). Con clic
+  su estado, el artefacto que deja (`specs/SPEC-001.md`,
+  `.specify/planes/PLAN-001.md`, `.specify/tareas/TASKS-PLAN-001.md`,
+  `.specify/informes/INFORME-PLAN-001.md`) y la skill que la ejecuta
+  (`/sdd-plan`, `/sdd-test`). Con clic
   lanza el comando de la fase cuando los datos alcanzan; si falta el ID, la
   fila se muestra sin comando en vez de fallar.
 - **MCP:** `python3 mcp/server.py` expone por stdio las herramientas de
@@ -252,9 +254,27 @@ toolkit comandos --cliente cursor    # repetible; solo los que use
 | Windsurf | `.windsurf/workflows/<nombre>.md` | `/sdd-status` |
 | Antigravity | `.agents/skills/<nombre>/SKILL.md` | `/sdd-status` |
 
-Son catorce, uno por paso del flujo: `/sdd` (qué sigue) y luego `-enrich`,
-`-specify`, `-clarify`, `-plan`, `-plan-gate`, `-tasks`, `-analyze`, `-build`,
-`-pin`, `-test`, `-traza` y `-cierre`.
+Son catorce, uno por paso del flujo. Cada uno ejecuta un subcomando de la
+CLI con `--root .`; el catálogo vive en `core/agent_commands.py` y es el que
+usa `toolkit comandos` para escribirlos, así que la tabla y los archivos
+generados no pueden separarse:
+
+| Skill | Ejecuta | Para qué |
+|---|---|---|
+| `/sdd` | `siguiente` | ver el tablero y el próximo comando recomendado |
+| `/sdd-status` | `status` | fase, progreso y bloqueos antes de elegir el paso |
+| `/sdd-enrich` | `enrich "idea"` | convertir una idea en requerimientos |
+| `/sdd-specify` | `specify ENR-ID` | escribir la SPEC de un requerimiento aceptado |
+| `/sdd-clarify` | `clarify SPEC-ID` | responder las aclaraciones abiertas |
+| `/sdd-plan` | `plan SPEC-ID` | plan técnico de una SPEC aprobada |
+| `/sdd-plan-gate` | `plan --gate PLAN-ID` | aprobar el plan y superar el Quality Gate |
+| `/sdd-tasks` | `tasks PLAN-ID` | desglosar el plan en tareas verificables |
+| `/sdd-analyze` | `analyze PLAN-ID` | informe de consistencia antes de implementar |
+| `/sdd-build` | `build PLAN-ID` | poner la siguiente tarea en curso |
+| `/sdd-pin` | `pin PLAN-ID --task TASK-ID` | congelar interfaces y detectar desviaciones |
+| `/sdd-test` | `test TASK-ID` | correr el arnés de pruebas de la tarea |
+| `/sdd-traza` | `traza SPEC-ID` | trazabilidad SPEC → test → evidencia |
+| `/sdd-cierre` | `cierre TASK-ID o PLAN-ID` | mensaje de cierre de la fase |
 
 Cada archivo ejecuta la CLI con su ruta absoluta y `--root .`, y le pide al
 agente dos cosas: mostrar la salida tal cual y detenerse en los `⛔` y `🔒`.
