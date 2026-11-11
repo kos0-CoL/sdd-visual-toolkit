@@ -1,15 +1,93 @@
 # Compatibilidad por entorno (§30) — RF-40
 
-La compatibilidad se comprueba individualmente; no se asume.
+La compatibilidad se comprueba individualmente; no se asume. Cada entorno
+tiene dos superficies independientes: la **extensión** (`ide/vscode/`, RF-39)
+y los **comandos de barra** (`toolkit comandos`, RF-36). Una puede estar verde
+y la otra no.
 
-| Entorno | Estado | Base |
+## Estado
+
+| Entorno | Extensión | Comandos de barra |
 |---|---|---|
-| VS Code | ✅ soportado | RF-39 (`ide/vscode/`): paleta, vista lateral, barra de estado. Solo APIs estables (commands, TreeView, StatusBar, Terminal); verificado con `node --check` + `tests/test_ide.py`. |
-| Cursor | ✅ compatible por diseño | Misma API de extensiones que VS Code; la extensión no usa proposed APIs. Pendiente: prueba manual en Cursor. |
-| Windsurf | ✅ compatible por diseño | Idem Cursor. Pendiente: prueba manual en Windsurf. |
-| Otros basados en VS Code | ✅ compatible por diseño | Idem. Pendiente: prueba manual en cada uno. |
-| Antigravity | ⚠️ pendiente de verificación | §29: debe usarse lo que ese entorno ofrezca de verdad. Verificar antes de afirmar: paleta de comandos, vistas propias, terminal integrada y lectura del workspace. Hasta entonces, usar la CLI (RF-36) o el servidor MCP. |
-| Solo terminal / CLI | ✅ soportado | RF-36: la CLI es completa sin IDE. |
-| Vía MCP (Claude Code, etc.) | ✅ soportado | `mcp/server.py`: seis herramientas por stdio, sin dependencias — de lectura (`exportar_estado`, `siguiente`, `tablero`) y operativas (`asignar_tarea`, `registrar_resultado`, `marcar_completada`). Verificado en `tests/test_mcp.py`. |
+| VS Code | ✅ `node --check` + `tests/test_ide.py`; **sin prueba manual** | ✅ `.github/prompts/`; **sin probar en el IDE** |
+| Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar |
+| Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar |
+| Antigravity | ⚠️ pendiente de verificación | ⚠️ `.agents/skills/`; sin probar |
+| Claude Code (CLI) | — no aplica: no es un IDE | ✅ `.claude/skills/`; sin probar |
+| Solo terminal / CLI | — | — la CLI es completa sin IDE (RF-36) |
+| Vía MCP | — | ✅ `tests/test_mcp.py` |
 
-Regla (§47): donde falte capacidad, se degrada a CLI + `export`, nunca se inventa estado.
+Ningún ✅ de la columna de comandos significa «visto funcionando». Significa
+que el archivo se escribe en la ruta y con el formato que ese cliente
+documenta, y que `tests/test_agent_commands.py` lo comprueba. Abrirlo dentro
+del cliente sigue pendiente en todos.
+
+La extensión solo usa APIs estables (commands, TreeView, StatusBar,
+Terminal); Cursor, Windsurf y los demás basados en VS Code heredan esa base,
+pero eso es «compatible por diseño», no una prueba.
+
+## Qué falta para cerrarlo
+
+Cada entorno se cierra igual: generar, abrir, mirar y anotar. Generar los
+comandos una vez en el proyecto:
+
+```bash
+toolkit comandos --cliente <cliente>
+```
+
+### VS Code
+
+1. Instalar el `.vsix` de la última release (*Extensiones → … → Instalar
+   desde VSIX…*) y configurar `sddToolkit.cliPath` con la ruta absoluta a
+   `cli/main.py`.
+2. Comprobar que la paleta `SDD: …` ejecuta el comando en la terminal
+   `SDD Toolkit`, que la vista `SDD → Fases y tareas` muestra la fase y el
+   progreso reales, y que la barra de estado aparece con un proyecto y se
+   oculta sin `.specify/`.
+3. `toolkit comandos --cliente copilot` y verificar que `/sdd-status` aparece
+   al escribir `/` en el chat y devuelve la salida de la CLI tal cual.
+
+### Cursor
+
+1. `toolkit comandos --cliente cursor`; los archivos quedan en
+   `.cursor/commands/`.
+2. `/sdd` debe aparecer en el chat; comprobar que el agente **no** recibe
+   argumentos detrás del comando y que aun así pide el ID cuando falta (los
+   comandos de Cursor no los pasan).
+3. La extensión se prueba igual que en VS Code si el editor la acepta.
+
+### Windsurf
+
+1. `toolkit comandos --cliente windsurf`; quedan en
+   `.windsurf/workflows/`.
+2. `/sdd-plan` debe invocarse desde Cascade y ejecutar `plan $ARGUMENTS`
+   con el ID que se escriba detrás.
+
+### Antigravity
+
+1. `toolkit comandos --cliente antigravity`; quedan en `.agents/skills/`.
+   No se generan *workflows*: ese mecanismo está deprecado y la migración es
+   hacia skills.
+2. Verificar que las skills aparecen en el agente y que la ejecución de shell
+   les permite correr la CLI.
+3. Mientras no se verifique: usar la CLI (RF-36) o el MCP.
+
+### Claude Code
+
+1. `toolkit comandos --cliente claude`; quedan en `.claude/skills/`.
+2. `/sdd-specify ENR-001` debe sustituir `$ARGUMENTS` y ejecutar
+   `specify ENR-001`.
+
+## Cómo se anota un resultado
+
+Cuando un entorno se pruebe de verdad, se cambia su fila: el ✅ pasa a
+`✅ verificado` con la versión del cliente y la fecha, y se deja una línea en
+el registro. Si falla, se anota el síntoma y se degrada a CLI + `export`,
+nunca se inventa estado.
+
+| Fecha | Entorno y versión | Superficie | Resultado |
+|---|---|---|---|
+| — | — | — | sin pruebas manuales registradas |
+
+Regla (§47): donde falte capacidad, se degrada a CLI + `export`, nunca se
+inventa estado.
