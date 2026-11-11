@@ -11,6 +11,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - La extensión lleva su `LICENSE` (copia del del repo) y un `.vscodeignore`:
   `vsce` empaqueta solo `extension.js`, `package.json`, el `readme.md` y la
   licencia, sin avisos de archivos faltantes ni de sobrantes.
+- `ide/COMPATIBILIDAD.md` registra la primera pasada del IDE: la del
+  2026-11-11, hecha **sin editor** con el arnés (41/41) sobre el entorno
+  materializado. Queda en ⚠️ parcial, con la lista de lo que sigue necesitando
+  ojos; ninguna casilla de la checklist se marcó.
 - El arnés comprueba además que los tres `.md` que materializa la preparación
   son el artefacto de su fase en el flujo y que el plan se abre en vista
   previa, que es el camino que antes no se podía ejercitar con el fixture.

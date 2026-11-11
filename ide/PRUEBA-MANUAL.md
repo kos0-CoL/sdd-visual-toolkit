@@ -19,6 +19,10 @@ después de dejar su registro en `ide/COMPATIBILIDAD.md` según «Cómo se anota
 | VS Code — comandos de barra | `tests/test_agent_commands.py` (los catorce, formato por cliente y ruta absoluta en el cuerpo) | sin probar |
 | Antigravity | lo anterior, más `tests/test_compatibilidad_formato.py` y la matriz de la extensión | sin probar |
 
+La pasada del 2026-11-11 se hizo **sin editor** (arnés headless, 41/41 en
+verde): no habilita ninguna casilla. El detalle de lo cubierto y de lo que
+falta está en `ide/COMPATIBILIDAD.md`.
+
 ## Preparación
 
 Se prueba sobre un proyecto ya inicializado, no sobre uno vacío (para el
