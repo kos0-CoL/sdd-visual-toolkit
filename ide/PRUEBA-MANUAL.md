@@ -123,8 +123,12 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       sin `🔒`, ningún grupo `Bloqueos`, y nueve fases en `Árbol de estados`
       (cinco completadas; Tareas e Implementación en progreso; Análisis y
       Recuperación pendientes). Cualquier diferencia es un hallazgo.
-- [ ] Clic en un nodo con comando: corre ese comando y su salida aparece en
+- [x] Clic en un nodo con comando: corre ese comando y su salida aparece en
       el canal `SDD Toolkit`. Clic en una píldora bloqueada: no pasa nada.
+      *Visto* el 2026-11-12: `▫ Ver reporte: reporte TASK-001` deja en el canal
+      `$ … reporte TASK-001   (código 0)` con el reporte entero; en un proyecto
+      en `📐 Arquitectura`, `🔒 Desglosar tareas: tasks PLAN-001` no abre
+      notificación, ni canal, ni pestaña, y la fase sigue donde estaba.
 - [x] Fallo visible: `SDD: Implementar (build)` con `PLAN-999` muestra una
       notificación de error con `plan inexistente: PLAN-999`; su botón `Ver
       salida` abre el canal con la orden, el código y la salida completa.
@@ -159,10 +163,14 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       al minuto salió `SDD: test excedió 1 minuto(s) y se cortó` con `Ver
       salida`, el clic en ese botón dejó `(tiempo agotado)` en el canal y ni el
       `pytest` ni la CLI quedaron vivos.
-- [ ] Abrir un proyecto recién inicializado (`python3 cli/main.py --root
+- [x] Abrir un proyecto recién inicializado (`python3 cli/main.py --root
       /tmp/sdd-init init`) en VS Code: la vista `SDD → Fases y tareas`
       funciona sin configurar `cliPath` (lo dejó `.vscode/settings.json`) y
       *Terminal → Ejecutar tarea* lista las tareas `SDD: …`.
+      *Visto* el 2026-11-12 sin tocar ajustes: la vista abre en
+      `📍 Fase: sin SPEC` con `➡ Siguiente: enrich «idea»`, la barra dice
+      `SDD: sin SPEC` y *Tasks: Run Task* ofrece `SDD: árbol`, `SDD: estado`,
+      `SDD: instrucciones`, `SDD: siguiente` y `SDD: tablero`.
 - [x] Vista `SDD → Flujo SDD`: nueve fases en orden, cada una con su estado
       a la derecha y, al pasar el mouse, la skill (`skill /sdd-plan`) y el
       artefacto. En un proyecto con SPEC, la fila Especificación muestra
