@@ -143,8 +143,11 @@ def cmd_init(args) -> int:
     print("✓ .specify/ (memoria con estado e historial, checkpoints)")
     print("✓ .specify/planes/ .specify/tareas/ .specify/informes/")
     print("✓ specs/ (SPEC-001.md y su .json)")
-    if escritos:
-        print(f"✓ {', '.join(escritos)} (ruta del toolkit y tareas SDD)")
+    del_ide = [n for n in escritos if n.startswith(f"{ide_entorno.CARPETA}/")]
+    if del_ide:
+        print(f"✓ {', '.join(del_ide)} (ruta del toolkit y tareas SDD)")
+    if ide_entorno.GITIGNORE in escritos:
+        print("✓ .gitignore (ajustes y caché de esta máquina)")
     for nombre in existentes:
         print(f"· {nombre} ya existía: no se tocó")
     # Los comandos de barra son lo único que `init` no dejaba listo: sin ellos

@@ -209,8 +209,8 @@ aparece en la barra lateral y `SDD: <fase>` en la barra de estado.
 
 ## Qué se commitea
 
-**Decisión: `specs/` y `.specify/` van al repositorio; `init` no escribe
-`.gitignore`.**
+**Decisión: `specs/` y `.specify/` van al repositorio; `init` crea `.gitignore`
+si falta y nunca edita uno existente.**
 
 **Al repositorio**, porque es la memoria del proyecto —sin esto el equipo pierde
 el tablero, los planes y el historial—:
@@ -219,18 +219,20 @@ el tablero, los planes y el historial—:
 - `.specify/` — estado, planes, tareas, informes, pines, checkpoints e historial.
   Ninguno de esos archivos lleva rutas de su máquina (verificado con `grep`).
 
-**Fuera del repositorio**, porque apuntan a su máquina:
+**Fuera del repositorio**, porque apuntan a su máquina: `.vscode/settings.json`
+(tiene `sddToolkit.cliPath` y el intérprete absolutos) y `.specify/cache/` (el
+análisis del repo, que se recalcula en el siguiente plan).
 
 ```gitignore
-.vscode/settings.json   # sddToolkit.cliPath y python: rutas absolutas
-.specify/cache/         # análisis del repo; se recalcula en el siguiente plan
+.vscode/settings.json
+.specify/cache/
 ```
 
-**`init` no toca `.gitignore`**: no lo crea si falta ni añade líneas a uno
-existente —`tests/test_cli_init.py` lo comprueba—. Es un archivo del proyecto,
-qué ignorar depende del equipo (hay quien commitea `.vscode/` entero) y `init`
-ya promete no sobrescribir nada que exista. Las líneas de arriba se añaden a
-mano, una vez por proyecto.
+**`init` escribe ese `.gitignore` cuando no existe** —con los comentarios en su
+propia línea, porque en gitignore un `#` al final forma parte del patrón— y no
+toca uno existente: lo dice como `· .gitignore ya existía: no se tocó`. Añadir
+líneas a un archivo ajeno depende de qué más ignora el equipo, y para eso no hay
+forma de acertar desde fuera. `tests/test_cli_init.py` cubre los dos casos.
 
 `.vscode/tasks.json` también lleva el intérprete y el `cli/main.py` absolutos si
 lo escribió `init`. Si el proyecto ya tenía tareas propias, no lo ignore.
