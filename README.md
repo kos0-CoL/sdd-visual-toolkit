@@ -141,6 +141,215 @@ tablero. Con la extensión, `Fases y tareas` aparece en la barra lateral y
 
 ---
 
+## Primera sesión: de la idea al primer build
+
+Una sesión real, sin retoques: proyecto de ejemplo en `/tmp/sesion`, Python
+3.14.4, 2026-11-12. Para no repetir la ruta, el bloque usa
+`TK="python3 /ruta/al/sdd-visual-toolkit/cli/main.py"`. Donde dice «…» la
+salida está recortada; lo demás es literal.
+
+### 1. Idea → SPEC
+
+```console
+$ $TK init --cliente copilot
+🟢 PROYECTO INICIALIZADO: /tmp/sesion
+Estado:
+✓ .specify/ (memoria con estado e historial, checkpoints)
+✓ .specify/planes/ .specify/tareas/ .specify/informes/
+✓ specs/ (SPEC-001.md y su .json)
+✓ .vscode/settings.json, .vscode/tasks.json (ruta del toolkit y tareas SDD)
+🧩 copilot: 14 comando(s) en .github/skills/{nombre}/SKILL.md
+✓ Comandos de barra instalados en /tmp/sesion
+
+$ $TK enrich "Quiero una agenda de turnos para un consultorio: necesito registrar \
+  clientes, reservar turnos, cancelar turnos y consultar la agenda del día. \
+  Debe funcionar sin internet."
+🌀 ENRIQUECIMIENTO ENR-001 (pendiente de validación) — dominio: turnos
+
+🎯 Objetivo:
+  [OBJ-1] (explicito) Una agenda de turnos para un consultorio: necesito registrar
+  clientes, reservar turnos, cancelar turnos y consultar la agenda del día
+
+📦 Entidades potenciales (inferido):
+  [ENT-1] (inferido) Clientes
+  [ENT-2] (inferido) Turnos
+  [ENT-3] (inferido) Agenda
+  [ENT-4] (inferido) Profesionales
+
+⚙️ Funcionalidades:
+  [FUN-1] (explicito) Debe funcionar sin internet
+  [FUN-2] (inferido) Reserva de turnos
+  [FUN-3] (inferido) Cancelación de turnos
+  [FUN-4] (inferido) Consulta de agenda
+  [FUN-5] (inferido) Registro de clientes
+
+❓ Falta información (desconocido):
+  [FAL-1] (desconocido) Stack tecnológico sin definir (pendiente de aclaración)
+  [FAL-2] (desconocido) ¿dónde se guardan los datos hoy? (archivo, planilla, base de datos)
+
+Problemas pendientes: responda lo marcado como desconocido.
+
+$ $TK enrich --accept ENR-001
+🟢 ENRIQUECIMIENTO VALIDADO: ENR-001
+Requerimientos creados: 3
+  ...
+
+$ $TK specify ENR-001 --titulo "Agenda de turnos"
+📝 SPEC SPEC-001 v1.0.0 [draft] — Agenda de turnos
+  funcionales: 12 | entidades: 4
+  criterios: 12 | casos: 12
+  fuera de alcance: 2 | supuestos: 2
+```
+
+Nada se aprobó solo: `enrich` marca lo inferido como pendiente y la SPEC nace
+en `draft`. Aceptar el enriquecimiento es el primer acto humano.
+
+### 2. Aclarar antes de planificar
+
+`clarify` lista lo que falta. En esta sesión fueron 18 preguntas: 4 de
+contexto, 12 de confirmación y 2 sobre datos de cada entidad.
+
+```console
+$ $TK clarify --list SPEC-001
+○ CLA-001 [supuesto] Pendiente de aclarar: Stack tecnológico sin definir (pendiente de aclaración)
+○ CLA-002 [supuesto] Pendiente de aclarar: ¿dónde se guardan los datos hoy? (archivo, planilla, base de datos)
+○ CLA-003 [regla] ¿Hay alguna regla de negocio (precios, descuentos, permisos)?
+○ CLA-009 [confirmar_req] ¿Se confirma este requerimiento? «[ENR-001/FUN-2] Reserva de turnos»
+…
+○ CLA-018 [entidad_datos] ¿Qué datos guarda «Profesionales»?
+
+$ $TK clarify SPEC-001 --answer CLA-001 "Python 3.11, sin dependencias externas"
+✓ CLA-001: supuesto resuelto y movido a aclarados
+$ $TK clarify SPEC-001 --answer CLA-009 "sí"
+✓ CLA-009: [ENR-001/FUN-2] confirmado como aceptado
+$ $TK clarify SPEC-001 --skip CLA-013 --skip CLA-014
+— CLA-013 omitida (registrada, no se repetirá)
+— CLA-014 omitida (registrada, no se repetirá)
+```
+
+Omitir es explícito y queda en el historial: no es lo mismo que responder
+«no lo sé». Lo que se descarta se marca con `Descartar` como respuesta.
+
+```console
+$ $TK clarify SPEC-001 --gate
+🟢 QUALITY GATE 1: SUPERADO — 18/18 aclaradas. SPEC-001 lista para /plan
+```
+
+### 3. Plan y tareas (Gate 2)
+
+```console
+$ $TK plan SPEC-001
+📐 PLAN PLAN-001 v1.0.0 [draft] → SPEC-001
+  pasos: 14 | riesgos: 1 | validación: 12 criterios
+  greenfield: True | archivos analizados: 0
+
+$ $TK plan --gate PLAN-001
+🟢 QUALITY GATE 2: SUPERADO — PLAN-001 responde a SPEC-001 y al repo real.
+Sin funcionalidad inventada (§8.6).
+
+$ $TK tasks PLAN-001
+🧩 14 tareas derivadas de PLAN-001 (TASK-001…TASK-014), cadena secuencial explícita.
+
+$ $TK analyze PLAN-001
+🔍 Informe PLAN-001: 6 hallazgo(s), 0 crítica(s).
+```
+
+El plan no se puede generar con preguntas abiertas, y las tareas no se pueden
+generar sin el Gate 2. Son dos bloqueos reales, no avisos.
+
+### 4. El primer build
+
+```console
+$ $TK siguiente
+🧭 Navegación — fase actual: 💾 Tareas.
+Recomendada: [ build PLAN-001 ]
+
+$ $TK build PLAN-001
+🏗️ PLAN-001: 0/14 completadas.
+📌 PIN TASK-001 — SPEC SPEC-001 [draft]
+Requerimiento: (sección §6:Clientes, §6:Turnos, §6:Agenda, §6:Profesionales)
+Tarea: Modelar entidades de §6. Estructuras de datos antes que comportamiento.
+Criterio: Criterio de §6:Clientes: completar «Modelar entidades de §6» según su sección SPEC
+Archivos autorizados: src/clientes.py, tests/test_clientes.py
+Exclusiones: Facturación electrónica; Múltiples sedes
+Supuestos abiertos: 0
+
+▶ TASK-001 en curso. Implemente, luego `build PLAN-001 --done TASK-001`.
+```
+
+Ahí está el aporte concreto: **la tarea autoriza dos archivos y nada más**.
+La implementación la escribe el agente o usted; el toolkit la mide. Este es el
+contenido real con el que se cerró la tarea:
+
+```python
+# src/clientes.py
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Cliente:
+    """Persona que reserva turnos. Datos mínimos: nombre y teléfono."""
+
+    nombre: str
+    telefono: str
+
+    def __post_init__(self) -> None:
+        if not self.nombre.strip():
+            raise ValueError("el cliente necesita un nombre")
+        if not self.telefono.strip():
+            raise ValueError("el cliente necesita un teléfono")
+```
+
+```console
+$ $TK test TASK-001
+🧪 Ciclo de testing TASK-001: ✅ TODO VERDE.
+✅ unitarios: total=3 pasadas=3 fallidas=0 omitidas=0 (0.497s)
+✅ regresión: total=3 pasadas=3 fallidas=0 omitidas=0 (0.4s)
+✅ cobertura: total=12 pasadas=12 fallidas=0 omitidas=0 (0.0s)
+   Cobertura TASK-001: 100% de 12 líneas (src/clientes.py 100%) ✅
+
+$ $TK validate TASK-001
+✔ Validación TASK-001: OBSERVADO (0 rechazo(s), 4 observación(es)).
+  🟡 [pin-B] src/clientes.py: símbolo público nuevo «Cliente (clase)» en archivo
+  creado por la tarea: justifique por qué es indispensable (§12.B)
+  …
+Revise y justifique con --nota (§17.4).
+```
+
+`validate` no bloquea por un símbolo nuevo, pero no lo deja pasar en silencio:
+pide una nota. Con ella, la tarea se cierra:
+
+```console
+$ $TK build PLAN-001 --done TASK-001 --nota "Cliente es la entidad de §6:Clientes
+  que la tarea pide modelar; dataclass evita escribir a mano igualdad y repr,
+  y from __future__ import annotations es la cabecera estándar de los módulos."
+✔ Validación TASK-001: VALIDADO (0 rechazo(s), 4 observación(es)).
+✅ TASK-001 completada (intento 1).
+```
+
+El PLAN-ID va delante aunque se use `--done`: sin él la CLI responde
+`⛔ plan inexistente: None`.
+
+### 5. Dónde quedó el trabajo
+
+```console
+$ $TK tablero
+📊 Tablero «sesion» — SPEC-001 [draft].
+Fase actual: 🧪 Pruebas.
+Progreso: [█···················] 1/14.
+Tarea actual: ninguna en curso.
+Última completada: TASK-001.
+Pendientes: 13.
+Pruebas: ✅ P=6 F=0 cob=100% (TASK-001).
+Errores: ninguno registrado.
+Próxima acción: build PLAN-001
+```
+
+Eso es el ciclo completo: idea → 12 requerimientos → 18 preguntas cerradas →
+plan de 14 pasos → 14 tareas → una tarea implementada, probada y cerrada. El
+estado vive en `.specify/` y `specs/`, así que el día siguiente empieza con
+`$TK recover` o `$TK siguiente`, no con explicaciones.
+
 ## Terminal, chat o extensión: qué necesita cada cosa
 
 El toolkit vive **una sola vez** en su máquina: el proyecto del usuario no
