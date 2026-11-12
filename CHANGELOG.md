@@ -21,6 +21,48 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   `flujo` (`Pruebas`) y no encontraba el artefacto. Ahora compara sin emoji,
   tildes ni mayúsculas, y el arnés exige que esa fila traiga `contextValue`,
   `_artefacto` y el aviso en el tooltip (43 comprobaciones).
+- `init` tampoco deja un `current_task.json` ni un `execution_history.jsonl`
+  en `.specify/`: el journal escribe el estado y el historial en
+  `.specify/memory/`, así que la copia de la raíz nunca se actualizaba. El
+  flujo del IDE apunta al historial real (`memory/execution_history.jsonl`).
+- `init` ya no deja `plans/` ni `tasks/` en la raíz: nadie escribía ahí,
+  porque `plan`, `tasks` y `analyze` guardan bajo `.specify/`. Ahora crea
+  `.specify/planes/`, `.specify/tareas/` y `.specify/informes/`, y la salida
+  de la instalación nombra esas rutas en vez de las vacías.
+- `init` respeta `--root`, la opción global que usan los demás comandos y que
+  la extensión de VS Code pasa siempre; antes la ignoraba y creaba `.specify/`
+  en la carpeta actual, así que `Inicializar proyecto` desde la paleta
+  inicializaba una carpeta distinta de la abierta. El path posicional sigue
+  mandando cuando se indica.
+- `init` se niega a crear un `.specify/` anidado cuando ya hay un proyecto
+  toolkit en una carpeta superior: los comandos suben hasta el estado más
+  cercano, así que el segundo dejaría dos raíces contradictorias. Volver a
+  inicializar el mismo proyecto sigue siendo inocuo.
+- La paleta de VS Code ejecuta los comandos capturando la salida y los
+  muestra en el canal `SDD Toolkit`: cuando la CLI sale con 1 el fallo
+  aparece como notificación con «Ver salida», en vez de perderse al fondo de
+  un terminal. `clarify` sigue en la terminal porque pregunta por stdin, y
+  `init` además confirma por notificación y refresca la vista y la barra.
+- `clarify` desde la paleta valida el `SPEC-ID` con `clarify --list` antes de
+  abrir el terminal: un ID inexistente se notifica con «Ver salida» en vez de
+  quedar al fondo de la terminal, que solo se abre cuando la validación pasa.
+- El panel de flujo apunta a los artefactos donde la CLI los escribe de
+  verdad: `.specify/planes/PLAN-001.md`, `.specify/tareas/TASKS-PLAN-001.md`
+  y `.specify/informes/INFORME-PLAN-001.md`, en vez de rutas que no existían.
+- `arbol` y el flujo del IDE respetan el orden §21 de las fases: la
+  recuperación aparecía antes de la implementación y las pruebas porque el
+  orden lo dictaba la inserción en el diccionario, no el método.
+- `specify` y `restricciones` avisan con `⛔` cuando el ID no existe, en vez de
+  terminar con un traceback: son los dos últimos comandos que reventaban al
+  escribir un identificador equivocado.
+- El IDE gana el panel **Flujo SDD**: una fila por fase con su estado, el
+  artefacto que deja y la skill que la ejecuta, y un clic que lanza el
+  comando de la fase. Los datos salen de `export`, que ahora publica `flujo`
+  (fase → artefacto → skill → comando) para cualquier adaptador.
+- `init` deja el proyecto listo para el IDE: escribe `.vscode/settings.json`
+  con el intérprete y la ruta del toolkit, y `.vscode/tasks.json` con las
+  tareas `SDD: …`. Al abrir la carpeta la extensión funciona sin configurar
+  nada, y los archivos existentes no se sobrescriben.
 
 ### Añadido
 
@@ -151,51 +193,6 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - El tope de espera de la paleta es configurable en
   `sddToolkit.timeoutMinutos` (5 por defecto): un valor inválido vuelve al
   defecto en vez de dejar los comandos sin límite.
-
-### Corregido
-
-- `init` tampoco deja un `current_task.json` ni un `execution_history.jsonl`
-  en `.specify/`: el journal escribe el estado y el historial en
-  `.specify/memory/`, así que la copia de la raíz nunca se actualizaba. El
-  flujo del IDE apunta al historial real (`memory/execution_history.jsonl`).
-- `init` ya no deja `plans/` ni `tasks/` en la raíz: nadie escribía ahí,
-  porque `plan`, `tasks` y `analyze` guardan bajo `.specify/`. Ahora crea
-  `.specify/planes/`, `.specify/tareas/` y `.specify/informes/`, y la salida
-  de la instalación nombra esas rutas en vez de las vacías.
-- `init` respeta `--root`, la opción global que usan los demás comandos y que
-  la extensión de VS Code pasa siempre; antes la ignoraba y creaba `.specify/`
-  en la carpeta actual, así que `Inicializar proyecto` desde la paleta
-  inicializaba una carpeta distinta de la abierta. El path posicional sigue
-  mandando cuando se indica.
-- `init` se niega a crear un `.specify/` anidado cuando ya hay un proyecto
-  toolkit en una carpeta superior: los comandos suben hasta el estado más
-  cercano, así que el segundo dejaría dos raíces contradictorias. Volver a
-  inicializar el mismo proyecto sigue siendo inocuo.
-- La paleta de VS Code ejecuta los comandos capturando la salida y los
-  muestra en el canal `SDD Toolkit`: cuando la CLI sale con 1 el fallo
-  aparece como notificación con «Ver salida», en vez de perderse al fondo de
-  un terminal. `clarify` sigue en la terminal porque pregunta por stdin, y
-  `init` además confirma por notificación y refresca la vista y la barra.
-- `clarify` desde la paleta valida el `SPEC-ID` con `clarify --list` antes de
-  abrir el terminal: un ID inexistente se notifica con «Ver salida» en vez de
-  quedar al fondo de la terminal, que solo se abre cuando la validación pasa.
-- El panel de flujo apunta a los artefactos donde la CLI los escribe de
-  verdad: `.specify/planes/PLAN-001.md`, `.specify/tareas/TASKS-PLAN-001.md`
-  y `.specify/informes/INFORME-PLAN-001.md`, en vez de rutas que no existían.
-- `arbol` y el flujo del IDE respetan el orden §21 de las fases: la
-  recuperación aparecía antes de la implementación y las pruebas porque el
-  orden lo dictaba la inserción en el diccionario, no el método.
-- `specify` y `restricciones` avisan con `⛔` cuando el ID no existe, en vez de
-  terminar con un traceback: son los dos últimos comandos que reventaban al
-  escribir un identificador equivocado.
-- El IDE gana el panel **Flujo SDD**: una fila por fase con su estado, el
-  artefacto que deja y la skill que la ejecuta, y un clic que lanza el
-  comando de la fase. Los datos salen de `export`, que ahora publica `flujo`
-  (fase → artefacto → skill → comando) para cualquier adaptador.
-- `init` deja el proyecto listo para el IDE: escribe `.vscode/settings.json`
-  con el intérprete y la ruta del toolkit, y `.vscode/tasks.json` con las
-  tareas `SDD: …`. Al abrir la carpeta la extensión funciona sin configurar
-  nada, y los archivos existentes no se sobrescriben.
 
 ## [0.1.5] — 2026-11-11
 
