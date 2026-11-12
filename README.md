@@ -88,6 +88,44 @@ python3 cli/main.py --version
 
 ---
 
+## Instalar en tu proyecto (2 pasos)
+
+Sirve para cualquier proyecto, nuevo o existente. No hace falta `pip install` ni
+copiar el toolkit dentro del proyecto: se queda donde está y el proyecto guarda
+su ruta.
+
+**Paso 1 — el chat (obligatorio).** Desde la carpeta del proyecto:
+
+```bash
+cd ~/mi-proyecto
+python3 /ruta/al/toolkit/cli/main.py init --cliente copilot
+```
+
+Deja el estado (`.specify/`, `specs/`), los ajustes del IDE
+(`.vscode/settings.json` con la ruta del toolkit y las tareas `SDD: …`) y las
+**14 skills** en `.github/skills/`. Eso es el menú `/sdd…` del chat: archivos en
+el proyecto, nada instalado en el editor.
+
+- Otros IDEs: `--cliente claude`, `--cliente cursor`, `--cliente windsurf`,
+  `--cliente antigravity`. Es repetible: `init --cliente copilot --cliente cursor`.
+- ¿El proyecto ya estaba inicializado? Entonces solo `comandos --cliente copilot`.
+
+**Paso 2 — la extensión (opcional).** Añade la vista `Fases y tareas`, la barra
+de estado y la paleta `SDD: …`:
+
+```bash
+code --install-extension sdd-visual-toolkit-0.1.6.vsix
+```
+
+y recargar la ventana. El chat del paso 1 funciona sin este paso.
+
+**Comprobar que quedó bien:** abre la carpeta en VS Code, escribe `/` en el chat
+con el arnés `Copilot` y deben aparecer los comandos; `/sdd` responde con el
+tablero. Con la extensión, `Fases y tareas` aparece en la barra lateral y
+`SDD: <fase>` en la barra de estado.
+
+---
+
 ## Terminal, chat o extensión: qué necesita cada cosa
 
 El toolkit vive **una sola vez** en su máquina: el proyecto del usuario no
