@@ -179,6 +179,26 @@ class TestRender(unittest.TestCase):
                 self.assertIn("fuente de la verdad", contenido)
                 self.assertIn("no lo inventes", contenido)
 
+    def test_la_skill_pide_el_dato_antes_de_ejecutar(self):
+        """El modelo corría `plan` sin ID y dejaba que la CLI lo frenara."""
+        archivos = agent_commands.generar("claude", PYTHON, CLI)
+        skill = archivos[".claude/skills/sdd-plan/SKILL.md"]
+        self.assertIn("**Antes de ejecutar**: este comando necesita la SPEC-ID",
+                      skill)
+        self.assertLess(skill.index("Antes de ejecutar"),
+                        skill.index("La salida de la CLI es la fuente"))
+        self.assertNotIn("Antes de ejecutar",
+                         archivos[".claude/skills/sdd/SKILL.md"])
+
+    def test_los_comandos_que_exigen_un_dato_lo_declaran(self):
+        """`cierre` funciona sin identificador (da la foto): no pregunta."""
+        con_dato = {"sdd-enrich", "sdd-specify", "sdd-clarify", "sdd-plan",
+                    "sdd-plan-gate", "sdd-tasks", "sdd-analyze", "sdd-build",
+                    "sdd-pin", "sdd-test", "sdd-traza"}
+        for comando in agent_commands.COMANDOS:
+            with self.subTest(comando=comando.nombre):
+                self.assertEqual(bool(comando.pide), comando.nombre in con_dato)
+
     def test_generar_es_determinista(self):
         uno = agent_commands.generar("claude", PYTHON, CLI)
         otro = agent_commands.generar("claude", PYTHON, CLI)

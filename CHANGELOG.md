@@ -14,6 +14,15 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   el chat por defecto, carga skills. Los prompts se siguen generando, así que
   `/sdd` funciona en los dos arneses.
 
+### Corregido
+
+- Las skills generadas piden el dato antes de ejecutar. El cuerpo decía «si
+  falta un identificador, pídelo antes de ejecutar», pero el agente lanzaba
+  `plan` a secas y dejaba que la CLI contestara «indique la SPEC-ID». Ahora el
+  primer punto de las reglas nombra el dato del comando
+  (`**Antes de ejecutar**: este comando necesita la SPEC-ID…`) y aclara que el
+  ⛔ de la CLI no sustituye a la pregunta.
+
 ## [0.1.6] — 2026-11-12
 
 ### Corregido
