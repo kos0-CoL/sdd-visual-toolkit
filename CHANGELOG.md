@@ -36,6 +36,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- Las skills de `sdd` y `sdd-status` ya no dicen «pasa el texto detrás del
+  comando»: `siguiente` y `status` no aceptan argumentos y la CLI respondía
+  `unrecognized arguments`. En Claude tampoco llevan `$ARGUMENTS`.
 - `build --done TASK-001` ya no exige el PLAN-ID posicional: se deduce de la
   tarea. Antes, sin él, respondía `⛔ plan inexistente: None`; ahora, si la
   tarea no existe, el mensaje nombra la tarea y muestra la orden con el plan

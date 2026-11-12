@@ -172,12 +172,34 @@ class TestRender(unittest.TestCase):
         for cliente in agent_commands.CLIENTES:
             with self.subTest(cliente=cliente):
                 archivos = agent_commands.generar(cliente, PYTHON, CLI)
-                for contenido in archivos.values():
+                for comando in agent_commands.COMANDOS:
+                    if comando.nombre in agent_commands.SIN_ARGUMENTOS:
+                        continue
+                    contenido = archivos[
+                        agent_commands.CLIENTES[cliente].format(nombre=comando.nombre)]
                     if cliente in agent_commands.CON_ARGUMENTOS:
                         self.assertIn("$ARGUMENTS", contenido)
                     else:
                         self.assertNotIn("$ARGUMENTS", contenido)
                         self.assertIn("pásalo tal cual", contenido)
+
+    def test_comandos_sin_argumentos_no_invitan_a_escribir_texto(self):
+        """`/sdd quiero un kiosco` terminaba en `unrecognized arguments`:
+        la regla genérica mandaba pasar el texto a `siguiente`."""
+        for cliente in agent_commands.CLIENTES:
+            with self.subTest(cliente=cliente):
+                archivos = agent_commands.generar(cliente, PYTHON, CLI)
+                for nombre in agent_commands.SIN_ARGUMENTOS:
+                    contenido = archivos[
+                        agent_commands.CLIENTES[cliente].format(nombre=nombre)]
+                    self.assertNotIn("$ARGUMENTS", contenido)
+                    self.assertNotIn("pásalo tal cual", contenido)
+                    self.assertIn("no lleva argumentos", contenido)
+
+    def test_sin_argumentos_solo_nombra_comandos_del_catalogo(self):
+        nombres = {c.nombre for c in agent_commands.COMANDOS}
+        self.assertTrue(agent_commands.SIN_ARGUMENTOS <= nombres,
+                        "SIN_ARGUMENTOS nombra un comando que ya no existe")
 
     def test_reglas_comunes_en_todos_los_archivos(self):
         for cliente in agent_commands.CLIENTES:
