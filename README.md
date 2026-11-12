@@ -58,8 +58,9 @@ extensión de VS Code, cualquier cliente MCP y sus propios hooks
 
 ## Instalación paso a paso
 
-Requisitos: **Python ≥ 3.11**; Git solo para clonar. Cero dependencias en
-tiempo de ejecución.
+Requisitos: **Python ≥ 3.11** y nada más: cero dependencias en tiempo de
+ejecución. Con el ZIP o el clon funciona igual; Git solo hace falta para
+instalar el paquete desde el repositorio («Ponerlo global»).
 
 ### Si solo va a usarlo
 
@@ -90,11 +91,13 @@ proyecto (2 pasos)».
 
 Sin instalar, cada orden lleva la ruta al `cli/main.py`. Si prefiere el flujo
 de spec-kit —entrar a la carpeta del proyecto y escribir `sdd init`— instale
-el paquete una vez:
+el paquete una vez. Hace falta `pipx` (o `uv`) y **Git**, porque instala desde
+el repositorio:
 
 ```bash
 pipx install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
 # con uv en lugar de pipx: uv tool install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
+# sin pipx ni uv: python3 -m pip install . dentro del clon deja los mismos dos comandos
 ```
 
 Deja dos comandos con el mismo programa: **`sdd`** y **`toolkit`**. Después,
@@ -186,13 +189,16 @@ cuál toca (`/sdd-enrich --accept ENR-001`, `/sdd-specify ENR-001`…). La lista
 completa, con lo que ejecuta cada uno, está en [Comandos](#comandos).
 
 **Paso 2 — la extensión (opcional).** Añade la vista `Fases y tareas`, la barra
-de estado y la paleta `SDD: …`:
+de estado y la paleta `SDD: …`. El `.vsix` no viene en el repositorio: descárguelo
+de la [última release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/latest)
+y instálelo desde la ruta donde quedó:
 
 ```bash
-code --install-extension sdd-visual-toolkit-0.1.6.vsix
+code --install-extension /ruta/a/sdd-visual-toolkit-0.1.6.vsix
 ```
 
-y recargar la ventana. El chat del paso 1 funciona sin este paso.
+y recargar la ventana; en el editor también sirve *Extensiones → … → Instalar
+desde VSIX…*. El chat del paso 1 funciona sin este paso.
 
 **Comprobar que quedó bien:** abre la carpeta en el editor y escribe `/` en el
 chat del cliente que instalaste —el arnés `Copilot` en VS Code, el panel de
@@ -475,9 +481,9 @@ toolkit enrich "Quiero un dashboard para gestionar un kiosco"
 # 3. Aceptar el enriquecimiento
 toolkit enrich --accept ENR-001
 
-# 4. Generar la SPEC y aprobarla
+# 4. Generar la SPEC (aprobarla es opcional: `plan` no la exige)
 toolkit specify ENR-001 --titulo "Kiosco"
-toolkit specify --approve SPEC-001
+# toolkit specify --approve SPEC-001
 
 # 5. Responder las aclaraciones (interactivo o por flags)
 toolkit clarify SPEC-001
@@ -691,7 +697,9 @@ docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)
 
 - ✅ §44 completo (30/30) y las RF definidas en el código (RF-01 a RF-43;
   no existe RF-20) verificadas con tests.
-- ⏳ Pendiente en entorno real: prueba manual en Antigravity y VS Code.
+- ⏳ Pendiente en entorno real: 4 de las 29 casillas de VS Code (25 vistas el
+  2026-11-11), Antigravity, y abrir los comandos en Cursor, Windsurf, Cline,
+  Kilo y Claude Code. El detalle está en `ide/COMPATIBILIDAD.md`.
 - La fuente de verdad es `docs/SPEC-v0.1.md`; cada RF cita su sección.
 
 ## Contribuir
