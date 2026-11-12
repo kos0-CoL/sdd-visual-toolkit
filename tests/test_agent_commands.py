@@ -317,6 +317,44 @@ class TestRegenerar(unittest.TestCase):
         for ajena in (".claude", ".github", ".windsurf", ".agents"):
             self.assertFalse((self.root / ajena).exists(), ajena)
 
+    def test_retira_los_prompts_del_formato_anterior(self):
+        """Un `.prompt.md` viejo al lado de la skill duplica el menú `/`."""
+        self.assertEqual(self._cli("init", "--sin-comandos")[0], 0)
+        self.assertEqual(self._cli("comandos", "--cliente", "copilot")[0], 0)
+        viejo = self.root / ".github" / "prompts" / "sdd-status.prompt.md"
+        viejo.parent.mkdir(parents=True)
+        viejo.write_text(
+            "<!-- generado por `toolkit comandos`; se sobrescribe -->\n\n"
+            f'python3 "{self.pi}" --root . status\n', encoding="utf-8")
+        ajeno = viejo.parent / "mio.prompt.md"
+        ajeno.write_text("# mi prompt\n", encoding="utf-8")
+
+        codigo, salida = self._cli("comandos", "--regenerar")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("formato anterior", salida)
+        self.assertFalse(viejo.exists())
+        self.assertTrue(ajeno.exists(), "lo que escribió el usuario se queda")
+        self.assertTrue((self.root / ".github" / "skills").is_dir())
+
+    def test_proyecto_viejo_con_solo_prompts(self):
+        """Sin skills, `instalados()` no los ve: el retiro tiene que bastar
+        para que el cliente cuente como instalado y se regenere la skill."""
+        self.assertEqual(self._cli("init", "--sin-comandos")[0], 0)
+        carpeta = self.root / ".github" / "prompts"
+        carpeta.mkdir(parents=True)
+        for comando in self.agent_commands.COMANDOS:
+            (carpeta / f"{comando.nombre}.prompt.md").write_text(
+                "<!-- generado por `toolkit comandos`; se sobrescribe -->\n\n"
+                f'python3 "{self.pi}" --root . status\n', encoding="utf-8")
+
+        codigo, salida = self._cli("comandos", "--regenerar")
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("copilot", salida)
+        self.assertFalse(list(carpeta.glob("*.md")))
+        skills = self.root / ".github" / "skills"
+        self.assertEqual(len(list(skills.glob("*/SKILL.md"))),
+                         len(self.agent_commands.COMANDOS))
+
     def test_sin_nada_instalado_avisa(self):
         self.assertEqual(self._cli("init", "--sin-comandos")[0], 0)
         codigo, salida = self._cli("comandos", "--regenerar")

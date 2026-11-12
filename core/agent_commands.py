@@ -176,6 +176,50 @@ def _frontmatter(comando: Comando, cliente: str) -> str:
 # La ruta horneada en el cuerpo: `{python} "{cli}" --root . {argv}`.
 _RUTA_CLI = re.compile(r'"([^"]*cli[\\/]main\.py)" --root \.')
 
+# Formatos que este toolkit escribió en el pasado y ya no usa. Quedaron en el
+# proyecto del usuario y, al regenerar, duplicarían el menú `/` de VS Code: el
+# prompt file y la skill con el mismo nombre cuentan como dos comandos.
+RETIRADAS: tuple[str, ...] = (".github/prompts/{nombre}.prompt.md",)
+
+
+def retirados(raiz) -> list[Path]:
+    """Archivos de formatos retirados que escribió este toolkit.
+
+    Solo cuentan los que llevan la cabecera: un `.prompt.md` del usuario se
+    queda donde está.
+    """
+    sobrantes: list[Path] = []
+    for plantilla in RETIRADAS:
+        carpeta = Path(raiz) / plantilla.split("{nombre}")[0]
+        if not carpeta.is_dir():
+            continue
+        for ruta in sorted(carpeta.glob("*.md")):
+            try:
+                contenido = ruta.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if _CABECERA in contenido:
+                sobrantes.append(ruta)
+    return sobrantes
+
+
+def retirar(raiz) -> list[Path]:
+    """Borra esos archivos y la carpeta si se queda vacía."""
+    borrados: list[Path] = []
+    for ruta in retirados(raiz):
+        try:
+            ruta.unlink()
+        except OSError:
+            continue
+        borrados.append(ruta)
+        padre = ruta.parent
+        try:
+            if not any(padre.iterdir()):
+                padre.rmdir()
+        except OSError:
+            pass  # queda vacía pero no se puede borrar: no es un fallo
+    return borrados
+
 
 def instalados(raiz) -> dict[str, dict[Path, str]]:
     """Cliente → {archivo generado: ruta de CLI que lleva grabada}.
