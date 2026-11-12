@@ -30,12 +30,13 @@ clic derecho que abre `PLAN-001.md` en vista previa, paleta `SDD: Estado +
 siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
 (`Arquitectura` → `PLAN-001.md`, `Especificación` → `SPEC-001.md`) y en
 `📍 Fase`, que **no aparecía** y quedó arreglado en esa misma pasada. Una
-tercera pasada comprobó el progreso y su «Cancelar» —dos casillas más— y una
+tercera pasada comprobó el progreso y su «Cancelar» —dos casillas más—, una
 cuarta midió el tope `timeoutMinutos`, una quinta el `pin` de dos datos, el
-vacío obligatorio y `Escape`, y una sexta el estado vacío y la CLI rota:
-veintitrés en total. El resto sigue sin marcar: el «Cancelar» con `pytest` en
-marcha, `SDD: Actualizar vista lateral` y todas las de comandos de barra (no hay
-sesión de Copilot en ese perfil).
+vacío obligatorio y `Escape`, una sexta el estado vacío y la CLI rota y una
+séptima la paleta con y sin argumento, `SDD: Aclarar SPEC`, el «Cancelar» con
+`pytest` en marcha y `SDD: Actualizar vista lateral`: veinticinco en total. Lo
+único que sigue sin marcar son las catorce casillas de comandos de barra (no
+hay sesión de Copilot en ese perfil).
 
 Ojo con el estado: ejecutar comandos lo mueve. Tras `build`, la tarea actual
 deja de ser `—` y las píldoras cambian; para repetir la lista desde la línea
@@ -140,9 +141,16 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       con la IU en inglés; al pulsarlo salieron `SDD: test cancelado`, la línea
       `(cancelado)` en el canal y ninguna notificación de error, y la vista se
       refrescó sola.
-- [ ] Cancelar un `SDD: Correr pruebas` que tenga `pytest` en marcha: al
+- [x] Cancelar un `SDD: Correr pruebas` que tenga `pytest` en marcha: al
       cancelar, el subproceso también desaparece (comprobar en el gestor de
       procesos del sistema, no solo que la notificación se cierre).
+      *Visto* con el `.vsix` de 0.1.6: `test` solo llama a `pytest` con los
+      archivos que lista la tarea, así que el fixture necesitó `pytest.ini` y
+      un `test_productos.py` dentro de `tests/` que duerme 90 s. Con
+      `python3 -m pytest -q` sobre ese archivo en marcha,
+      «Cancel» dejó `SDD: test cancelado`, `(cancelado)` en el canal y ninguna
+      notificación de error, y el proceso de pytest ya no estaba en `/proc`
+      tres segundos después.
 - [x] Tope configurable: poner `sddToolkit.timeoutMinutos` en 1 y lanzar un
       comando que tarde más. A ~1 minuto se corta con `tiempo agotado` en el
       canal y la notificación de error con «Ver salida»; el proceso y sus
@@ -233,7 +241,12 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
 - [x] Cancelar con `Escape` en el cuadro de entrada: no se ejecuta nada.
       *Visto*: el cuadro se cierra, el canal no suma líneas y no aparece
       ninguna notificación.
-- [ ] Volver a pulsar `SDD: Actualizar vista lateral` refresca los datos.
+- [x] Volver a pulsar `SDD: Actualizar vista lateral` refresca los datos.
+      *Visto*: con `build PLAN-001` lanzado desde fuera del IDE la vista se
+      quedó en `Tarea actual: —` y `➡ Siguiente: build PLAN-001`; al pulsar el
+      comando aparecieron `Tarea actual: TASK-002`,
+      `➡ Siguiente: build PLAN-001 --done TASK-002` y su píldora, sin recargar
+      la ventana.
 - [x] Estado vacío: abrir una carpeta sin `.specify/` y comprobar que la
       vista muestra `⛔ sin inicializar o CLI no disponible` junto a
       `Inicializar proyecto` (la CLI responde «no hay proyecto toolkit aquí»)
