@@ -398,6 +398,26 @@ python3 cli/main.py --root /tmp/sdd-manual comandos --cliente antigravity
 - [ ] Anotar si `engines.vscode ^1.80.0` es compatible con la versión que
       trae ese entorno.
 
+## Cline y Kilo Code
+
+Extensiones de VS Code con agente propio: no leen `.github/skills/`. Generan
+sus archivos con `--cliente cline` y `--cliente kilo`. Nada de esto está
+probado dentro del agente; la generación sí (`tests/test_agent_commands.py`).
+
+```bash
+python3 cli/main.py --root /tmp/sdd-manual comandos --cliente cline --cliente kilo
+```
+
+- [ ] Abrir el proyecto en VS Code con Cline y comprobar que los 14 workflows
+      aparecen en su menú `/`. Cline toma el nombre del archivo como comando,
+      así que se invoca `/sdd-status.md`, con extensión.
+- [ ] Lo mismo con Kilo Code en `.kilo/commands/`: se invoca `/sdd-status`,
+      sin extensión.
+- [ ] Comprobar que la orden ejecutada lleva la ruta absoluta a `cli/main.py`
+      y `--root .`, igual que en Copilot.
+- [ ] Anotar si el agente pide aprobación por comando y si la salida de la CLI
+      llega intacta al chat.
+
 ## Cómo se anota
 
 Una casilla no se marca por haber visto la paleta: cada una necesita su
@@ -432,3 +452,6 @@ Fallos:              casilla, comando, mensaje obtenido, mensaje esperado
   hallazgo esperado son detalles de UX, no roturas.
 - **Antigravity**: skills ejecutando la CLI y degradación documentada. Con
   eso deja de ser «pendiente de verificación» aunque no soporte extensión.
+- **Cline y Kilo Code**: los 14 comandos visibles en su menú `/` y una orden
+  ejecutada de punta a punta. Mientras no se haga, sus filas siguen en
+  «sin probar».
