@@ -194,10 +194,12 @@ code --install-extension sdd-visual-toolkit-0.1.6.vsix
 
 y recargar la ventana. El chat del paso 1 funciona sin este paso.
 
-**Comprobar que quedó bien:** abre la carpeta en VS Code, escribe `/` en el chat
-con el arnés `Copilot` y deben aparecer los comandos; `/sdd` responde con el
-tablero y `/sdd-enrich "una idea"` arranca el flujo. Con la extensión, `Fases y
-tareas` aparece en la barra lateral y `SDD: <fase>` en la barra de estado.
+**Comprobar que quedó bien:** abre la carpeta en el editor y escribe `/` en el
+chat del cliente que instalaste —el arnés `Copilot` en VS Code, el panel de
+`Cline`, el de tu agente—: deben aparecer los comandos. `/sdd` responde con el
+tablero y `/sdd-enrich "una idea"` arranca el flujo; en Cline se invocan con
+extensión (`/sdd-enrich.md`). Con la extensión de VS Code, `Fases y tareas`
+aparece en la barra lateral y `SDD: <fase>` en la barra de estado.
 
 ---
 
@@ -425,13 +427,13 @@ IDE tampoco es instalar nada en el editor; cada superficie se consigue así:
 |---|---|---|
 | **Chat del IDE** | los comandos `/sdd-enrich`, `/sdd-plan`, `/sdd-test`… | `init --cliente copilot` escribe `.github/skills/` en el proyecto. Nada que instalar |
 | **Extensión de VS Code** | vista `Fases y tareas`, barra de estado, paleta `SDD: …`, aviso de comandos desactualizados | instalar el `.vsix`. **Opcional** |
-| **Terminal** | todos los subcomandos, incluidos los que no tienen botón | `python3 cli/main.py …` desde la raíz del toolkit |
+| **Terminal** | todos los subcomandos, incluidos los que no tienen botón | `python3 cli/main.py …` desde la raíz de tu proyecto, o con `--root RUTA` desde cualquier carpeta |
 
-**Basta el chat** para el flujo completo: `/sdd`, `/sdd-enrich`,
+**Basta el chat** para el flujo completo, los catorce: `/sdd`, `/sdd-enrich`,
 `/sdd-specify`, `/sdd-clarify`, `/sdd-plan`, `/sdd-plan-gate`, `/sdd-tasks`,
-`/sdd-analyze`, `/sdd-build`, `/sdd-test`, `/sdd-status` y `/sdd-cierre`.
-Cada uno ejecuta su subcomando de la CLI: no hay dos caminos, hay dos puertas
-a lo mismo.
+`/sdd-analyze`, `/sdd-build`, `/sdd-pin`, `/sdd-test`, `/sdd-traza`,
+`/sdd-status` y `/sdd-cierre`. Cada uno ejecuta su subcomando de la CLI: no hay
+dos caminos, hay dos puertas a lo mismo.
 
 **Basta la extensión** para mirar y lanzar ese flujo desde la vista lateral y
 la paleta, con progreso, «Cancelar», «Ver salida» y el aviso para regenerar
