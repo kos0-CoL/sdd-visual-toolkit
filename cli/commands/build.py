@@ -61,6 +61,25 @@ def _exigir_gate4(raiz, plan_id: str) -> None:
             f"resuélvalas antes de implementar (§10.4)")
 
 
+def _plan_de_tarea(raiz, tarea_id: str) -> str:
+    """PLAN-ID de la tarea, para no repetirlo con --done/--fail.
+
+    Distingue «esa tarea no existe» (con el plan que sí la tiene, si lo hay)
+    de «falta el plan»: antes, sin posicional, el mensaje era
+    `plan inexistente: None`, que no dice nada.
+    """
+    for plan_id in mod_plan._indice(raiz):
+        try:
+            _info, tareas = mod_tasks._cargar_tareas(raiz, plan_id)
+        except store.StoreError:
+            continue
+        if any(t.id == tarea_id for t in tareas):
+            return plan_id
+    raise BuildError(
+        f"tarea inexistente: {tarea_id}; compruebe `tasks --list PLAN-001` "
+        f"o indique el plan a mano: `build PLAN-001 --done {tarea_id}`")
+
+
 def _cargar_todo(raiz, plan_id: str):
     plan = mod_plan._cargar_plan(raiz, plan_id)
     spec = mod_specify._cargar_spec(raiz, plan.spec_id)
@@ -246,6 +265,15 @@ def cmd_build_fail(args) -> int:
 
 
 def despachar(args) -> int:
+    if args.done or args.fail:
+        # `build --done TASK-001` es válido: el plan se deduce de la tarea.
+        tarea_id = args.done or args.fail
+        if not args.texto:
+            try:
+                args.texto = _plan_de_tarea(_raiz(args), tarea_id)
+            except (BuildError, store.StoreError) as error:
+                print(f"⛔ {error}")
+                return 1
     if args.done:
         return cmd_build_done(args)
     if args.fail:

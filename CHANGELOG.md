@@ -36,6 +36,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `build --done TASK-001` ya no exige el PLAN-ID posicional: se deduce de la
+  tarea. Antes, sin él, respondía `⛔ plan inexistente: None`; ahora, si la
+  tarea no existe, el mensaje nombra la tarea y muestra la orden con el plan
+  explícito (`build PLAN-001 --done TASK-999`).
 - Las skills generadas piden el dato antes de ejecutar. El cuerpo decía «si
   falta un identificador, pídelo antes de ejecutar», pero el agente lanzaba
   `plan` a secas y dejaba que la CLI contestara «indique la SPEC-ID». Ahora el

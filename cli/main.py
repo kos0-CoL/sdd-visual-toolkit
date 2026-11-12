@@ -336,7 +336,8 @@ def construir_parser() -> argparse.ArgumentParser:
     p_analyze.set_defaults(func=cmd_analyze.despachar)
 
     p_build = sub.add_parser("build", help="ejecución guiada (RF-09)")
-    p_build.add_argument("texto", nargs="?", default=None, help="PLAN-ID")
+    p_build.add_argument("texto", nargs="?", default=None,
+                         help="PLAN-ID; opcional con --done/--fail, se deduce de la tarea")
     p_build.add_argument("--done", default=None, metavar="TASK-ID")
     p_build.add_argument("--fail", default=None, metavar="TASK-ID")
     p_build.add_argument("--nota", default="")
@@ -471,7 +472,8 @@ def construir_parser() -> argparse.ArgumentParser:
     p_comandos.set_defaults(func=cmd_comandos.despachar)
 
     p_impl = sub.add_parser("implement", help="alias de build (RF-36)")
-    p_impl.add_argument("texto", nargs="?", default=None, help="PLAN-ID")
+    p_impl.add_argument("texto", nargs="?", default=None,
+                        help="PLAN-ID; opcional con --done/--fail, se deduce de la tarea")
     p_impl.add_argument("--done", default=None, metavar="TASK-ID")
     p_impl.add_argument("--fail", default=None, metavar="TASK-ID")
     p_impl.add_argument("--nota", default="")
