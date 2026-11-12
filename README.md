@@ -80,8 +80,8 @@ python3 cli/main.py --version          # toolkit 0.1.6
   `ide/COMPATIBILIDAD.md`.
 - **Sin Git**: *Code → Download ZIP* en GitHub y descomprimir; el resultado
   es el mismo.
-- Opcional: `python3 -m pip install -e .` deja el comando `toolkit`
-  disponible en cualquier carpeta (ver `pyproject.toml`).
+- Si prefiere escribir `sdd` o `toolkit` en vez de la ruta, vea «Ponerlo global»:
+  hay una sola receta y su alternativa sin `pipx`.
 
 Con eso la CLI ya funciona desde la terminal. Para usarla **dentro de su
 proyecto** y tener los comandos `/sdd…` en el chat, siga «Instalar en tu
@@ -206,6 +206,41 @@ chat del cliente que instalaste —el arnés `Copilot` en VS Code, el panel de
 tablero y `/sdd-enrich "una idea"` arranca el flujo; en Cline se invocan con
 extensión (`/sdd-enrich.md`). Con la extensión de VS Code, `Fases y tareas`
 aparece en la barra lateral y `SDD: <fase>` en la barra de estado.
+
+## Qué se commitea
+
+`init` no toca `.gitignore`: lo que sigue es lo que conviene versionar y lo que
+no. Comprobado en un proyecto generado.
+
+**Al repositorio**, porque es la memoria del proyecto —sin esto el equipo pierde
+el tablero, los planes y el historial—:
+
+- `specs/` — `SPEC-001.md` y su `.json`.
+- `.specify/` — estado, planes, tareas, informes, pines, checkpoints e historial.
+  Ninguno de esos archivos lleva rutas de su máquina (verificado con `grep`).
+
+**Fuera del repositorio**, porque apuntan a su máquina:
+
+```gitignore
+.vscode/settings.json   # sddToolkit.cliPath y python: rutas absolutas
+.specify/cache/         # análisis del repo; se recalcula en el siguiente plan
+```
+
+`.vscode/tasks.json` también lleva el intérprete y el `cli/main.py` absolutos si
+lo escribió `init`. Si el proyecto ya tenía tareas propias, no lo ignore.
+
+**Los comandos generados** (`.github/skills/`, `.claude/skills/`, …) llevan
+dentro la ruta absoluta a su copia del toolkit, así que depende del equipo:
+commitearlos deja los mismos comandos a todos, y cada compañero corre una vez
+`sdd comandos --regenerar` tras clonar. Si no se commitean, cada uno los genera
+con `sdd comandos --cliente <el suyo>`. En ambos casos `sdd status` avisa cuando
+las rutas grabadas ya no existen:
+
+```console
+⚠️ COMANDOS DE BARRA DESACTUALIZADOS: 1 archivo(s) apuntan a una ruta que ya no existe
+   1 archivo(s) → /ruta/que/no/existe/cli/main.py
+   regenere con `toolkit comandos`; `toolkit comandos --verificar` lo detalla
+```
 
 ---
 
