@@ -300,6 +300,12 @@ Copilot en el perfil (`Sign In` en la barra) tampoco se pudo ver con
 `Local`. Para probarlo: elegir `Local` en el selector del chat, con sesión
 iniciada, y escribir `/sdd`.
 
+- [ ] `/sdd` en el arnés `Copilot`: `toolkit comandos --cliente copilot`
+      escribe además `.github/skills/<nombre>/SKILL.md` (14), así que al
+      tipear `/` aparecen `sdd`, `sdd-status`… como comandos de barra en el
+      arnés que trae el chat por defecto. Comprobar también que la misma `/`
+      sigue listándolos con el arnés `Local` y el prompt file.
+
 - [ ] Escribir `/sdd` en el chat y comprobar que aparecen los comandos.
 - [ ] `/sdd-status`: la salida de la CLI llega tal cual, sin resumen.
 - [ ] `/sdd-plan PLAN-001`: el ID se pasa al final del comando.

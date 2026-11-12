@@ -76,8 +76,10 @@ def despachar(args) -> int:
                 ruta = raiz / relativa
                 ruta.parent.mkdir(parents=True, exist_ok=True)
                 ruta.write_text(contenido, encoding="utf-8")
-            print(f"🧩 {cliente}: {len(archivos)} comando(s) en "
-                  f"{agent_commands.CLIENTES[cliente]}")
+            for plantilla in agent_commands.destinos(cliente):
+                cuantos = sum(1 for relativa in archivos if relativa.startswith(
+                    plantilla.split("{nombre}")[0]))
+                print(f"🧩 {cliente}: {cuantos} comando(s) en {plantilla}")
     except (ValueError, OSError) as error:
         print(f"⛔ {error}")
         return 1
