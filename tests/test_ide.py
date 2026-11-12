@@ -86,7 +86,7 @@ class TestManifiesto(unittest.TestCase):
         cuerpo = corrida.group(0)
         # `spawn` y no `execFile`: es el único que respeta `detached`.
         self.assertIn("spawn(cfg().python", cuerpo)
-        self.assertIn("[rutaCli(dir), '--root', dir, ...argv]", cuerpo)
+        self.assertIn("[...resuelta.args, '--root', dir, ...argv]", cuerpo)
         self.assertIn("codigo !== 0", cuerpo)
         self.assertIn("reportarFallo", cuerpo)
         # El aviso ofrece la salida completa de la CLI, no solo su primera línea.
@@ -97,6 +97,20 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("'Ver salida'", cuerpo_aviso)
         self.assertIn("mostrarSalida", cuerpo_aviso)
         self.assertIn("createOutputChannel", fuente)
+
+    def test_la_cli_se_busca_si_la_carpeta_no_la_tiene(self):
+        """En una carpeta sin `cli/main.py` la ruta relativa no existe: se usa
+        el paquete instalado y, si tampoco está, se avisa de qué ajustar en vez
+        de dejar el «can't open file» de python."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("'import cli.main'", fuente)
+        self.assertIn("['-m', 'cli.main']", fuente)
+        helper = re.search(r"function cli\(dir\).*?\n\}", fuente, re.S)
+        self.assertIsNotNone(helper, "falta la resolución de la CLI")
+        self.assertIn("existsSync", helper.group(0))
+        corrida = re.search(r"function correr\(dir, argv.*?\n\}", fuente, re.S)
+        self.assertIn("no encuentro la CLI en", corrida.group(0))
+        self.assertIn("pip install -e .", corrida.group(0))
 
     def test_clarify_valida_antes_de_abrir_el_terminal(self):
         """`clarify` es interactivo, pero un SPEC-ID inexistente falla antes:

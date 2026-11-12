@@ -5,7 +5,8 @@
 'use strict';
 
 const vscode = require('vscode');
-const { execFile, spawn } = require('child_process');
+const { execFile, spawn, spawnSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 /* id de paleta, título, CLI y pregunta por el argumento cuando lo exige. */
@@ -92,14 +93,50 @@ function citar(argumento) {
   return /\s/.test(argumento) ? `"${argumento}"` : argumento;
 }
 
-function rutaCli(dir) {
+/* ¿Este intérprete trae el paquete instalado (`pip install -e .`)? Es lo que
+ * permite arrancar en una carpeta vacía, donde la ruta relativa no está. Se
+ * prueba una vez por intérprete: cada comprobación costaría un proceso más. */
+let cacheModulo = null;
+function tieneModulo() {
+  const interprete = cfg().python;
+  if (cacheModulo && cacheModulo.interprete === interprete) {
+    return cacheModulo.sirve;
+  }
+  let sirve = false;
+  try {
+    /* `-I`: sin la carpeta actual en `sys.path`, para no confundir un `cli`
+     * cualquiera con el del toolkit. */
+    const prueba = spawnSync(interprete, ['-I', '-c', 'import cli.main'],
+      { timeout: 5000, windowsHide: true });
+    sirve = prueba.status === 0;
+  } catch (error) {
+    sirve = false;
+  }
+  cacheModulo = { interprete, sirve };
+  return sirve;
+}
+
+/* Argumento que nombra la CLI. La ruta configurada manda; si es relativa y no
+ * está en la carpeta —un proyecto todavía sin inicializar— se usa el módulo
+ * instalado, que es la misma CLI sin una ruta que adivinar. */
+function cli(dir) {
   const { cliPath } = cfg();
-  return path.isAbsolute(cliPath) ? cliPath : path.join(dir, cliPath);
+  if (path.isAbsolute(cliPath)) {
+    return { args: [cliPath], texto: citar(cliPath), existe: true };
+  }
+  const ruta = path.join(dir, cliPath);
+  if (fs.existsSync(ruta)) {
+    return { args: [ruta], texto: citar(ruta), existe: true };
+  }
+  if (tieneModulo()) {
+    return { args: ['-m', 'cli.main'], texto: '-m cli.main', existe: true };
+  }
+  return { args: [ruta], texto: citar(ruta), existe: false, ruta };
 }
 
 /* Orden completa, para mostrarla y poder copiarla tal cual. */
 function comando(dir, argv) {
-  return [cfg().python, citar(rutaCli(dir)), '--root', citar(dir),
+  return [cfg().python, cli(dir).texto, '--root', citar(dir),
     ...argv.map(citar)].join(' ');
 }
 
@@ -159,6 +196,15 @@ const ESPERA_PROGRESO = 400;
  * IDE y un fallo se ve como notificación con la salida a un clic, en vez de
  * quedar al fondo de un terminal que nadie mira. */
 function correr(dir, argv, opciones = {}) {
+  const resuelta = cli(dir);
+  if (!resuelta.existe) {
+    /* Sin ruta ni paquete, python solo diría «can't open file»: se dice qué
+     * ajustar antes de lanzarlo. */
+    vscode.window.showErrorMessage(
+      `SDD: no encuentro la CLI en ${resuelta.ruta}. Ajuste «sddToolkit.cliPath»` +
+      ' a la ruta de cli/main.py o instale el paquete con «pip install -e .».');
+    return;
+  }
   const orden = comando(dir, argv);
   let terminado = false;
   let cancelado = false;
@@ -197,7 +243,7 @@ function correr(dir, argv, opciones = {}) {
   };
   /* `spawn` y no `execFile`: solo el primero respeta `detached` y deja al hijo
    * como líder de su grupo, que es lo que permite alcanzar a los nietos. */
-  hijo = spawn(cfg().python, [rutaCli(dir), '--root', dir, ...argv], {
+  hijo = spawn(cfg().python, [...resuelta.args, '--root', dir, ...argv], {
     cwd: dir,
     detached: process.platform !== 'win32',
     windowsHide: true,
@@ -263,7 +309,7 @@ function validarYTerminal(dir, argv) {
     return;
   }
   execFile(cfg().python,
-    [rutaCli(dir), '--root', dir, argv[0], '--list', argv[1]],
+    [...cli(dir).args, '--root', dir, argv[0], '--list', argv[1]],
     { cwd: dir, timeout: 300000 }, (err, stdout, stderr) => {
       if (!err) {
         terminal().sendText(orden);
@@ -343,9 +389,7 @@ function cargarDoc() {
       resolve({ doc: null, error: 'sin carpeta abierta' });
       return;
     }
-    const { python, cliPath } = cfg();
-    const cli = path.isAbsolute(cliPath) ? cliPath : path.join(dir, cliPath);
-    execFile(python, [cli, '--root', dir, 'export'],
+    execFile(cfg().python, [...cli(dir).args, '--root', dir, 'export'],
       { cwd: dir, timeout: 30000 }, (err, stdout) => {
         if (err) {
           resolve({ doc: null, error: 'sin inicializar o CLI no disponible' });

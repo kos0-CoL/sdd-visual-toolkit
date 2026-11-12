@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-447%20passed-green)
+![Tests](https://img.shields.io/badge/tests-448%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -71,7 +71,7 @@ python3 -m venv .venv && source .venv/bin/activate
 # 3. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 4. Verificar que todo funciona (447 tests, ~40 s; ~20 s con -n 2)
+# 4. Verificar que todo funciona (448 tests, ~40 s; ~20 s con -n 2)
 python3 -m pytest tests/ -q
 
 #    Ciclo rápido: deja fuera el arnés de la extensión (marcado "lento")
@@ -210,11 +210,14 @@ Recomendada: [ build PLAN-001 ]
   superior (`engines.vscode`). Las releases anteriores a v0.1.5 no adjuntan
   el archivo.
 
-  La extensión ejecuta la CLI en la terminal integrada en vez de
-  reimplementarla, así que hay que indicarle dónde está: `sddToolkit.cliPath`
-  (por defecto `cli/main.py` relativo al proyecto) debe apuntar al
-  `cli/main.py` de su copia del toolkit —ruta absoluta si no vive dentro del
-  proyecto— y `sddToolkit.python` al intérprete (por defecto `python3`).
+  La extensión ejecuta la CLI en vez de reimplementarla, así que hay que
+  indicarle dónde está: `sddToolkit.cliPath` (por defecto `cli/main.py`
+  relativo al proyecto) debe apuntar al `cli/main.py` de su copia del toolkit
+  —ruta absoluta si no vive dentro del proyecto— y `sddToolkit.python` al
+  intérprete (por defecto `python3`). Si esa ruta relativa no existe —carpeta
+  donde `init` todavía no ha corrido— y el intérprete tiene el paquete
+  instalado (`pip install -e .`), la extensión usa `python -m cli.main`; si
+  tampoco, avisa de qué ajustar en vez de dejar el error de python.
   `sddToolkit.timeoutMinutos` (5 por defecto) fija cuánto se espera a un
   comando antes de cortarlo con sus procesos hijos. Sin `.specify/` la vista
   lo declara y ofrece `SDD: Inicializar proyecto`.
@@ -322,7 +325,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (447 tests, uno o más por RF)
+tests/      Suite pytest (448 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)
