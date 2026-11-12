@@ -117,12 +117,19 @@ SIN_FRONTMATTER = {"cursor", "cline", "kilo"}
 # del comando. En el resto, el cuerpo pide los datos si faltan.
 CON_ARGUMENTOS = {"claude"}
 
+# Comandos que no aceptan nada detrás: `siguiente` y `status` no tienen
+# posicionales y, con texto, argparse responde `unrecognized arguments`. Su
+# skill no puede invitar a escribir nada —ni llevar `$ARGUMENTS` en Claude—, o
+# el agente convierte «/sdd quiero un kiosco» en una orden inválida.
+SIN_ARGUMENTOS = frozenset({"sdd", "sdd-status"})
+
 _CABECERA = "<!-- generado por `toolkit comandos`; se sobrescribe -->"
 
 
 def _cuerpo(comando: Comando, python: str, cli: Path, cliente: str) -> str:
+    con_argumentos = comando.nombre not in SIN_ARGUMENTOS
     orden = f'{python} "{cli}" --root . {comando.argv}'
-    if cliente in CON_ARGUMENTOS:
+    if cliente in CON_ARGUMENTOS and con_argumentos:
         orden = f"{orden} $ARGUMENTS"
     reglas = [
         "- La salida de la CLI es la fuente de la verdad: muéstrala tal cual, "
@@ -141,7 +148,14 @@ def _cuerpo(comando: Comando, python: str, cli: Path, cliente: str) -> str:
             "Si el usuario no lo escribió, pregúntaselo y espera su respuesta: "
             "no lances la orden sin ese dato —el ⛔ de la CLI no sustituye a "
             "la pregunta— ni inventes un valor de ejemplo."))
-    if cliente not in CON_ARGUMENTOS:
+    if not con_argumentos:
+        # Vale también para Claude: ahí no hay `$ARGUMENTS` que sustituir, y
+        # el agente podría pegar igualmente el texto detrás.
+        reglas.append(
+            "- Este comando no lleva argumentos: ejecútalo tal cual, aunque "
+            "el usuario haya escrito algo detrás. Ese texto no forma parte "
+            "de la orden y la CLI lo rechaza.")
+    elif cliente not in CON_ARGUMENTOS:
         reglas.append(
             "- Si el usuario escribió texto o un identificador detrás del "
             "comando, pásalo tal cual al final del comando.")
