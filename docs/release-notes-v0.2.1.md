@@ -23,6 +23,14 @@ code --install-extension sdd-visual-toolkit-0.2.1.vsix
   el aviso de la paleta trae ese botón en vez de «abra una carpeta primero» a
   secas.
 
+## Documentación
+
+- **`docs/TUTORIAL.md`**: el recorrido de cero, con un ejemplo real. Instalar el
+  comando, instalar la extensión, `init`, abrir el panel y el primer prompt;
+  después cada fase con su salida y una tabla con lo que muestra la vista.
+  Incluye los errores frecuentes (`abra una carpeta primero`, `Orden «sdd» no
+  encontrada`, gates bloqueados) con su solución.
+
 ## Verificación
 
 - `python3 -m pytest tests/ -q` → 481 passed, 81 subtests passed.

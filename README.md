@@ -130,6 +130,10 @@ python3 -m pytest tests/ -q -m "not lento"   # sin el arnés de la extensión
 
 ## Instalar en tu proyecto (2 pasos)
 
+Si preferís un recorrido completo con un ejemplo —instalar, `init`, abrir el
+panel y el primer prompt—, seguí el
+[tutorial paso a paso](docs/TUTORIAL.md).
+
 Sirve para cualquier proyecto, nuevo o existente. El toolkit no se copia dentro
 del proyecto: se instala una vez y el proyecto solo guarda su ruta (ver «1.
 Instalar el comando»).
