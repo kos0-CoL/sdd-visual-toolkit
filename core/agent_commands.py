@@ -27,6 +27,9 @@ class Comando:
     descripcion: str
     argv: str
     pista: str = ""
+    # Qué dato hay que pedir si el usuario no lo escribió. Vacío = el comando
+    # funciona sin argumentos; la skill no pregunta nada.
+    pide: str = ""
 
 
 # El orden es el del flujo SDD: es el que verá el usuario al tipear "/".
@@ -45,37 +48,42 @@ COMANDOS: tuple[Comando, ...] = (
     Comando("sdd-enrich", "Enriquecer una idea y dejarla pendiente de "
             "validar. Úsalo cuando la idea cabe en una frase y hay que "
             "convertirla en requerimientos.",
-            "enrich", pista='idea entre comillas: "…"'),
+            "enrich", pista='idea entre comillas: "…"',
+            pide="la idea, entre comillas"),
     Comando("sdd-specify", "Generar la SPEC a partir de un ENR validado. "
             "Úsalo cuando el requerimiento ya está aceptado y toca escribir "
-            "la especificación.", "specify", pista="ENR-ID"),
+            "la especificación.", "specify", pista="ENR-ID",
+            pide="el ENR-ID"),
     Comando("sdd-clarify", "Responder las aclaraciones abiertas de una "
             "SPEC. Úsalo cuando quedan preguntas sin responder y no se "
-            "puede planificar.", "clarify", pista="SPEC-ID"),
+            "puede planificar.", "clarify", pista="SPEC-ID",
+            pide="la SPEC-ID"),
     Comando("sdd-plan", "Generar el plan técnico de una SPEC aprobada. "
             "Úsalo cuando la SPEC está clara y hay que decidir arquitectura "
-            "y pasos.", "plan", pista="SPEC-ID"),
+            "y pasos.", "plan", pista="SPEC-ID", pide="la SPEC-ID"),
     Comando("sdd-plan-gate", "Aprobar el plan y superar el Quality Gate. "
             "Úsalo cuando el plan existe y falta la aprobación para "
-            "escribir tareas.", "plan --gate", pista="PLAN-ID"),
+            "escribir tareas.", "plan --gate", pista="PLAN-ID",
+            pide="el PLAN-ID"),
     Comando("sdd-tasks", "Desglosar el plan en tareas verificables. Úsalo "
             "cuando el plan está aprobado y hay que repartirlo en tareas "
-            "con prueba.", "tasks", pista="PLAN-ID"),
+            "con prueba.", "tasks", pista="PLAN-ID", pide="el PLAN-ID"),
     Comando("sdd-analyze", "Informe de consistencia antes de implementar. "
             "Úsalo cuando las tareas ya existen y antes de tocar código.",
-            "analyze", pista="PLAN-ID"),
+            "analyze", pista="PLAN-ID", pide="el PLAN-ID"),
     Comando("sdd-build", "Poner la siguiente tarea en curso. Úsalo cuando "
             "quieres empezar o retomar la implementación de una tarea.",
-            "build", pista="PLAN-ID"),
+            "build", pista="PLAN-ID", pide="el PLAN-ID"),
     Comando("sdd-pin", "Congelar las interfaces de la tarea: línea base y "
             "desviaciones. Úsalo antes de editar archivos que otra tarea "
-            "también toca.", "pin", pista="PLAN-ID --task TASK-ID"),
+            "también toca.", "pin", pista="PLAN-ID --task TASK-ID",
+            pide="el PLAN-ID y la TASK-ID"),
     Comando("sdd-test", "Correr el arnés de pruebas de una tarea. Úsalo "
             "cuando la implementación está lista para medirse.",
-            "test", pista="TASK-ID"),
+            "test", pista="TASK-ID", pide="la TASK-ID"),
     Comando("sdd-traza", "Trazabilidad SPEC → test → evidencia. Úsalo "
             "cuando piden demostrar qué cubre cada requerimiento.",
-            "traza", pista="SPEC-ID"),
+            "traza", pista="SPEC-ID", pide="la SPEC-ID"),
     Comando("sdd-cierre", "Mensaje de cierre de la fase. Úsalo cuando la "
             "tarea o el plan terminan y hay que entregar el resumen.",
             "cierre", pista="TASK-ID o PLAN-ID"),
@@ -122,13 +130,7 @@ def _cuerpo(comando: Comando, python: str, cli: Path, cliente: str) -> str:
     orden = f'{python} "{cli}" --root . {comando.argv}'
     if cliente in CON_ARGUMENTOS:
         orden = f"{orden} $ARGUMENTS"
-    lineas = [
-        "Ejecuta este comando en la terminal, desde la raíz del proyecto:",
-        "",
-        f"    {orden}",
-        "",
-        "Reglas:",
-        "",
+    reglas = [
         "- La salida de la CLI es la fuente de la verdad: muéstrala tal cual, "
         "sin reemplazarla por un resumen de memoria.",
         "- Si responde con ⛔ o 🔒, detente y muestra el mensaje; no lo rodees "
@@ -136,11 +138,28 @@ def _cuerpo(comando: Comando, python: str, cli: Path, cliente: str) -> str:
         "- Si falta un identificador (ENR, SPEC, PLAN o TASK), pídelo antes de "
         "ejecutar; no lo inventes.",
     ]
+    # El modelo lanzaba `plan` a secas y dejaba que la CLI contestara «indique
+    # la SPEC-ID», justo lo que esta regla prohíbe: va primero y nombrando el
+    # dato exacto del comando.
+    if comando.pide:
+        reglas.insert(0, (
+            f"- **Antes de ejecutar**: este comando necesita {comando.pide}. "
+            "Si el usuario no lo escribió, pregúntaselo y espera su respuesta: "
+            "no lances la orden sin ese dato —el ⛔ de la CLI no sustituye a "
+            "la pregunta— ni inventes un valor de ejemplo."))
     if cliente not in CON_ARGUMENTOS:
-        lineas.append(
+        reglas.append(
             "- Si el usuario escribió texto o un identificador detrás del "
             "comando, pásalo tal cual al final del comando.")
-    return "\n".join(lineas)
+    return "\n".join([
+        "Ejecuta este comando en la terminal, desde la raíz del proyecto:",
+        "",
+        f"    {orden}",
+        "",
+        "Reglas:",
+        "",
+        *reglas,
+    ])
 
 
 def _escalar(texto: str) -> str:
