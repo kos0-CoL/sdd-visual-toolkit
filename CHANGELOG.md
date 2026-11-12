@@ -17,7 +17,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - `copilot` ya no escribe `.github/prompts/<nombre>.prompt.md`. Con las dos
   formas el menú `/` del chat de VS Code listaba cada comando dos veces, una
   por el prompt y otra por la skill, y el prompt file solo lo veía el arnés
-  `Local`. Esa carpeta se puede borrar de los proyectos que la tengan.
+  `Local`. `comandos --regenerar` retira los que dejaron las versiones
+  anteriores —solo los que llevan la cabecera del toolkit— y regenera la skill
+  aunque el proyecto no tuviera ninguna.
 
 ### Corregido
 

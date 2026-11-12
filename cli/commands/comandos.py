@@ -60,6 +60,10 @@ def despachar(args) -> int:
         # Solo los clientes que ya tienen archivos: regenerar no debe estrenar
         # carpetas que el usuario nunca pidió.
         clientes = sorted(agent_commands.instalados(raiz))
+        if not clientes and agent_commands.retirados(raiz):
+            # Proyecto escrito por una versión que aún generaba los
+            # `.prompt.md`: se regenera la skill y de paso se retira el prompt.
+            clientes = ["copilot"]
         if not clientes:
             print("⛔ no hay comandos de barra que regenerar en este proyecto")
             print(f"  genérelos con: {_sugerencia()} --cliente copilot")
@@ -80,6 +84,12 @@ def despachar(args) -> int:
             cuantos = sum(1 for relativa in archivos if relativa.startswith(
                 plantilla.split("{nombre}")[0]))
             print(f"🧩 {cliente}: {cuantos} comando(s) en {plantilla}")
+        if getattr(args, "regenerar", False):
+            borrados = agent_commands.retirar(raiz)
+            if borrados:
+                carpeta = borrados[0].parent.relative_to(raiz)
+                print(f"🧹 {len(borrados)} archivo(s) del formato anterior "
+                      f"borrados ({carpeta}/)")
     except (ValueError, OSError) as error:
         print(f"⛔ {error}")
         return 1
