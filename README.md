@@ -173,6 +173,18 @@ solo tiene sentido si estás probando varios agentes. Después, `sdd status` y e
 resto de comandos son idénticos cambies o no de agente. Si no instalaste el
 paquete global, donde dice `sdd` va `python3 /ruta/al/toolkit/cli/main.py`.
 
+**Empezar en el chat.** Con la carpeta abierta y los comandos ya generados, el
+primero es `/sdd-enrich` con la idea entre comillas:
+
+```text
+/sdd-enrich "quiero un dashboard para gestionar un kiosco"
+```
+
+`/sdd` no arranca nada: muestra el tablero y el paso recomendado, y por eso no
+lleva texto detrás. Después del primer enriquecimiento sí es la brújula: dice
+cuál toca (`/sdd-enrich --accept ENR-001`, `/sdd-specify ENR-001`…). La lista
+completa, con lo que ejecuta cada uno, está en [Comandos](#comandos).
+
 **Paso 2 — la extensión (opcional).** Añade la vista `Fases y tareas`, la barra
 de estado y la paleta `SDD: …`:
 
@@ -184,8 +196,8 @@ y recargar la ventana. El chat del paso 1 funciona sin este paso.
 
 **Comprobar que quedó bien:** abre la carpeta en VS Code, escribe `/` en el chat
 con el arnés `Copilot` y deben aparecer los comandos; `/sdd` responde con el
-tablero. Con la extensión, `Fases y tareas` aparece en la barra lateral y
-`SDD: <fase>` en la barra de estado.
+tablero y `/sdd-enrich "una idea"` arranca el flujo. Con la extensión, `Fases y
+tareas` aparece en la barra lateral y `SDD: <fase>` en la barra de estado.
 
 ---
 
@@ -195,6 +207,10 @@ Una sesión real, sin retoques: proyecto de ejemplo en `/tmp/sesion`, Python
 3.14.4, 2026-11-12. Para no repetir la ruta, el bloque usa
 `TK="python3 /ruta/al/sdd-visual-toolkit/cli/main.py"`. Donde dice «…» la
 salida está recortada; lo demás es literal.
+
+Los mismos pasos desde el chat son `/sdd-enrich`, `/sdd-specify`,
+`/sdd-clarify`… Aquí van en terminal para que se vea la salida completa de
+cada fase.
 
 ### 1. Idea → SPEC
 
