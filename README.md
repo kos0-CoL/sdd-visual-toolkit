@@ -78,7 +78,7 @@ Deja dos nombres para el mismo programa: **`sdd`** y **`toolkit`**, en
 
 ```console
 $ sdd --version
-toolkit 0.2.0
+toolkit 0.2.1
 ```
 
 Si responde `Orden «sdd» no encontrada`, ese directorio no está en el `PATH`:
@@ -193,7 +193,7 @@ de la [última release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/
 y instálelo desde la ruta donde quedó:
 
 ```bash
-code --install-extension /ruta/a/sdd-visual-toolkit-0.2.0.vsix
+code --install-extension /ruta/a/sdd-visual-toolkit-0.2.1.vsix
 ```
 
 y recargar la ventana; en el editor también sirve *Extensiones → … → Instalar
