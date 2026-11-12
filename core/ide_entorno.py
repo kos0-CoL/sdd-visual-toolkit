@@ -62,16 +62,36 @@ def _tareas(python: str, cli: pathlib.Path) -> dict:
     }
 
 
-def preparar(raiz, cli, python: str) -> tuple[list[str], list[str]]:
+def _ya_ignorada(regla: str, lineas: list[str]) -> bool:
+    """¿El `.gitignore` ya ignora `regla`?
+
+    Vale la regla exacta y también la carpeta que la contiene: con `.vscode/`
+    o `.specify/` en el archivo, añadir la ruta de dentro sobra.
+    """
+    for linea in lineas:
+        limpia = linea.strip()
+        if not limpia or limpia.startswith(("#", "!")):
+            continue
+        if limpia == regla:
+            return True
+        if limpia.endswith("/") and (regla == limpia.rstrip("/")
+                                      or regla.startswith(limpia)):
+            return True
+    return False
+
+
+def preparar(raiz, cli, python: str) -> tuple[list[str], list[str], list[str]]:
     """Escribe los ajustes y las tareas del IDE que falten, y el `.gitignore`.
 
-    Devuelve `(escritos, existentes)` con las rutas relativas a la raíz, para
-    que `init` pueda decir qué hizo sin afirmar de más. El `.gitignore` solo
-    se crea cuando no existe: el del usuario no se toca.
+    Devuelve `(escritos, existentes, añadidas)`: rutas relativas a la raíz de lo
+    creado y de lo que ya estaba, y las reglas que se añadieron a un
+    `.gitignore` que ya existía. Las reglas que ya cubre no se duplican y se
+    respeta el contenido previo tal cual.
     """
     raiz = pathlib.Path(raiz)
     escritos: list[str] = []
     existentes: list[str] = []
+    añadidas: list[str] = []
     for nombre, contenido in (
         (AJUSTES, _ajustes(python, pathlib.Path(cli))),
         (TAREAS, _tareas(python, pathlib.Path(cli))),
@@ -88,9 +108,18 @@ def preparar(raiz, cli, python: str) -> tuple[list[str], list[str]]:
         )
         escritos.append(relativo)
     destino = raiz / GITIGNORE
-    if destino.exists():
-        existentes.append(GITIGNORE)
-    else:
+    if not destino.exists():
         destino.write_text(IGNORAR, encoding="utf-8")
         escritos.append(GITIGNORE)
-    return escritos, existentes
+    else:
+        previo = destino.read_text(encoding="utf-8")
+        lineas = previo.splitlines()
+        añadidas = [r for r in REGLAS_IGNORADAS if not _ya_ignorada(r, lineas)]
+        if añadidas:
+            separador = "" if not previo or previo.endswith("\n") else "\n"
+            destino.write_text(
+                previo + separador + "\n".join(añadidas) + "\n",
+                encoding="utf-8")
+        else:
+            existentes.append(GITIGNORE)
+    return escritos, existentes, añadidas
