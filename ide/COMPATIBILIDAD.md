@@ -12,7 +12,7 @@ y la otra no.
 | VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (25 de 29 casillas)** | ✅ `.github/skills/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **visto en el chat** (arneses `Copilot` y `Local`) |
 | Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar |
 | Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar |
-| Antigravity | ⚠️ pendiente de verificación | ⚠️ `.agents/skills/`; sin probar |
+| Antigravity | ⚠️ pendiente de verificación | ✅ `.agents/skills/`, 14 archivos generados; **sin probar en el agente** |
 | Claude Code (CLI) | — no aplica: no es un IDE | ✅ `.claude/skills/`; sin probar |
 | Solo terminal / CLI | — | — la CLI es completa sin IDE (RF-36) |
 | Vía MCP | — | ✅ `tests/test_mcp.py` |
@@ -168,3 +168,4 @@ Regla (§47): donde falte capacidad, se degrada a CLI + `export`, nunca se
 inventa estado.
 | 2026-11-12 | VS Code 1.142.0 · perfil aislado · `/tmp/sdd-manual` regenerado con `comandos --cliente copilot` | comandos de barra | ✅ **sin duplicados** — `copilot` escribe solo `.github/skills/` (14 archivos y ninguna carpeta `.github/prompts/`) y el menú `/` del chat lista cada comando una vez en los dos arneses: `Local` y `Copilot` dan 12 filas en la ventana con 12 nombres distintos (los 14 al desplazar) |
 | 2026-11-12 | VS Code 1.142.0 · perfil aislado, `.vsix` de la `0.1.6` · `/tmp/sdd-manual` con una skill apuntando a `/tmp/toolkit-viejo/cli/main.py` y un `.prompt.md` del formato anterior | extensión (comandos de barra) | ✅ **aviso y «Regenerar los comandos»** — `Fases y tareas` abre con `⚠️ Comandos de barra desactualizados: 1` y el hijo `1 archivo(s) → /tmp/toolkit-viejo/cli/main.py`; al pulsar la fila la notificación muestra la primera línea de la CLI (`SDD: 🧩 copilot: 14 comando(s) en .github/skills/{nombre}/SKILL.md`, no texto de la extensión), la vista pierde el aviso sin perder las filas de la fase y la skill recupera la ruta. De paso **retira el `.github/prompts/` viejo**: la carpeta desaparece y quedan las 14 skills |
+| 2026-11-12 | Antigravity · generación de comandos, sin abrir el agente | comandos de barra | ✅ **14 skills generadas** — `comandos --cliente antigravity` sobre un proyecto vacío responde `🧩 antigravity: 14 comando(s) en .agents/skills/{nombre}/SKILL.md`, deja 14 `.agents/skills/<nombre>/SKILL.md` y ningún `workflows/`; el frontmatter lleva solo `name` y `description`. Sin probar en el agente: que las liste, que ejecute el comando y si pide aprobación |
