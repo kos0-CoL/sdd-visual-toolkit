@@ -72,8 +72,8 @@ code --install-extension sdd-visual-toolkit-0.2.0.vsix
 - `python3 -m pytest tests/ -q` → 478 passed, 81 subtests passed.
 - CI en verde en Python 3.11, 3.12, 3.13 y 3.14, más la instalación editable.
 - `python3 scripts/verificar_release.py --previo 0.2.0` en verde antes del tag.
-- `uv tool install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git`
-  instaló `sdd-toolkit==0.2.0` y dejó `sdd` y `toolkit`; en un proyecto vacío
+- `uv tool install` desde el repositorio instaló `sdd-toolkit==0.2.0` y dejó
+  `sdd` y `toolkit`; en un proyecto vacío
   `sdd init --cliente copilot` creó `.specify/`, `specs/`, catorce skills y el
   `.gitignore`.
 - La extensión `0.2.0` instalada desde el `.vsix` resuelve el `sdd` del `PATH`:
