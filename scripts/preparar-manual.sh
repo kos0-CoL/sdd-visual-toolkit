@@ -209,7 +209,7 @@ PY
     echo "  /tmp/sdd-manual/sub y las skills de Antigravity."
     echo "  Necesitan ojos en el editor: pintado, tooltips, menú contextual,"
     echo "  notificaciones y «Cancelar»."
-    echo "  El arnés rompe y restaura un archivo de .github/prompts por corrida."
+    echo "  El arnés rompe y restaura un archivo de .github/skills por corrida."
     echo
     local comprobado pendiente fallos
     fallos="$(grep -c $'\tfallo\t' "$filas" || true)"

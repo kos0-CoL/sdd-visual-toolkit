@@ -8,11 +8,16 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
-- El cliente `copilot` escribe también `.github/skills/<nombre>/SKILL.md`. En
-  VS Code 1.142 los `.prompt.md` son comandos de barra solo del arnés `Local`,
-  que está en retirada para febrero de 2027; el arnés `Copilot`, el que trae
-  el chat por defecto, carga skills. Los prompts se siguen generando, así que
-  `/sdd` funciona en los dos arneses.
+- El cliente `copilot` escribe `.github/skills/<nombre>/SKILL.md`. En VS Code
+  1.142 una skill la listan los dos arneses del chat: `Copilot`, el que trae
+  por defecto, y `Local`, en retirada para febrero de 2027.
+
+### Cambiado
+
+- `copilot` ya no escribe `.github/prompts/<nombre>.prompt.md`. Con las dos
+  formas el menú `/` del chat de VS Code listaba cada comando dos veces, una
+  por el prompt y otra por la skill, y el prompt file solo lo veía el arnés
+  `Local`. Esa carpeta se puede borrar de los proyectos que la tengan.
 
 ### Corregido
 

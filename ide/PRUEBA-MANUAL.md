@@ -190,12 +190,12 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       la fase* y abre el mismo archivo que desde el flujo; en las fases sin
       artefacto no aparece.
 - [ ] Aviso de skills desactualizadas: reescribir la ruta horneada de un
-      archivo de `.github/prompts/` a `/tmp/toolkit-viejo/cli/main.py`,
+      archivo de `.github/skills/` a `/tmp/toolkit-viejo/cli/main.py`,
       recargar y comprobar que `Fases y tareas` abre con
       `⚠️ Comandos de barra desactualizados: 1` y que el hijo dice cuántos
       archivos apuntan a esa ruta. Hacer clic en `↻ Regenerar los comandos`
       y comprobar que la notificación muestra la primera línea de la CLI
-      —`SDD: 🧩 copilot: 14 comando(s) en .github/prompts/{nombre}.prompt.md`,
+      —`SDD: 🧩 copilot: 14 comando(s) en .github/skills/{nombre}/SKILL.md`,
       no un texto propio de la extensión—, que la vista se refresca sin el
       aviso y que el archivo recuperó la ruta buena.
 - [x] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
@@ -288,7 +288,7 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
 
 ## VS Code — comandos de barra
 
-Con el paso de preparación hecho, `.github/prompts/` tiene 14 archivos.
+Con el paso de preparación hecho, `.github/skills/` tiene 14 archivos.
 
 Pasada del 2026-11-12 en VS Code 1.142.0, perfil aislado con la cuenta
 `kos0-CoL` de GitHub: los 14 archivos se listan en **Chat: Run Prompt...**
@@ -317,7 +317,9 @@ arnés `Copilot` sí ejecuta; el prompt file solo se puede probar eligiendo
       porque `copilot` escribe las dos formas. *Visto* el 2026-11-12: con solo
       `.github/prompts/` la lista sale limpia (12 visibles, sin repetidos) y
       con solo `.github/skills/` el arnés `Local` lista igualmente los catorce
-      —así que la skill basta para los dos arneses—.
+      —así que la skill basta para los dos arneses—. *Visto* ya con `copilot`
+      escribiendo solo la skill: `Local` y `Copilot` dan 12 filas en la ventana
+      con 12 nombres distintos (los 14 al desplazar).
 
 - [x] `/sdd-status`: la salida de la CLI llega tal cual, sin resumen.
       *Visto*: 2026-11-12, arnés `Copilot` sobre `/tmp/sdd-manual`: al

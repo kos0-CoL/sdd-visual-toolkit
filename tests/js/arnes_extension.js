@@ -349,7 +349,7 @@ const textos = (nodos) => nodos.map((n) => n.label);
     `canal=${registros.canal.length} visible=${registros.canal_visible}`);
 
   /* 8. Aviso de skills: romper la ruta, refrescar, regenerar con un clic */
-  const prompt = path.join(PROYECTO, '.github', 'prompts', 'sdd-status.prompt.md');
+  const prompt = path.join(PROYECTO, '.github', 'skills', 'sdd-status', 'SKILL.md');
   const original = fs.readFileSync(prompt, 'utf8');
   fs.writeFileSync(prompt, original.replace(path.join(REPO, 'cli', 'main.py'),
     '/tmp/toolkit-viejo/cli/main.py'));

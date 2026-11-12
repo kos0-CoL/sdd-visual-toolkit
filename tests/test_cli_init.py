@@ -157,8 +157,7 @@ class TestInitGeneraLosComandos(unittest.TestCase):
     def test_varios_clientes_de_una_vez(self):
         codigo, salida = self._init("--cliente", "copilot", "--cliente", "claude")
         self.assertEqual(codigo, 0, salida)
-        self.assertEqual(
-            len(list((self.raiz / ".github" / "prompts").glob("*.md"))), 14)
+        self.assertFalse((self.raiz / ".github" / "prompts").exists())
         self.assertEqual(
             len(list((self.raiz / ".github" / "skills").glob("*/SKILL.md"))), 14)
         self.assertEqual(

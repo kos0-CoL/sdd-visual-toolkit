@@ -1,8 +1,8 @@
 """Comandos de barra para agentes de código (§31, §30).
 
 Un agente solo descubre lo que está en su workspace: `.claude/skills/`,
-`.cursor/commands/`, `.github/prompts/` o `.github/skills/`,
-`.windsurf/workflows/` y `.agents/skills/`. Este módulo guarda el catálogo una
+`.cursor/commands/`, `.github/skills/`, `.windsurf/workflows/` y
+`.agents/skills/`. Este módulo guarda el catálogo una
 vez y lo escribe en el formato de cada cliente, con la ruta absoluta de la CLI
 dentro del
 proyecto del usuario —la extensión del IDE hace lo mismo y por eso también
@@ -94,26 +94,14 @@ COMANDOS: tuple[Comando, ...] = (
 CLIENTES: dict[str, str] = {
     "claude": ".claude/skills/{nombre}/SKILL.md",
     "cursor": ".cursor/commands/{nombre}.md",
-    "copilot": ".github/prompts/{nombre}.prompt.md",
+    # VS Code: una skill la lista el arnés `Copilot` y también el `Local`, que
+    # está en retirada (febrero de 2027). Los `.prompt.md` solo los ve `Local`
+    # y, escritos junto a la skill, duplicaban cada comando en el menú `/`.
+    "copilot": ".github/skills/{nombre}/SKILL.md",
     "windsurf": ".windsurf/workflows/{nombre}.md",
     "antigravity": ".agents/skills/{nombre}/SKILL.md",
 }
 
-# En VS Code los `.prompt.md` son comandos de barra **solo del arnés `Local`**,
-# que está en retirada (febrero de 2027); el arnés `Copilot`, el que trae el
-# chat por defecto, no los carga y usa agent skills. Por eso `copilot` escribe
-# las dos formas: el prompt para quien siga en `Local` y la skill para el
-# arnés que ya no los ve.
-SKILLS_VSCODE = ".github/skills/{nombre}/SKILL.md"
-
-
-def destinos(cliente: str) -> tuple[str, ...]:
-    """Plantillas que escribe un cliente: solo `copilot` escribe dos."""
-    if cliente not in CLIENTES:
-        raise ValueError(f"cliente desconocido: {cliente}")
-    if cliente == "copilot":
-        return (CLIENTES[cliente], SKILLS_VSCODE)
-    return (CLIENTES[cliente],)
 
 # Clientes cuyo formato no lleva frontmatter (Cursor lo ignora y el cuerpo
 # solo es lo documentado).
@@ -171,7 +159,7 @@ def _escalar(texto: str) -> str:
     return "'" + texto.replace("'", "''") + "'"
 
 
-def _frontmatter(comando: Comando, cliente: str, es_skill: bool) -> str:
+def _frontmatter(comando: Comando, cliente: str) -> str:
     if cliente in SIN_FRONTMATTER:
         return ""
     lineas = [
@@ -181,9 +169,6 @@ def _frontmatter(comando: Comando, cliente: str, es_skill: bool) -> str:
     ]
     if comando.pista:
         lineas.append(f"argument-hint: {_escalar(comando.pista)}")
-    # `agent` es del prompt file; una skill lleva solo nombre y descripción.
-    if cliente == "copilot" and not es_skill:
-        lineas.append(f"agent: {_escalar('agent')}")
     lineas.append("---")
     return "\n".join(lineas)
 
@@ -199,20 +184,19 @@ def instalados(raiz) -> dict[str, dict[Path, str]]:
     queda dentro del archivo, así que si el toolkit se movió hay que saberlo.
     """
     encontrados: dict[str, dict[Path, str]] = {}
-    for cliente in CLIENTES:
+    for cliente, plantilla in CLIENTES.items():
+        carpeta = Path(raiz) / plantilla.split("{nombre}")[0]
+        if not carpeta.is_dir():
+            continue
         archivos: dict[Path, str] = {}
-        for plantilla in destinos(cliente):
-            carpeta = Path(raiz) / plantilla.split("{nombre}")[0]
-            if not carpeta.is_dir():
-                continue
-            for ruta in sorted(carpeta.rglob("*.md")):
-                try:
-                    contenido = ruta.read_text(encoding="utf-8")
-                except OSError:
-                    continue  # un archivo ilegible no puede tumbar una consulta
-                match = _RUTA_CLI.search(contenido)
-                if match:
-                    archivos[ruta] = match.group(1)
+        for ruta in sorted(carpeta.rglob("*.md")):
+            try:
+                contenido = ruta.read_text(encoding="utf-8")
+            except OSError:
+                continue  # un archivo ilegible no puede tumbar una consulta
+            match = _RUTA_CLI.search(contenido)
+            if match:
+                archivos[ruta] = match.group(1)
         if archivos:
             encontrados[cliente] = archivos
     return encontrados
@@ -234,14 +218,15 @@ def rutas_muertas(raiz) -> dict[str, int]:
 
 def generar(cliente: str, python: str, cli: Path) -> dict[str, str]:
     """Ruta relativa → contenido, para cada comando del catálogo."""
+    if cliente not in CLIENTES:
+        raise ValueError(f"cliente desconocido: {cliente}")
+    plantilla = CLIENTES[cliente]
     archivos: dict[str, str] = {}
-    for plantilla in destinos(cliente):
-        es_skill = "/skills/" in plantilla
-        for comando in COMANDOS:
-            # El frontmatter va en la primera línea o el cliente lo ignora.
-            partes = [parte for parte in (
-                _frontmatter(comando, cliente, es_skill), _CABECERA,
-                _cuerpo(comando, python, cli, cliente)) if parte]
-            archivos[plantilla.format(nombre=comando.nombre)] = (
-                "\n\n".join(partes) + "\n")
+    for comando in COMANDOS:
+        # El frontmatter va en la primera línea o el cliente lo ignora.
+        partes = [parte for parte in (
+            _frontmatter(comando, cliente), _CABECERA,
+            _cuerpo(comando, python, cli, cliente)) if parte]
+        archivos[plantilla.format(nombre=comando.nombre)] = (
+            "\n\n".join(partes) + "\n")
     return archivos

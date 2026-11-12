@@ -9,7 +9,7 @@ y la otra no.
 
 | Entorno | Extensión | Comandos de barra |
 |---|---|---|
-| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (25 de 29 casillas)** | ✅ `.github/prompts/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **sin abrir el chat** |
+| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (25 de 29 casillas)** | ✅ `.github/skills/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **visto en el chat** (arneses `Copilot` y `Local`) |
 | Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar |
 | Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar |
 | Antigravity | ⚠️ pendiente de verificación | ⚠️ `.agents/skills/`; sin probar |
@@ -166,3 +166,4 @@ se copia del fixture y no trae `.vscode/tasks.json`.
 
 Regla (§47): donde falte capacidad, se degrada a CLI + `export`, nunca se
 inventa estado.
+| 2026-11-12 | VS Code 1.142.0 · perfil aislado · `/tmp/sdd-manual` regenerado con `comandos --cliente copilot` | comandos de barra | ✅ **sin duplicados** — `copilot` escribe solo `.github/skills/` (14 archivos y ninguna carpeta `.github/prompts/`) y el menú `/` del chat lista cada comando una vez en los dos arneses: `Local` y `Copilot` dan 12 filas en la ventana con 12 nombres distintos (los 14 al desplazar) |

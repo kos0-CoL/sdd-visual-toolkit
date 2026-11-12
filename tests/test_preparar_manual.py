@@ -39,8 +39,6 @@ class TestPrepararManual(unittest.TestCase):
         self.assertTrue(cli.is_absolute(), cli)
         self.assertTrue(cli.is_file(), cli)
         self.assertTrue(ajustes["sddToolkit.python"])
-        prompts = list((self.destino / ".github" / "prompts").glob("*.md"))
-        self.assertEqual(len(prompts), 14)
         skills = list((self.destino / ".github" / "skills").glob("*/SKILL.md"))
         self.assertEqual(len(skills), 14)
         self.assertTrue((self.destino / "src" / "productos.py").is_file())
