@@ -472,29 +472,6 @@ Detalles útiles:
 - `toolkit export` — foto JSON del estado para IDEs, scripts y MCP.
 - Todos los comandos aceptan `--root RUTA` para operar fuera del cwd.
 
-## Ejemplo de sesión
-
-Salida real de un proyecto de ejemplo, justo después de `tasks` (las
-píldoras restantes se omiten):
-
-```text
-$ toolkit status
-📊 Tablero «mi-kiosco» — SPEC-001 [approved].
-Fase actual: 💾 Tareas.
-Progreso: [····················] 0/18.
-Tarea actual: ninguna en curso.
-Última completada: ninguna todavía.
-Pendientes: 18.
-Pruebas: sin corridas.
-Errores: ninguno registrado.
-Próxima acción: build PLAN-001
-
-🧭 Navegación — fase actual: 💾 Tareas.
-Recomendada: [ build PLAN-001 ]
-[ build PLAN-001 ] ★ Empezar implementación
-[ analyze PLAN-001 ] Revisar consistencia
-```
-
 ---
 
 ## Integraciones
