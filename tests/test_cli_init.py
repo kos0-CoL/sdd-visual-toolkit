@@ -32,7 +32,7 @@ def _despachar(argv):
 
 
 class TestInitGitignore(unittest.TestCase):
-    """`init` crea `.gitignore` si falta y nunca toca uno existente."""
+    """`init` deja las reglas de `.gitignore`, sin duplicar ni pisar lo previo."""
 
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
@@ -59,29 +59,46 @@ class TestInitGitignore(unittest.TestCase):
             self.assertNotIn("#", regla)
         self.assertIn("✓ .gitignore", salida)
 
-    def test_no_modifica_un_gitignore_existente(self):
-        original = "# mío\nnode_modules/\n"
+    def test_añade_solo_las_reglas_que_faltan(self):
+        original = "# mío\nnode_modules/\n.vscode/settings.json\n"
         (self.proyecto / ".gitignore").write_text(original, encoding="utf-8")
         salida = self._init()
-        self.assertEqual(
-            (self.proyecto / ".gitignore").read_text(encoding="utf-8"),
-            original)
-        self.assertIn(".gitignore ya existía: no se tocó", salida)
-        self.assertNotIn("✓ .gitignore", salida)
-        # Aunque no lo toque, dice qué reglas faltan para copiarlas a mano.
-        self.assertIn("compruebe que ignora las rutas de esta máquina", salida)
-        for regla in (".vscode/settings.json", ".specify/cache/"):
-            self.assertIn(regla, salida)
+        contenido = (self.proyecto / ".gitignore").read_text(encoding="utf-8")
+        self.assertTrue(contenido.startswith(original), "lo previo se respeta")
+        self.assertEqual(contenido.count(".vscode/settings.json"), 1,
+                         "una regla que ya estaba no se duplica")
+        self.assertEqual(contenido.count(".specify/cache/"), 1)
+        self.assertIn("añadidas las reglas que faltaban", salida)
+        self.assertIn(".specify/cache/", salida)
+        self.assertNotIn("ya existía: no se tocó", salida)
 
-    def test_el_aviso_no_escribe_en_el_gitignore_ajeno(self):
-        original = ".specify/cache/\n"
+    def test_no_toca_nada_si_las_reglas_ya_estaban(self):
+        original = ".vscode/settings.json\n.specify/cache/\n"
         destino = self.proyecto / ".gitignore"
         destino.write_text(original, encoding="utf-8")
         antes = destino.stat().st_mtime_ns
-        self._init()
+        salida = self._init()
         self.assertEqual(destino.read_text(encoding="utf-8"), original)
-        self.assertEqual(destino.stat().st_mtime_ns, antes,
-                         "init no debe reescribir un .gitignore existente")
+        self.assertEqual(destino.stat().st_mtime_ns, antes)
+        self.assertIn(".gitignore ya existía: no se tocó", salida)
+        self.assertNotIn("añadidas", salida)
+
+    def test_una_carpeta_ignorada_cubre_lo_de_dentro(self):
+        (self.proyecto / ".gitignore").write_text(".vscode/\n",
+                                                  encoding="utf-8")
+        self._init()
+        contenido = (self.proyecto / ".gitignore").read_text(encoding="utf-8")
+        self.assertNotIn(".vscode/settings.json", contenido,
+                         ".vscode/ ya lo ignora")
+        self.assertIn(".specify/cache/", contenido)
+
+    def test_respeta_un_archivo_sin_salto_final(self):
+        (self.proyecto / ".gitignore").write_text("node_modules/",
+                                                  encoding="utf-8")
+        self._init()
+        self.assertEqual(
+            (self.proyecto / ".gitignore").read_text(encoding="utf-8"),
+            "node_modules/\n.vscode/settings.json\n.specify/cache/\n")
 
 
 class TestInitConRoot(unittest.TestCase):

@@ -136,7 +136,7 @@ def cmd_init(args) -> int:
     cli = Path(__file__).resolve()
     # La capa visual (§29): sin esto la extensión no sabe qué `cli/main.py`
     # ejecutar y las tareas SDD no aparecen al abrir la carpeta en el IDE.
-    escritos, existentes = ide_entorno.preparar(
+    escritos, existentes, añadidas = ide_entorno.preparar(
         raiz, cli, sys.executable or "python3")
     print(f"🟢 PROYECTO INICIALIZADO: {raiz}")
     print("Estado:")
@@ -150,11 +150,11 @@ def cmd_init(args) -> int:
         print("✓ .gitignore (ajustes y caché de esta máquina)")
     for nombre in existentes:
         print(f"· {nombre} ya existía: no se tocó")
-    # Si el `.gitignore` es del usuario no se toca, pero tampoco se calla: se
-    # muestran las dos reglas que `init` habría escrito, para copiarlas a mano.
-    if ide_entorno.GITIGNORE in existentes:
-        print("  compruebe que ignora las rutas de esta máquina:")
-        for regla in ide_entorno.REGLAS_IGNORADAS:
+    # Si el `.gitignore` existía y le faltaban reglas, se añaden y se dice
+    # cuáles; el resto del archivo queda como estaba.
+    if añadidas:
+        print(f"✓ {ide_entorno.GITIGNORE}: añadidas las reglas que faltaban")
+        for regla in añadidas:
             print(f"    {regla}")
     # Los comandos de barra son lo único que `init` no dejaba listo: sin ellos
     # el agente no ve `/sdd-*`. Se generan aquí si el usuario ya dijo el
