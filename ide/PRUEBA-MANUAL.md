@@ -33,9 +33,9 @@ siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
 tercera pasada comprobó el progreso y su «Cancelar» —dos casillas más— y una
 cuarta midió el tope `timeoutMinutos`, una quinta el `pin` de dos datos, el
 vacío obligatorio y `Escape`, y una sexta el estado vacío y la CLI rota:
-diecinueve en total. El resto sigue sin marcar: el «Cancelar» con `pytest` en marcha,
-proyecto` y todas las de comandos de barra (no hay sesión de Copilot en ese
-perfil).
+veintitrés en total. El resto sigue sin marcar: el «Cancelar» con `pytest` en
+marcha, `SDD: Actualizar vista lateral` y todas las de comandos de barra (no hay
+sesión de Copilot en ese perfil).
 
 Ojo con el estado: ejecutar comandos lo mueve. Tras `build`, la tarea actual
 deja de ser `—` y las píldoras cambian; para repetir la lista desde la línea
@@ -190,15 +190,27 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       —`SDD: 🧩 copilot: 14 comando(s) en .github/prompts/{nombre}.prompt.md`,
       no un texto propio de la extensión—, que la vista se refresca sin el
       aviso y que el archivo recuperó la ruta buena.
-- [ ] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
+- [x] `SDD: Aclarar SPEC` con `SPEC-001` se abre en la terminal `SDD
       Toolkit`, porque pregunta por stdin.
-- [ ] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece
+      *Visto*: se abre la pestaña `SDD Toolkit` y corre `clarify SPEC-001`,
+      que responde `QUALITY GATE 1: SUPERADO — 6/6 aclaradas` y se queda
+      esperando la respuesta con `¿Qué desea hacer ahora?`.
+- [x] `SDD: Aclarar SPEC` con `SPEC-999`: la validación previa falla, aparece
       la notificación `SPEC inexistente: SPEC-999` y **no** se abre el
       terminal; `Ver salida` muestra la salida de `clarify --list SPEC-999`.
-- [ ] Paleta, comando sin argumentos (`SDD: Estado + siguiente`): corre
+      *Visto*: sale `SDD: SPEC inexistente: SPEC-999` con `Ver salida` y el
+      terminal no recibe nada. Al pulsarlo, el canal muestra
+      `clarify SPEC-999   (código 1)` y `⛔ SPEC inexistente: SPEC-999` — la
+      salida es la de la validación, aunque la línea nombre la orden sin
+      `--list`.
+- [x] Paleta, comando sin argumentos (`SDD: Estado + siguiente`): corre
       `status` sin preguntar.
-- [ ] Paleta, comando con argumento (`SDD: Generar / ver plan`): pide
+      *Visto*: no abre ningún cuadro y el canal registra `status   (código 0)`.
+- [x] Paleta, comando con argumento (`SDD: Generar / ver plan`): pide
       `SPEC-ID`; escribir `SPEC-001` lo pasa al final del comando.
+      *Visto*: el cuadro dice `SDD: SPEC-ID` y el canal registra
+      `plan SPEC-001   (código 1)`, con `PLAN-001 ya existe; regenere con
+      --force` en la notificación.
 - [x] Comando que pide dos datos (`SDD: Spec pinning`): pregunta `PLAN-ID`,
       después `TASK-ID`, y ejecuta `pin PLAN-001 --task TASK-001`. Cancelar en
       el segundo no ejecuta nada; dejarlo vacío avisa y no ejecuta.
