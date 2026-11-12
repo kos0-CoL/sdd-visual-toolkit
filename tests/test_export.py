@@ -153,7 +153,7 @@ class TestAvisoDeSkillsEnExport(unittest.TestCase):
         sano = json.loads(correr("export"))
         self.assertEqual(sano["avisos"]["skills"]["total"], 0)
 
-        generado = root / ".github" / "prompts" / "sdd-status.prompt.md"
+        generado = root / ".github" / "skills" / "sdd-status" / "SKILL.md"
         generado.parent.mkdir(parents=True, exist_ok=True)
         generado.write_text(
             'python3 "/tmp/toolkit-viejo/cli/main.py" --root . status\n',

@@ -64,12 +64,10 @@ class TestRender(unittest.TestCase):
             with self.subTest(cliente=cliente):
                 self.assertIn("{nombre}", plantilla)
                 archivos = agent_commands.generar(cliente, PYTHON, CLI)
-                destinos = agent_commands.destinos(cliente)
-                self.assertEqual(len(archivos),
-                                 len(agent_commands.COMANDOS) * len(destinos))
+                self.assertEqual(len(archivos), len(agent_commands.COMANDOS))
                 for ruta in archivos:
-                    self.assertTrue(any(ruta.startswith(destino.split("{")[0])
-                                        for destino in destinos), ruta)
+                    self.assertTrue(ruta.startswith(plantilla.split("{")[0]),
+                                    ruta)
 
     def test_frontmatter_solo_donde_corresponde(self):
         for cliente in agent_commands.CLIENTES:
@@ -96,17 +94,13 @@ class TestRender(unittest.TestCase):
                     self.assertIn(f"description: '{comando.descripcion}'",
                                   cabecera)
 
-    def test_copilot_pide_el_agente_con_terminal(self):
+    def test_copilot_escribe_solo_la_skill(self):
+        """Con el `prompt.md` al lado, el menú `/` de VS Code mostraba cada
+        comando dos veces: uno por la skill y otro por el prompt. La skill la
+        listan los dos arneses (`Copilot` y `Local`), así que el prompt sobra."""
         archivos = agent_commands.generar("copilot", PYTHON, CLI)
-        prompts = {ruta: contenido for ruta, contenido in archivos.items()
-                   if "/prompts/" in ruta}
-        self.assertEqual(len(prompts), len(agent_commands.COMANDOS))
-        for contenido in prompts.values():
-            self.assertIn("agent: 'agent'", contenido.split("---\n")[1])
-
-    def test_copilot_escribe_la_skill_que_carga_su_arnes(self):
-        """El prompt solo lo lee el arnés `Local`; la skill, el `Copilot`."""
-        archivos = agent_commands.generar("copilot", PYTHON, CLI)
+        self.assertEqual(len(archivos), len(agent_commands.COMANDOS))
+        self.assertFalse([ruta for ruta in archivos if "/prompts/" in ruta])
         ruta = ".github/skills/sdd-status/SKILL.md"
         self.assertIn(ruta, archivos)
         cabecera = archivos[ruta].split("---\n")[1]
@@ -114,8 +108,8 @@ class TestRender(unittest.TestCase):
         self.assertNotIn("agent:", cabecera)
         self.assertIn("--root .", archivos[ruta])
 
-    def test_instalados_ve_los_prompts_y_las_skills(self):
-        """`--regenerar` y `status` tienen que llegar a las dos formas."""
+    def test_instalados_ve_la_skill_de_copilot(self):
+        """`--regenerar` y `status` tienen que llegar a lo que se escribió."""
         with tempfile.TemporaryDirectory() as tmp:
             for relativa, contenido in agent_commands.generar(
                     "copilot", PYTHON, CLI).items():
@@ -123,13 +117,10 @@ class TestRender(unittest.TestCase):
                 destino.parent.mkdir(parents=True, exist_ok=True)
                 destino.write_text(contenido, encoding="utf-8")
             instalados = agent_commands.instalados(tmp)["copilot"]
-            self.assertEqual(len(instalados), 2 * len(agent_commands.COMANDOS))
-            prompts = [r for r in instalados if "/prompts/" in str(r)]
-            self.assertEqual(len(prompts), len(agent_commands.COMANDOS))
-            # La ruta horneada es inventada: las dos formas se tienen que ver
-            # como muertas, no solo el prompt.
+            self.assertEqual(len(instalados), len(agent_commands.COMANDOS))
+            # La ruta horneada es inventada: todas se ven como muertas.
             self.assertEqual(agent_commands.rutas_muertas(tmp),
-                             {str(CLI): 2 * len(agent_commands.COMANDOS)})
+                             {str(CLI): len(agent_commands.COMANDOS)})
 
     def test_frontmatter_cita_todos_los_valores(self):
         """Sin comillas, un valor con «: » rompe el YAML del cliente."""
@@ -351,7 +342,7 @@ class TestStatusAvisaSkills(unittest.TestCase):
         return codigo, salida.getvalue()
 
     def test_avisa_si_la_ruta_grabada_ya_no_existe(self):
-        destino = self.root / ".github" / "prompts" / "sdd-status.prompt.md"
+        destino = self.root / ".github" / "skills" / "sdd-status" / "SKILL.md"
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(
             'python3 "/no/existe/toolkit/cli/main.py" --root . status\n',

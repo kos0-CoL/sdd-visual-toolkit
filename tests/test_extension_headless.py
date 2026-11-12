@@ -80,8 +80,8 @@ class TestArnesDeLaExtension(unittest.TestCase):
                          for p in self.proyecto.rglob("*"))
         self.assertEqual(antes, despues)
         self.assertIn(str(RAIZ / "cli" / "main.py"),
-                      (self.proyecto / ".github" / "prompts"
-                       / "sdd-status.prompt.md").read_text(encoding="utf-8"))
+                      (self.proyecto / ".github" / "skills" / "sdd-status"
+                       / "SKILL.md").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
