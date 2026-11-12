@@ -33,7 +33,7 @@ siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
 tercera pasada comprobó el progreso y su «Cancelar» —dos casillas más— y una
 cuarta midió el tope `timeoutMinutos`, una quinta el `pin` de dos datos, el
 vacío obligatorio y `Escape`, y una sexta el estado vacío y la CLI rota:
-diecisiete en total. El resto sigue sin marcar: el «Cancelar» con `pytest` en marcha, las dos de `SDD: Inicializar
+diecinueve en total. El resto sigue sin marcar: el «Cancelar» con `pytest` en marcha,
 proyecto` y todas las de comandos de barra (no hay sesión de Copilot en ese
 perfil).
 
@@ -233,15 +233,27 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       esa carpeta la extensión no se activó —no había vista SDD— hasta abrir
       la ventana con `--disable-workspace-trust`; el modo restringido la deja
       fuera.
-- [ ] `SDD: Inicializar proyecto` en una carpeta vacía: aparece la
+- [x] `SDD: Inicializar proyecto` en una carpeta vacía: aparece la
       notificación con la ruta inicializada y la vista deja de mostrar
       `sin inicializar` sin recargar la ventana.
-- [ ] `SDD: Inicializar proyecto` con la carpeta abierta dentro de otro
+      *Visto* en `/tmp/sdd-init2`: `SDD: PROYECTO INICIALIZADO: /tmp/sdd-init2`
+      y la vista pasó de `⛔` a `📍 Fase: sin SPEC`, `Progreso: 0/0` y
+      `➡ Siguiente: enrich «idea»` sin recargar; dejó `.specify/`, `.vscode/`
+      y `specs/`. **Hallazgo**: con los valores por defecto
+      (`cliPath: cli/main.py`) el comando falla en una carpeta vacía con
+      `python3: can't open file '<carpeta>/cli/main.py'`; hizo falta
+      `sddToolkit.cliPath` a nivel de usuario.
+- [x] `SDD: Inicializar proyecto` con la carpeta abierta dentro de otro
       proyecto (`/tmp/sdd-manual/sub`): notificación de error con
       `YA HAY UN PROYECTO TOOLKIT POR ENCIMA: /tmp/sdd-manual` y ningún
       `.specify/` nuevo en `sub/`. El botón `Ver salida` abre el canal
       `SDD Toolkit` con la orden, el código y lo que imprimió la CLI;
       cerrar la notificación sin pulsarlo no abre nada.
+      *Visto* con `/tmp/sdd-manual/sub`: sale `SDD: YA HAY UN PROYECTO
+      TOOLKIT POR ENCIMA: /tmp/sdd-manual` con `Ver salida`, `sub/` queda
+      vacío y la vista sigue leyendo el proyecto padre (`1/18`). `Ver
+      salida` deja `init (código 1)` y «no se crea .specify/ anidado» en el
+      canal; cerrar las notificaciones sin pulsarlo no añade ni una línea.
 - [x] CLI rota: poner `sddToolkit.python` en algo inexistente y comprobar
       que la vista cae en `⛔ sin inicializar o CLI no disponible` y la barra
       se oculta. Restaurar el valor.
