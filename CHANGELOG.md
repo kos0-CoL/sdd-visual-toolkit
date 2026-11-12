@@ -6,6 +6,8 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+## [0.2.1] — 2026-11-12
+
 ### Añadido
 
 - `init --sin-gitignore`: inicializa el proyecto sin escribir el `.gitignore` ni
@@ -560,7 +562,8 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.2.0...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.0
 [0.1.6]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.6
 [0.1.5]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.5

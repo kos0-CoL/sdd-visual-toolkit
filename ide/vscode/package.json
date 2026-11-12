@@ -2,7 +2,7 @@
   "name": "sdd-visual-toolkit",
   "displayName": "SDD Visual Toolkit",
   "description": "Fases, tareas, pruebas e historial del SDD Visual Toolkit dentro del IDE. Lee el mismo estado central que la CLI (toolkit export).",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "sdd-toolkit",
   "license": "MIT",
   "engines": {
