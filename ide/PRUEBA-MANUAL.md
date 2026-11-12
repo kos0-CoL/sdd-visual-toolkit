@@ -31,11 +31,12 @@ siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
 (`Arquitectura` → `PLAN-001.md`, `Especificación` → `SPEC-001.md`) y en
 `📍 Fase`, que **no aparecía** y quedó arreglado en esa misma pasada. Una
 tercera pasada comprobó el progreso y su «Cancelar» —dos casillas más— y una
-cuarta midió el tope `timeoutMinutos` y una quinta el `pin` de dos datos, el
-vacío obligatorio y `Escape`: catorce en total. El resto sigue sin marcar: el
-vacío de los comandos opcionales, el «Cancelar» con `pytest` en marcha, estado
-vacío, CLI rota y todas las de comandos de barra (no hay sesión de Copilot en
-ese perfil).
+cuarta midió el tope `timeoutMinutos`, una quinta el `pin` de dos datos, el
+vacío obligatorio y `Escape`, y una sexta el estado vacío y la CLI rota:
+dieciséis en total. El resto sigue sin marcar: el vacío de los comandos
+opcionales, el «Cancelar» con `pytest` en marcha, las dos de `SDD: Inicializar
+proyecto` y todas las de comandos de barra (no hay sesión de Copilot en ese
+perfil).
 
 Ojo con el estado: ejecutar comandos lo mueve. Tras `build`, la tarea actual
 deja de ser `—` y las píldoras cambian; para repetir la lista desde la línea
@@ -217,10 +218,17 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       *Visto*: el cuadro se cierra, el canal no suma líneas y no aparece
       ninguna notificación.
 - [ ] Volver a pulsar `SDD: Actualizar vista lateral` refresca los datos.
-- [ ] Estado vacío: abrir una carpeta sin `.specify/` y comprobar que la
+- [x] Estado vacío: abrir una carpeta sin `.specify/` y comprobar que la
       vista muestra `⛔ sin inicializar o CLI no disponible` junto a
       `Inicializar proyecto` (la CLI responde «no hay proyecto toolkit aquí»)
       y que la barra de estado se oculta, en vez de inventar fase.
+      *Visto* en `/tmp/sdd-vacio`: la vista muestra esa fila y `Inicializar
+      proyecto`, la CLI responde `⛔ no hay proyecto toolkit aquí (falta
+      .specify/); ejecute toolkit init` con código 1, y la barra no tiene
+      ningún elemento `SDD: …`. **Hallazgo**: con el perfil recién abierto en
+      esa carpeta la extensión no se activó —no había vista SDD— hasta abrir
+      la ventana con `--disable-workspace-trust`; el modo restringido la deja
+      fuera.
 - [ ] `SDD: Inicializar proyecto` en una carpeta vacía: aparece la
       notificación con la ruta inicializada y la vista deja de mostrar
       `sin inicializar` sin recargar la ventana.
@@ -230,9 +238,12 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       `.specify/` nuevo en `sub/`. El botón `Ver salida` abre el canal
       `SDD Toolkit` con la orden, el código y lo que imprimió la CLI;
       cerrar la notificación sin pulsarlo no abre nada.
-- [ ] CLI rota: poner `sddToolkit.python` en algo inexistente y comprobar
+- [x] CLI rota: poner `sddToolkit.python` en algo inexistente y comprobar
       que la vista cae en `⛔ sin inicializar o CLI no disponible` y la barra
       se oculta. Restaurar el valor.
+      *Visto* con `/no/existe/python3`: la vista cae en esa fila con
+      `Inicializar proyecto` y la barra no muestra `SDD: …`; el valor quedó
+      restaurado.
 
 ## VS Code — comandos de barra
 
