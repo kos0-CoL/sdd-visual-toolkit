@@ -326,14 +326,13 @@ arnés `Copilot` sí ejecuta; el prompt file solo se puede probar eligiendo
       `plan PLAN-001`; la CLI contestó `⛔ PLAN-001 no pasó por clarify;
       ejecute \`clarify PLAN-001\` primero` y el chat se detuvo ahí, sin
       reintentar ni tocar el estado.
-- [ ] `/sdd-plan` sin ID: lo pide antes de ejecutar; no lo inventa.
-      *Visto* el 2026-11-12 con el arnés `Copilot`: **no pregunta**. Ejecuta
-      `plan` sin identificador y la CLI responde `⛔ indique la SPEC-ID o use
-      --list/--show/--gate`; el agente muestra eso y se detiene, sin inventar
-      el ID ni mover el estado (`1/18`, `🧪 Pruebas`). La regla del cuerpo ya
-      se reforzó con un primer punto que nombra el dato del comando
-      (`**Antes de ejecutar**: este comando necesita la SPEC-ID…`); falta
-      repetir esta prueba en el chat para ver si ahora pregunta.
+- [x] `/sdd-plan` sin ID: lo pide antes de ejecutar; no lo inventa.
+      *Visto* el 2026-11-12 con el arnés `Copilot`: tras `Read skill
+      sdd-plan`, el chat abre el campo `SPEC-ID` («Exact ENR/SPEC/PLAN/TASK
+      identifier required by the sdd-plan command»), avisa `Waiting for your
+      response` y **no pide permiso de terminal**, así que no ejecuta nada.
+      Antes de reforzar la regla (#137) lanzaba `plan` a secas y devolvía el
+      `⛔ indique la SPEC-ID` de la CLI; ahora pregunta primero.
 - [x] `/sdd-build PLAN-999`: se detiene y muestra `⛔ plan inexistente:
       PLAN-999` sin rodearlo de otros comandos ni tocar el estado.
       *Visto*: 2026-11-12, arnés `Copilot`: la orden que corrió fue
