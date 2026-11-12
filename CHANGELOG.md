@@ -17,6 +17,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   «Abrir carpeta» (y, si es nueva, «inicializa el proyecto»), y el aviso de la
   paleta trae el mismo botón en vez de «abra una carpeta primero» a secas.
 
+### Documentación
+
+- `docs/TUTORIAL.md`: recorrido de cero con un ejemplo real (kiosco), desde
+  `uv tool install` y el `.vsix` hasta el panel, el primer prompt, cada fase con
+  su salida y los errores frecuentes con su solución.
+
 ## [0.2.0] — 2026-11-12
 
 ### Añadido
