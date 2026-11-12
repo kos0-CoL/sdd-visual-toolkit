@@ -20,10 +20,11 @@ GITIGNORE = ".gitignore"
 # comentarios van en su propia línea a propósito: en `.gitignore` un `#` al
 # final no comenta nada, se vuelve parte del patrón y la regla deja de
 # aplicarse.
+REGLAS_IGNORADAS = (".vscode/settings.json", ".specify/cache/")
 IGNORAR = (
     "# generado por `toolkit init`: rutas de esta máquina\n"
-    ".vscode/settings.json\n"
-    ".specify/cache/\n"
+    + "\n".join(REGLAS_IGNORADAS)
+    + "\n"
 )
 
 # Una tarea del IDE no puede pedir un PLAN-ID ni un TASK-ID, así que se ofrecen
