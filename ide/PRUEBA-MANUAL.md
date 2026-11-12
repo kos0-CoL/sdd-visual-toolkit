@@ -292,9 +292,13 @@ Con el paso de preparación hecho, `.github/prompts/` tiene 14 archivos.
 
 Pasada del 2026-11-12 en VS Code 1.142.0, perfil aislado con la cuenta
 `kos0-CoL` de GitHub: los 14 archivos se listan en **Chat: Run Prompt...**
-con su descripción, pero el menú `/` del chat no los ofrece —sí las skills
-y los comandos del agente— y al ejecutar uno el chat pide sesión de
-Copilot (`Continue with GitHub`), así que no llegó ninguna salida.
+con su descripción, pero el menú `/` del chat no los ofrece. La causa no es
+el formato: los `.prompt.md` son comandos de barra **solo del arnés
+`Local`**, y el chat venía en el arnés `Copilot`, que lista sus propios
+comandos (`/autopilot`, `/clear`, `/fork`…) y las skills. Sin sesión de
+Copilot en el perfil (`Sign In` en la barra) tampoco se pudo ver con
+`Local`. Para probarlo: elegir `Local` en el selector del chat, con sesión
+iniciada, y escribir `/sdd`.
 
 - [ ] Escribir `/sdd` en el chat y comprobar que aparecen los comandos.
 - [ ] `/sdd-status`: la salida de la CLI llega tal cual, sin resumen.
