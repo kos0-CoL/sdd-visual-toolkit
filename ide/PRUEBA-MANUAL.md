@@ -368,8 +368,12 @@ aplica».
 python3 cli/main.py --root /tmp/sdd-manual comandos --cliente antigravity
 ```
 
-- [ ] Generar y comprobar que quedan 14 skills en `.agents/skills/*/SKILL.md`.
+- [x] Generar y comprobar que quedan 14 skills en `.agents/skills/*/SKILL.md`.
       No se generan *workflows*: ese mecanismo está deprecado.
+      *Visto* el 2026-11-12 desde la CLI, sin abrir el agente: `comandos
+      --cliente antigravity` responde `🧩 antigravity: 14 comando(s) en
+      .agents/skills/{nombre}/SKILL.md`, deja 14 `skills/*/SKILL.md` y ninguna
+      carpeta `workflows/`, con `name` y `description` como único frontmatter.
 - [ ] Abrir el proyecto y ver si las skills aparecen en el agente (por nombre
       y descripción) o si hace falta recargar la ventana.
 - [ ] Invocar `/sdd-status` o la skill equivalente: ¿ejecuta el comando con
