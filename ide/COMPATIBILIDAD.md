@@ -9,7 +9,7 @@ y la otra no.
 
 | Entorno | Extensión | Comandos de barra |
 |---|---|---|
-| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (23 de 29 casillas)** | ✅ `.github/prompts/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **sin abrir el chat** |
+| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (25 de 29 casillas)** | ✅ `.github/prompts/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **sin abrir el chat** |
 | Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar |
 | Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar |
 | Antigravity | ⚠️ pendiente de verificación | ⚠️ `.agents/skills/`; sin probar |
@@ -110,6 +110,7 @@ nunca se inventa estado.
 | 2026-11-11 | VS Code 1.142.0 · perfil aislado, `0.1.5` reempaquetada · `/tmp/sdd-manual` | extensión | ⚠️ parcial: **paleta y `clarify`** — `SDD: Estado + siguiente` corre `status (código 0)` sin preguntar; `SDD: Generar / ver plan` pide `SDD: SPEC-ID` y ejecuta `plan SPEC-001 (código 1)`; `SDD: Aclarar SPEC` con `SPEC-001` abre la terminal `SDD Toolkit` y el `clarify` interactivo; con `SPEC-999` sale `SDD: SPEC inexistente: SPEC-999`, el terminal no recibe nada y `Ver salida` deja `clarify SPEC-999 (código 1)` con el ⛔ en el canal (la línea nombra la orden sin `--list`). **Cuatro casillas más (23 de 29)**. Faltan el «Cancelar» con `pytest` en marcha, `SDD: Actualizar vista lateral` y los comandos de barra |
 | 2026-11-11 | VS Code 1.142.0 · proyecto `/tmp/sdd-manual` | comandos de barra | ⚠️ parcial: 14 archivos en `.github/prompts/` y `comandos --verificar` en verde; no se abrió el chat |
 | 2026-11-12 | VS Code 1.142.0 · perfil aislado, `.vsix` reempaquetada · `/tmp/sdd-vacio4` vacío | extensión (arreglo) | ✅ **`init` en carpeta vacía con el `cliPath` por defecto** — con un intérprete que tiene el paquete instalado (`pip install -e .`), `SDD: Inicializar proyecto` responde `SDD: PROYECTO INICIALIZADO: /tmp/sdd-vacio4`, deja `.specify/`, `.vscode/` y `specs/`, y el canal registra `/tmp/venv-sdd/bin/python3 -m cli.main --root /tmp/sdd-vacio4 init   (código 0)`; con un intérprete sin el paquete y la misma ruta relativa sale `SDD: no encuentro la CLI en /tmp/sdd-vacio4/cli/main.py. Ajuste «sddToolkit.cliPath» a la ruta de cli/main.py o instale el paquete con «pip install -e .».` en vez del traceback de python |
+| 2026-11-12 | VS Code 1.142.0 · perfil aislado, `.vsix` de la release `0.1.6` · `/tmp/sdd-manual` con `pytest.ini` y un `test_productos.py` de 90 s dentro de `tests/` | extensión | ⚠️ parcial: **«Cancelar» con `pytest` en marcha y vista lateral** — `SDD: Correr pruebas` con `TASK-001` deja `python3 -m pytest -q` corriendo sobre ese archivo; al pulsar «Cancel» salen `SDD: test cancelado`, `(cancelado)` en el canal y ninguna notificación de error, y el proceso desaparece de `/proc` en menos de 3 s. `build PLAN-001` desde fuera del IDE no se refleja hasta pulsar `SDD: Actualizar vista lateral`, que trae `Tarea actual: TASK-002` y la píldora `build PLAN-001 --done TASK-002`. **Dos casillas más (25 de 29)**. Faltan los catorce comandos de barra |
 
 ### Para marcar la pasada en editor
 
