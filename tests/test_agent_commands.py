@@ -206,6 +206,39 @@ class TestRender(unittest.TestCase):
         # opcional cuenta, o su skill dejaría de aceptar el identificador.
         self.assertNotIn("sdd-cierre", agent_commands.comandos_sin_argumentos())
 
+    def _parser_con(self, con_posicional: bool) -> argparse.ArgumentParser:
+        """Parser mínimo con un solo subcomando, para mover un posicional."""
+        parser = argparse.ArgumentParser(prog="toolkit")
+        sub = parser.add_subparsers(dest="cmd")
+        p_status = sub.add_parser("status")
+        if con_posicional:
+            p_status.add_argument("texto", nargs="?", default=None)
+        p_status.set_defaults(func=lambda args: 0)
+        return parser
+
+    def test_si_el_comando_gana_o_pierde_un_posicional_la_skill_cambia(self):
+        """La regla sigue al parser, sin tocar el catálogo."""
+        comando = agent_commands.Comando("sdd-status", "Estado del proyecto.",
+                                         "status")
+        casos = ((False, "no lleva argumentos", "pásalo tal cual"),
+                 (True, "pásalo tal cual", "no lleva argumentos"))
+        for con_posicional, esperada, descartada in casos:
+            with self.subTest(posicional=con_posicional):
+                parser = self._parser_con(con_posicional)
+                agent_commands.comandos_sin_argumentos.cache_clear()
+                try:
+                    with mock.patch.object(agent_commands, "COMANDOS",
+                                           (comando,)), \
+                            mock.patch.object(cli_main, "construir_parser",
+                                              lambda: parser):
+                        skill = agent_commands.generar(
+                            "copilot", PYTHON, CLI)[
+                                ".github/skills/sdd-status/SKILL.md"]
+                        self.assertIn(esperada, skill)
+                        self.assertNotIn(descartada, skill)
+                finally:
+                    agent_commands.comandos_sin_argumentos.cache_clear()
+
     def test_un_subcomando_desconocido_falla_en_vez_de_tragarse(self):
         """Si el catálogo y el parser se separan, salta aquí y no en el chat."""
         roto = agent_commands.Comando("sdd-inventado", "x", "inventado")
