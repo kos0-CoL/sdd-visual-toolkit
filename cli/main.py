@@ -158,7 +158,7 @@ def cmd_init(args) -> int:
         print("Comandos para su agente (opcional, repetible):")
         print(f"  {sys.executable or 'python3'} \"{cli}\" comandos"
               " --cliente copilot")
-        print("  sin --cliente escribe los cinco; la ruta absoluta queda"
+        print("  sin --cliente escribe todos; la ruta absoluta queda"
               " grabada, así que vuelva a ejecutarlo si mueve el repositorio.")
     print("¿Qué desea hacer ahora?")
     print("[ req add ]  [ status ]  [ comandos ]")

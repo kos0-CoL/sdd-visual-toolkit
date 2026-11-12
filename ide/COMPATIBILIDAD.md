@@ -13,6 +13,8 @@ y la otra no.
 | Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar |
 | Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar |
 | Antigravity | ⚠️ pendiente de verificación | ✅ `.agents/skills/`, 14 archivos generados; **sin probar en el agente** |
+| Cline | — no aplica: es una extensión de VS Code, no un IDE | ✅ `.clinerules/workflows/`; **sin probar** (se invoca `/sdd-status.md`) |
+| Kilo Code | — no aplica: es una extensión de VS Code, no un IDE | ✅ `.kilo/commands/`; **sin probar** (se invoca `/sdd-status`) |
 | Claude Code (CLI) | — no aplica: no es un IDE | ✅ `.claude/skills/`; sin probar |
 | Solo terminal / CLI | — | — la CLI es completa sin IDE (RF-36) |
 | Vía MCP | — | ✅ `tests/test_mcp.py` |

@@ -108,6 +108,22 @@ class TestRender(unittest.TestCase):
         self.assertNotIn("agent:", cabecera)
         self.assertIn("--root .", archivos[ruta])
 
+    def test_cline_y_kilo_escriben_sus_workflows(self):
+        """Cline toma el nombre del archivo como comando (`/sdd-status.md`) y
+        Kilo lee `.kilo/commands/` (`/sdd-status`); ninguno documenta
+        frontmatter, así que el archivo empieza por el cuerpo."""
+        esperado = {
+            "cline": ".clinerules/workflows/sdd-status.md",
+            "kilo": ".kilo/commands/sdd-status.md",
+        }
+        for cliente, ruta in esperado.items():
+            with self.subTest(cliente=cliente):
+                archivos = agent_commands.generar(cliente, PYTHON, CLI)
+                self.assertEqual(len(archivos), len(agent_commands.COMANDOS))
+                self.assertIn(ruta, archivos)
+                self.assertFalse(archivos[ruta].startswith("---\n"))
+                self.assertIn("--root .", archivos[ruta])
+
     def test_instalados_ve_la_skill_de_copilot(self):
         """`--regenerar` y `status` tienen que llegar a lo que se escribió."""
         with tempfile.TemporaryDirectory() as tmp:
