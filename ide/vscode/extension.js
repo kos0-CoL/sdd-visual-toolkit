@@ -116,9 +116,32 @@ function tieneModulo() {
   return sirve;
 }
 
+/* Instalado con `uv tool install` o `pipx`, el comando `sdd` resuelve la CLI
+ * sin ruta relativa ni intérprete que adivinar. Se busca a mano en el `PATH`
+ * para poder mostrarlo tal cual y porque `spawn` de un binario inexistente
+ * devuelve un ENOENT que no dice qué falta. */
+const BINARIOS = ['sdd', 'toolkit'];
+function binarioGlobal() {
+  const sufijos = process.platform === 'win32' ? ['.exe', '.cmd', ''] : [''];
+  const carpetas = (process.env.PATH || '').split(path.delimiter);
+  for (const carpeta of carpetas) {
+    if (!carpeta) continue;
+    for (const nombre of BINARIOS) {
+      for (const sufijo of sufijos) {
+        const ruta = path.join(carpeta, nombre + sufijo);
+        try {
+          if (fs.existsSync(ruta)) return ruta;
+        } catch (error) { /* entradas de PATH que no se pueden leer */ }
+      }
+    }
+  }
+  return null;
+}
+
 /* Argumento que nombra la CLI. La ruta configurada manda; si es relativa y no
- * está en la carpeta —un proyecto todavía sin inicializar— se usa el módulo
- * instalado, que es la misma CLI sin una ruta que adivinar. */
+ * está en la carpeta —un proyecto todavía sin inicializar— se usa el `sdd`
+ * instalado (o el módulo, si alguien hizo `pip install -e .`), que es la misma
+ * CLI sin una ruta que adivinar. */
 function cli(dir) {
   const { cliPath } = cfg();
   if (path.isAbsolute(cliPath)) {
@@ -128,6 +151,10 @@ function cli(dir) {
   if (fs.existsSync(ruta)) {
     return { args: [ruta], texto: citar(ruta), existe: true };
   }
+  const bin = binarioGlobal();
+  if (bin) {
+    return { bin, args: [], texto: citar(bin), existe: true };
+  }
   if (tieneModulo()) {
     return { args: ['-m', 'cli.main'], texto: '-m cli.main', existe: true };
   }
@@ -136,8 +163,9 @@ function cli(dir) {
 
 /* Orden completa, para mostrarla y poder copiarla tal cual. */
 function comando(dir, argv) {
-  return [cfg().python, cli(dir).texto, '--root', citar(dir),
-    ...argv.map(citar)].join(' ');
+  const resuelta = cli(dir);
+  return [resuelta.bin ? citar(resuelta.bin) : cfg().python, resuelta.texto,
+    '--root', citar(dir), ...argv.map(citar)].join(' ');
 }
 
 /* «Ver salida» de la notificación y consola de los comandos: la orden exacta
@@ -243,7 +271,8 @@ function correr(dir, argv, opciones = {}) {
   };
   /* `spawn` y no `execFile`: solo el primero respeta `detached` y deja al hijo
    * como líder de su grupo, que es lo que permite alcanzar a los nietos. */
-  hijo = spawn(cfg().python, [...resuelta.args, '--root', dir, ...argv], {
+  hijo = spawn(resuelta.bin || cfg().python,
+    [...resuelta.args, '--root', dir, ...argv], {
     cwd: dir,
     detached: process.platform !== 'win32',
     windowsHide: true,
@@ -255,8 +284,13 @@ function correr(dir, argv, opciones = {}) {
   hijo.on('error', (error) => {
     if (terminado) return;
     cerrar();
-    reportarFallo(orden, 'error', stdout,
-      String(error.message || error), argv[0]);
+    /* ENOENT suele ser el intérprete: se dice cuál y qué ajustar, porque el
+     * mensaje crudo («spawn python3 ENOENT») no lleva a ningún sitio. */
+    const detalle = error.code === 'ENOENT'
+      ? `no encontré «${resuelta.bin || cfg().python}»: ajuste «sddToolkit.python» ` +
+        'o instale el comando con «uv tool install …»'
+      : String(error.message || error);
+    reportarFallo(orden, 'error', stdout, detalle, argv[0]);
   });
   hijo.on('close', (codigo) => {
     if (terminado) return;
@@ -308,8 +342,9 @@ function validarYTerminal(dir, argv) {
     terminal().sendText(orden);
     return;
   }
-  execFile(cfg().python,
-    [...cli(dir).args, '--root', dir, argv[0], '--list', argv[1]],
+  const resuelta = cli(dir);
+  execFile(resuelta.bin || cfg().python,
+    [...resuelta.args, '--root', dir, argv[0], '--list', argv[1]],
     { cwd: dir, timeout: 300000 }, (err, stdout, stderr) => {
       if (!err) {
         terminal().sendText(orden);

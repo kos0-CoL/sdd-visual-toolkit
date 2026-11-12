@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-474%20passed-green)
+![Tests](https://img.shields.io/badge/tests-478%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -58,15 +58,14 @@ extensión de VS Code, cualquier cliente MCP y sus propios hooks
 
 ## Instalación paso a paso
 
-Hay dos cosas que se llaman «instalar» y conviene no mezclar: **el comando**
-(una vez por máquina) y **el proyecto** (una vez por proyecto, con `sdd init`).
-Lo primero es lo que permite escribir `sdd init` dentro de cualquier carpeta,
-como `specify` en spec-kit. Requisitos: **Python ≥ 3.11** y nada más; cero
-dependencias en tiempo de ejecución.
+Dos pasos, como spec-kit: **instalar el comando** una vez por máquina y
+ejecutar **`init`** en cada proyecto. No clones el repositorio dentro del
+proyecto: el comando se instala fuera y el proyecto solo guarda su ruta.
+
+Requisitos: **Python ≥ 3.11**, `uv` o `pipx`, y **Git** (la instalación va
+contra el repositorio). Cero dependencias en tiempo de ejecución.
 
 ### 1. Instalar el comando (una vez por máquina)
-
-Hace falta `uv` o `pipx`, y **Git**, porque se instala desde el repositorio:
 
 ```bash
 uv tool install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
@@ -74,18 +73,26 @@ uv tool install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
 # sin ninguno de los dos: python3 -m pip install . dentro de un clon
 ```
 
-Deja dos nombres para el mismo programa: **`sdd`** y **`toolkit`**.
+Deja dos nombres para el mismo programa: **`sdd`** y **`toolkit`**, en
+`~/.local/bin` (o donde su gestor ponga los binarios).
 
 ```console
 $ sdd --version
 toolkit 0.2.0
 ```
 
-Si responde `Orden «sdd» no encontrada`, el directorio donde `uv` deja los
-binarios (`~/.local/bin`) no está en el `PATH`: añádalo o llame al binario por
-su ruta (`~/.local/bin/sdd`).
+Si responde `Orden «sdd» no encontrada`, ese directorio no está en el `PATH`:
+añádalo a `~/.profile` y abra una terminal nueva, o llame al binario por su
+ruta (`~/.local/bin/sdd`).
 
-Después, por proyecto:
+Actualizar: `uv tool upgrade sdd-toolkit` (o `uv tool install --force`). Quitar:
+`uv tool uninstall sdd-toolkit`.
+
+**Windows**: instale `uv` desde su sitio y use `uv tool install …` igual; los
+comandos son idénticos, pero el `.vsix` y el paquete no están probados en
+Windows (ver `ide/COMPATIBILIDAD.md`).
+
+### 2. Inicializar cada proyecto
 
 ```bash
 cd ~/kiosco
@@ -98,30 +105,14 @@ el intérprete que lo tiene, así que no hay nada más que apuntar a mano.
 Verificado instalando desde el repositorio en un entorno limpio: `sdd init`
 deja el proyecto listo y `sdd status` responde.
 
-### 2. Sin instalarlo: usar la ruta
-
-El toolkit también funciona sin instalar nada: se ejecuta desde la carpeta donde
-quedó el código y cada orden lleva la ruta en lugar de `sdd`.
-
-```bash
-git clone https://github.com/kos0-CoL/sdd-visual-toolkit.git
-cd sdd-visual-toolkit
-python3 cli/main.py --version          # toolkit 0.2.0
-```
-
-- **Linux y macOS**: `python3`. En macOS ya viene de serie; en Linux suele
-  estar instalado.
-- **Windows**: use `py` o `python` en lugar de `python3` (PowerShell, CMD o
-  Git Bash); el resto de comandos es igual. *No probado en Windows*: ver
-  `ide/COMPATIBILIDAD.md`.
-- **Sin Git**: *Code → Download ZIP* en GitHub y descomprimir; el resultado
-  es el mismo.
-
-Con eso la CLI ya funciona desde la terminal, y `python3 /ruta/al/toolkit/cli/main.py
-init` sustituye a `sdd init`. Para tener los comandos `/sdd…` en el chat, siga
-«Instalar en tu proyecto (2 pasos)».
+Dos protecciones, porque clonar el repositorio dentro del proyecto es el error
+más fácil de cometer: `init` **se niega** a correr cuando la carpeta es el
+propio toolkit, y **avisa** si encuentra una copia del toolkit clonada dentro
+del proyecto.
 
 ### 3. Si va a desarrollarlo
+
+Acá sí se clona, y ese clon **no es el proyecto**: es la herramienta.
 
 ```bash
 # 1. Entorno virtual (opcional pero recomendado)
@@ -130,7 +121,7 @@ python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\ac
 # 2. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 3. Verificar que todo funciona (474 tests, ~40 s; ~20 s con -n 2)
+# 3. Verificar que todo funciona (478 tests, ~40 s; ~20 s con -n 2)
 python3 -m pytest tests/ -q
 python3 -m pytest tests/ -q -m "not lento"   # sin el arnés de la extensión
 ```
@@ -148,8 +139,6 @@ Instalar el comando»).
 ```bash
 cd ~/mi-proyecto
 sdd init --cliente copilot
-# sin instalar el comando:
-# python3 /ruta/al/toolkit/cli/main.py init --cliente copilot
 ```
 
 Deja el estado (`.specify/`, `specs/`), los ajustes del IDE
@@ -182,8 +171,8 @@ sdd comandos --cliente cline
 
 Y `sdd comandos` sin `--cliente` escribe los siete a la vez (7 × 14 archivos);
 solo tiene sentido si estás probando varios agentes. Después, `sdd status` y el
-resto de comandos son idénticos cambies o no de agente. Si no instalaste el
-paquete global, donde dice `sdd` va `python3 /ruta/al/toolkit/cli/main.py`.
+resto de comandos son idénticos cambies o no de agente. `sdd` y `toolkit` son
+el mismo comando: use el que prefiera.
 
 **Empezar en el chat.** Con la carpeta abierta y los comandos ya generados, el
 primero es `/sdd-enrich` con la idea entre comillas:
@@ -274,9 +263,10 @@ las rutas grabadas ya no existen:
 ## Primera sesión: de la idea al primer build
 
 Una sesión real, sin retoques: proyecto de ejemplo en `/tmp/sesion`, Python
-3.14.4, 2026-11-12. Para no repetir la ruta, el bloque usa
-`TK="python3 /ruta/al/sdd-visual-toolkit/cli/main.py"`. Donde dice «…» la
-salida está recortada; lo demás es literal.
+3.14.4, 2026-11-12. Se hizo antes de instalar el comando, así que para no repetir
+la ruta el bloque usa `TK="python3 /ruta/al/sdd-visual-toolkit/cli/main.py"`;
+con la instalación de arriba sería `TK=sdd`. Donde dice «…» la salida está
+recortada; lo demás es literal.
 
 Los mismos pasos desde el chat son `/sdd-enrich`, `/sdd-specify`,
 `/sdd-clarify`… Aquí van en terminal para que se vea la salida completa de
@@ -528,14 +518,16 @@ cambia ningún comportamiento.
 
 ## Guía rápida: su primer proyecto en 10 pasos
 
+`toolkit` y `sdd` son el mismo comando; aquí se usa `toolkit`.
+
 ```bash
 cd /ruta/a/mi-proyecto   # o una carpeta vacía para greenfield
 
 # 1. Inicializar (crea .specify/; no toca su código)
-python3 /ruta/al/toolkit/cli/main.py init
+sdd init --cliente copilot
 # ...o desde cualquier carpeta, indicando el destino:
-python3 /ruta/al/toolkit/cli/main.py --root /ruta/a/mi-proyecto init
-# A partir de aquí puede abreviar con --root, o trabajar desde dentro.
+sdd --root /ruta/a/mi-proyecto init --cliente copilot
+# A partir de aquí, --root apunta a otra carpeta sin entrar en ella.
 
 # 2. Enriquecer la idea (todo lo inferido nace pendiente de validación)
 toolkit enrich "Quiero un dashboard para gestionar un kiosco"
@@ -749,7 +741,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (474 tests, uno o más por RF)
+tests/      Suite pytest (478 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)

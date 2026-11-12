@@ -13,6 +13,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - El mismo programa se instala con dos nombres: **`sdd`** y `toolkit`. `sdd`
   permite el flujo de spec-kit —instalar una vez y escribir `sdd init` dentro
   de cualquier proyecto— sin renunciar al nombre largo.
+- La extensión usa el `sdd`/`toolkit` **instalado** cuando el proyecto no tiene
+  `cli/main.py`: con `uv tool install` hecho, `SDD: Inicializar proyecto`
+  funciona en una carpeta vacía sin configurar `sddToolkit.cliPath` ni el
+  intérprete. Si no lo encuentra, el aviso dice qué instalar en vez de
+  `spawn python3 ENOENT`.
+- `init` se niega a inicializar el propio repositorio del toolkit y avisa cuando
+  encuentra una copia del repositorio clonada dentro del proyecto.
 - `init` deja un `.gitignore` cuando el proyecto no tiene uno, con
   `.vscode/settings.json` y `.specify/cache/`, que guardan rutas absolutas de la
   máquina. Si ya existe añade solo las reglas que no cubre —una carpeta como
@@ -38,6 +45,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Documentación
 
+- El README deja **una sola** instalación, como spec-kit: `uv tool install` una
+  vez por máquina y `sdd init` por proyecto. Desaparece el camino de «clonar y
+  ejecutar la ruta», que invitaba a clonar el repositorio dentro del proyecto y
+  dejaba una carpeta `sdd-visual-toolkit/` que nadie entendía.
 - El README abre la instalación por «instalar el comando» (`uv tool install`),
   como spec-kit, y deja «usar la ruta» como segunda opción: antes lo primero que
   se veía era `python3 …/cli/main.py`, y `sdd init` fallaba con «Orden no

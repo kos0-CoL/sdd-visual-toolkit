@@ -84,8 +84,9 @@ class TestManifiesto(unittest.TestCase):
         corrida = re.search(r"function correr\(dir, argv.*?\n\}", fuente, re.S)
         self.assertIsNotNone(corrida, "falta la ejecución capturada")
         cuerpo = corrida.group(0)
-        # `spawn` y no `execFile`: es el único que respeta `detached`.
-        self.assertIn("spawn(cfg().python", cuerpo)
+        # `spawn` y no `execFile`: es el único que respeta `detached`. El
+        # comando puede ser el intérprete o el `sdd` instalado.
+        self.assertIn("spawn(resuelta.bin || cfg().python", cuerpo)
         self.assertIn("[...resuelta.args, '--root', dir, ...argv]", cuerpo)
         self.assertIn("codigo !== 0", cuerpo)
         self.assertIn("reportarFallo", cuerpo)
@@ -111,6 +112,30 @@ class TestManifiesto(unittest.TestCase):
         corrida = re.search(r"function correr\(dir, argv.*?\n\}", fuente, re.S)
         self.assertIn("no encuentro la CLI en", corrida.group(0))
         self.assertIn("pip install -e .", corrida.group(0))
+
+    def test_sin_ruta_local_usa_el_sdd_instalado(self):
+        """Con el comando instalado no hace falta `cliPath` ni `python3`: la
+        extensión ejecuta `sdd`, que es lo que instala `uv tool install`."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("const BINARIOS = ['sdd', 'toolkit'];", fuente)
+        self.assertIn("process.env.PATH", fuente)
+        helper = re.search(r"function cli\(dir\).*?\n\}", fuente, re.S)
+        self.assertIsNotNone(helper, "falta la resolución de la CLI")
+        cuerpo = helper.group(0)
+        self.assertIn("binarioGlobal()", cuerpo)
+        self.assertIn("bin, args: []", cuerpo)
+        # El binario instalado gana al módulo de python y al error.
+        self.assertLess(cuerpo.index("binarioGlobal()"),
+                        cuerpo.index("tieneModulo()"))
+        corrida = re.search(r"function correr\(dir, argv.*?\n\}", fuente, re.S)
+        self.assertIn("resuelta.bin || cfg().python", corrida.group(0))
+
+    def test_el_enoent_explica_que_falta(self):
+        """`spawn python3 ENOENT` no dice nada: el aviso nombra el comando."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("error.code === 'ENOENT'", fuente)
+        self.assertIn("no encontré «", fuente)
+        self.assertIn("uv tool install", fuente)
 
     def test_clarify_valida_antes_de_abrir_el_terminal(self):
         """`clarify` es interactivo, pero un SPEC-ID inexistente falla antes:
