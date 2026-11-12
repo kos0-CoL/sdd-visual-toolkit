@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import tomllib
 
 CARPETA = ".vscode"
 AJUSTES = "settings.json"
@@ -60,6 +61,40 @@ def _tareas(python: str, cli: pathlib.Path) -> dict:
             for nombre, comando in COMANDOS
         ],
     }
+
+
+NOMBRE_PAQUETE = "sdd-toolkit"
+
+
+def es_el_toolkit(carpeta) -> bool:
+    """¿Esta carpeta es una copia del toolkit y no un proyecto del usuario?
+
+    Evita el error de clonar el repositorio dentro del proyecto y correr `init`
+    ahí: dejaría `.specify/` y `specs/` dentro del propio toolkit.
+    """
+    carpeta = pathlib.Path(carpeta)
+    pyproject = carpeta / "pyproject.toml"
+    if not (carpeta / "cli" / "main.py").is_file() or not pyproject.is_file():
+        return False
+    try:
+        datos = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError):
+        return False
+    return datos.get("project", {}).get("name") == NOMBRE_PAQUETE
+
+
+def clones_anidados(carpeta) -> list[str]:
+    """Subcarpetas del proyecto que son copias del toolkit.
+
+    Clonar el repositorio dentro del proyecto no hace falta —se instala una vez
+    fuera— y deja una carpeta que nadie sabe para qué está.
+    """
+    carpeta = pathlib.Path(carpeta)
+    try:
+        hijos = sorted(p for p in carpeta.iterdir() if p.is_dir())
+    except OSError:
+        return []
+    return [hijo.name for hijo in hijos if es_el_toolkit(hijo)]
 
 
 def _ya_ignorada(regla: str, lineas: list[str]) -> bool:

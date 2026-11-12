@@ -127,6 +127,17 @@ def cmd_init(args) -> int:
     # Code la pasa siempre); init la ignoraba y creaba .specify/ en la carpeta
     # actual. El path posicional, más específico, sigue mandando si se da.
     destino = Path(args.path or getattr(args, "root", None) or ".").resolve()
+    # Clonar el repositorio y correr `init` ahí deja .specify/ dentro del
+    # toolkit; se corta antes de escribir nada.
+    if ide_entorno.es_el_toolkit(destino):
+        print("⛔ ESTA CARPETA ES EL TOOLKIT, NO UN PROYECTO")
+        print("  `init` dejaría .specify/ y specs/ dentro del repositorio del")
+        print("  toolkit. Abre tu proyecto y ejecuta allí `sdd init --cliente …`.")
+        return 1
+    for anidada in ide_entorno.clones_anidados(destino):
+        print(f"⚠️  {anidada}/ dentro del proyecto es una copia del toolkit")
+        print("   no hace falta tenerla aquí: el comando se instala una vez con")
+        print("   `uv tool install …` o `pipx install …`, fuera del proyecto.")
     superior = _proyecto_superior(destino)
     if superior is not None:
         print(f"⛔ YA HAY UN PROYECTO TOOLKIT POR ENCIMA: {superior}")

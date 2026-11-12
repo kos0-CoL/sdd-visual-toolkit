@@ -101,6 +101,41 @@ class TestInitGitignore(unittest.TestCase):
             "node_modules/\n.vscode/settings.json\n.specify/cache/\n")
 
 
+class TestInitNoSeConfundeConElToolkit(unittest.TestCase):
+    """Clonar el repositorio dentro del proyecto y correr `init` ahí."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.proyecto = Path(tmp.name).resolve() / "proyecto"
+        self.proyecto.mkdir()
+
+    def _marcar_como_toolkit(self, carpeta: Path) -> None:
+        (carpeta / "cli").mkdir(parents=True, exist_ok=True)
+        (carpeta / "cli" / "main.py").write_text("", encoding="utf-8")
+        (carpeta / "pyproject.toml").write_text(
+            '[project]\nname = "sdd-toolkit"\nversion = "0.0.0"\n',
+            encoding="utf-8")
+
+    def test_se_niega_a_inicializar_el_toolkit(self):
+        self._marcar_como_toolkit(self.proyecto)
+        codigo, salida = _despachar(
+            ["--root", str(self.proyecto), "init", "--sin-comandos"])
+        self.assertEqual(codigo, 1, salida)
+        self.assertIn("ESTA CARPETA ES EL TOOLKIT", salida)
+        self.assertFalse((self.proyecto / ".specify").exists())
+
+    def test_avisa_si_hay_una_copia_del_toolkit_dentro(self):
+        copia = self.proyecto / "sdd-visual-toolkit"
+        self._marcar_como_toolkit(copia)
+        codigo, salida = _despachar(
+            ["--root", str(self.proyecto), "init", "--sin-comandos"])
+        self.assertEqual(codigo, 0, salida)
+        self.assertIn("es una copia del toolkit", salida)
+        self.assertTrue((self.proyecto / ".specify").is_dir())
+        self.assertFalse((copia / ".specify").exists())
+
+
 class TestInitConRoot(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
