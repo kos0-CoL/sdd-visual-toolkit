@@ -312,6 +312,13 @@ arnés `Copilot` sí ejecuta; el prompt file solo se puede probar eligiendo
       comando recomendado», `/sdd-status` · «Estado del proyecto: fase,
       progreso y bloqueos») y las catorce se cuentan desplazando la lista.
 
+- [x] `/` con el arnés `Local`: los catorce prompts aparecen con su
+      descripción, pero cada comando sale **dos veces** (prompt file y skill),
+      porque `copilot` escribe las dos formas. *Visto* el 2026-11-12: con solo
+      `.github/prompts/` la lista sale limpia (12 visibles, sin repetidos) y
+      con solo `.github/skills/` el arnés `Local` lista igualmente los catorce
+      —así que la skill basta para los dos arneses—.
+
 - [x] `/sdd-status`: la salida de la CLI llega tal cual, sin resumen.
       *Visto*: 2026-11-12, arnés `Copilot` sobre `/tmp/sdd-manual`: al
       escribir `/sdd-status` el chat leyó la skill (`Read skill sdd-status`),
