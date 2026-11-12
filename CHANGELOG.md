@@ -11,6 +11,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - `init --sin-gitignore`: inicializa el proyecto sin escribir el `.gitignore` ni
   añadirle reglas. El resto de `init` —`.specify/`, `specs/` y los ajustes del
   IDE— queda igual, para quien ya lleva ese archivo como quiere.
+- La vista lateral dice cómo aparecer: con la ventana sin carpeta muestra
+  «Abrir carpeta» (y, si es nueva, «inicializa el proyecto»), y el aviso de la
+  paleta trae el mismo botón en vez de «abra una carpeta primero» a secas.
 
 ## [0.2.0] — 2026-11-12
 

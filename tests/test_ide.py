@@ -137,6 +137,23 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("no encontré «", fuente)
         self.assertIn("uv tool install", fuente)
 
+    def test_sin_carpeta_ofrece_abrirla(self):
+        """El panel lee el estado de una carpeta: sin ella el aviso debe decir
+        cómo abrirla, y la vista vacía trae el enlace para hacerlo."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("'Abrir carpeta…'", fuente)
+        self.assertIn("workbench.action.files.openFolder", fuente)
+        self.assertEqual(fuente.count("sinCarpeta();"), 2)
+        manifiesto = json.loads((IDE / "package.json").read_text(
+            encoding="utf-8"))
+        bienvenidas = {v["view"]: v
+                       for v in manifiesto["contributes"]["viewsWelcome"]}
+        self.assertEqual(set(bienvenidas), {"sddFases", "sddFlujo"})
+        for vista in bienvenidas.values():
+            self.assertIn("workbench.action.files.openFolder",
+                          vista["contents"])
+            self.assertEqual(vista["when"], "workspaceFolderCount == 0")
+
     def test_clarify_valida_antes_de_abrir_el_terminal(self):
         """`clarify` es interactivo, pero un SPEC-ID inexistente falla antes:
         ese ⛔ tiene que notificarse y no abrir el terminal."""
