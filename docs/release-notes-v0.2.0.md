@@ -27,8 +27,19 @@ code --install-extension sdd-visual-toolkit-0.2.0.vsix
   file anterior solo lo veía uno y duplicaba cada comando en el menú `/`.
 - **`init` deja un `.gitignore`** cuando el proyecto no tiene uno, con las dos
   rutas que guardan datos de la máquina (`.vscode/settings.json` y
-  `.specify/cache/`). Si ya existe no lo toca: imprime esas reglas para
-  copiarlas a mano.
+  `.specify/cache/`). Si ya existe **añade solo las reglas que le faltan**
+  —una carpeta como `.vscode/` ya cuenta como cubierta— sin duplicar ni tocar
+  el resto, y dice cuáles agregó. Los comentarios van en su propia línea: en
+  un `.gitignore` un `#` al final forma parte del patrón.
+- **La extensión ejecuta el `sdd` instalado.** En un proyecto sin
+  `cli/main.py` busca `sdd` y `toolkit` en el `PATH` antes de caer a
+  `python -m cli.main`, así que `SDD: Inicializar proyecto` funciona en una
+  carpeta vacía sin configurar `sddToolkit.cliPath` ni el intérprete. Si no
+  encuentra el comando, el aviso lo nombra y dice cómo instalarlo, en vez de
+  `spawn python3 ENOENT`.
+- **`init` no acepta el repositorio del toolkit como proyecto.** Se niega si la
+  carpeta es el propio repositorio y avisa si encuentra una copia clonada
+  dentro del proyecto.
 
 ## Cambiado
 
@@ -36,9 +47,10 @@ code --install-extension sdd-visual-toolkit-0.2.0.vsix
   formas el menú `/` listaba cada comando dos veces. `comandos --regenerar`
   retira los que dejaron versiones anteriores —solo los que llevan la cabecera
   del toolkit— y regenera la skill aunque el proyecto no tuviera ninguna.
-- La instalación del README empieza por «instalar el comando», no por
-  `python3 …/cli/main.py`: `sdd init` fallaba con «Orden no encontrada» si nadie
-  había instalado el paquete antes.
+- **El README instala como spec-kit, con un solo camino.** `uv tool install`
+  una vez por máquina y `sdd init` por proyecto; el camino de «clonar y
+  ejecutar la ruta» desapareció porque invitaba a clonar el repositorio dentro
+  del proyecto y a correr `init` sobre el toolkit.
 
 ## Corregido
 
@@ -57,12 +69,15 @@ code --install-extension sdd-visual-toolkit-0.2.0.vsix
 
 ## Verificación
 
-- `python3 -m pytest tests/ -q` → 472 passed, 81 subtests passed.
+- `python3 -m pytest tests/ -q` → 478 passed, 81 subtests passed.
 - CI en verde en Python 3.11, 3.12, 3.13 y 3.14, más la instalación editable.
 - `python3 scripts/verificar_release.py --previo 0.2.0` en verde antes del tag.
-- `uv tool install` desde el repositorio dejó `sdd` y `toolkit`, y en un
-  proyecto vacío `sdd init --cliente copilot` creó `.specify/`, `specs/`,
-  catorce skills y el `.gitignore`.
+- `uv tool install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git`
+  instaló `sdd-toolkit==0.2.0` y dejó `sdd` y `toolkit`; en un proyecto vacío
+  `sdd init --cliente copilot` creó `.specify/`, `specs/`, catorce skills y el
+  `.gitignore`.
+- La extensión `0.2.0` instalada desde el `.vsix` resuelve el `sdd` del `PATH`:
+  `sdd --version` → `toolkit 0.2.0`.
 - `git check-ignore -v` confirmó las dos reglas del `.gitignore` generado.
 
 ## Enlaces
