@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 TESTS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(TESTS_DIR.parent))
@@ -172,8 +173,9 @@ class TestRender(unittest.TestCase):
         for cliente in agent_commands.CLIENTES:
             with self.subTest(cliente=cliente):
                 archivos = agent_commands.generar(cliente, PYTHON, CLI)
+                sin_argumentos = agent_commands.comandos_sin_argumentos()
                 for comando in agent_commands.COMANDOS:
-                    if comando.nombre in agent_commands.SIN_ARGUMENTOS:
+                    if comando.nombre in sin_argumentos:
                         continue
                     contenido = archivos[
                         agent_commands.CLIENTES[cliente].format(nombre=comando.nombre)]
@@ -189,17 +191,31 @@ class TestRender(unittest.TestCase):
         for cliente in agent_commands.CLIENTES:
             with self.subTest(cliente=cliente):
                 archivos = agent_commands.generar(cliente, PYTHON, CLI)
-                for nombre in agent_commands.SIN_ARGUMENTOS:
+                for nombre in agent_commands.comandos_sin_argumentos():
                     contenido = archivos[
                         agent_commands.CLIENTES[cliente].format(nombre=nombre)]
                     self.assertNotIn("$ARGUMENTS", contenido)
                     self.assertNotIn("pásalo tal cual", contenido)
                     self.assertIn("no lleva argumentos", contenido)
 
-    def test_sin_argumentos_solo_nombra_comandos_del_catalogo(self):
-        nombres = {c.nombre for c in agent_commands.COMANDOS}
-        self.assertTrue(agent_commands.SIN_ARGUMENTOS <= nombres,
-                        "SIN_ARGUMENTOS nombra un comando que ya no existe")
+    def test_sin_argumentos_sale_del_parser_de_la_cli(self):
+        """La lista no se mantiene a mano: se pregunta a argparse."""
+        self.assertEqual(agent_commands.comandos_sin_argumentos(),
+                         frozenset({"sdd", "sdd-status"}))
+        # `cierre` lleva la TASK-ID o PLAN-ID como posicional opcional: un
+        # opcional cuenta, o su skill dejaría de aceptar el identificador.
+        self.assertNotIn("sdd-cierre", agent_commands.comandos_sin_argumentos())
+
+    def test_un_subcomando_desconocido_falla_en_vez_de_tragarse(self):
+        """Si el catálogo y el parser se separan, salta aquí y no en el chat."""
+        roto = agent_commands.Comando("sdd-inventado", "x", "inventado")
+        agent_commands.comandos_sin_argumentos.cache_clear()
+        try:
+            with mock.patch.object(agent_commands, "COMANDOS", (roto,)):
+                with self.assertRaises(ValueError):
+                    agent_commands.comandos_sin_argumentos()
+        finally:
+            agent_commands.comandos_sin_argumentos.cache_clear()
 
     def test_reglas_comunes_en_todos_los_archivos(self):
         for cliente in agent_commands.CLIENTES:
