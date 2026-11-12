@@ -296,9 +296,10 @@ con su descripción, pero el menú `/` del chat no los ofrece. La causa no es
 el formato: los `.prompt.md` son comandos de barra **solo del arnés
 `Local`**, y el chat venía en el arnés `Copilot`, que lista sus propios
 comandos (`/autopilot`, `/clear`, `/fork`…) y las skills. Sin sesión de
-Copilot en el perfil (`Sign In` en la barra) tampoco se pudo ver con
-`Local`. Para probarlo: elegir `Local` en el selector del chat, con sesión
-iniciada, y escribir `/sdd`.
+comandos (`/autopilot`, `/clear`, `/fork`…) y las skills. La cuenta del
+perfil (`kos0-CoL`) llega por el llavero del sistema, así que el chat del
+arnés `Copilot` sí ejecuta; el prompt file solo se puede probar eligiendo
+`Local` en el selector del chat.
 
 - [x] `/sdd` en el arnés `Copilot`: `toolkit comandos --cliente copilot`
       escribe también `.github/skills/<nombre>/SKILL.md` (14), así que al
@@ -310,11 +311,16 @@ iniciada, y escribir `/sdd`.
       filas con su descripción (`/sdd` · «Qué hacer ahora: tablero y próximo
       comando recomendado», `/sdd-status` · «Estado del proyecto: fase,
       progreso y bloqueos») y las catorce se cuentan desplazando la lista.
-      Sin sesión de GitHub no se ejecutó ninguna. Con el arnés `Local` el
-      chat sigue pidiendo sesión y el desplegable no llega a abrirse.
 
-- [ ] Escribir `/sdd` en el chat y comprobar que aparecen los comandos.
-- [ ] `/sdd-status`: la salida de la CLI llega tal cual, sin resumen.
+- [x] `/sdd-status`: la salida de la CLI llega tal cual, sin resumen.
+      *Visto*: 2026-11-12, arnés `Copilot` sobre `/tmp/sdd-manual`: al
+      escribir `/sdd-status` el chat leyó la skill (`Read skill sdd-status`),
+      pidió permiso (`Run in terminal?` con la orden horneada) y al pulsar
+      *Allow in this Session* terminó los cuatro pasos en ~10 s con el
+      tablero completo en el chat: `📊 Tablero «sdd-manual» — SPEC-001
+      [approved]`, `Fase actual: 🧪 Pruebas`, `Progreso: [█···] 1/18`,
+      `Próxima acción: build PLAN-001` y la navegación con sus cuatro
+      opciones. `Estado: se mantiene (solo lectura, nada se ejecutó)`.
 - [ ] `/sdd-plan PLAN-001`: el ID se pasa al final del comando.
 - [ ] `/sdd-plan` sin ID: lo pide antes de ejecutar; no lo inventa.
 - [ ] `/sdd-build PLAN-999`: se detiene y muestra `⛔ plan inexistente:
