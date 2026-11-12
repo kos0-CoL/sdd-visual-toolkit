@@ -6,6 +6,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Añadido
+
+- `init --sin-gitignore`: inicializa el proyecto sin escribir el `.gitignore` ni
+  añadirle reglas. El resto de `init` —`.specify/`, `specs/` y los ajustes del
+  IDE— queda igual, para quien ya lleva ese archivo como quiere.
+
 ## [0.2.0] — 2026-11-12
 
 ### Añadido
