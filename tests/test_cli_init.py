@@ -31,6 +31,34 @@ def _despachar(argv):
     return codigo, salida.getvalue()
 
 
+class TestInitNoTocaGitignore(unittest.TestCase):
+    """Decisión del README: `init` no crea ni edita `.gitignore`."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.proyecto = Path(tmp.name).resolve() / "proyecto"
+        self.proyecto.mkdir()
+
+    def _init(self):
+        codigo, salida = _despachar(
+            ["--root", str(self.proyecto), "init", "--sin-comandos"])
+        self.assertEqual(codigo, 0, salida)
+
+    def test_no_crea_gitignore_si_no_existe(self):
+        self._init()
+        self.assertTrue((self.proyecto / ".specify").is_dir())
+        self.assertFalse((self.proyecto / ".gitignore").exists())
+
+    def test_no_modifica_un_gitignore_existente(self):
+        original = "# mío\nnode_modules/\n"
+        (self.proyecto / ".gitignore").write_text(original, encoding="utf-8")
+        self._init()
+        self.assertEqual(
+            (self.proyecto / ".gitignore").read_text(encoding="utf-8"),
+            original)
+
+
 class TestInitConRoot(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
