@@ -117,7 +117,7 @@ Plantilla con los datos del entorno ya levantado: lo único que falta es escribi
 lo que se vea. Los valores salen de `scripts/preparar-manual.sh --solo-verificar`.
 
 ```
-Entorno y versión:   VS Code 1.142.0 (`sdd-toolkit.sdd-visual-toolkit@0.1.5`)
+Entorno y versión:   VS Code 1.142.0 (`sdd-toolkit.sdd-visual-toolkit@0.1.6`)
 Superficie:          extensión | comandos de barra
 Proyecto:            /tmp/sdd-manual (fixture 0.1.0, 9/9 fases con artefacto)
 Sistema:             Linux (Wayland), `code --version` 1.142.0

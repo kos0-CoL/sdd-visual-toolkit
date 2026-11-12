@@ -6,6 +6,8 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+## [0.1.6] — 2026-11-12
+
 ### Corregido
 
 - Dos filas de `Fases y tareas` ejecutaban un comando que no podía funcionar:
@@ -476,7 +478,8 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.5...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.6
 [0.1.5]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.5
 [0.1.4]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.4
 [0.1.3]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.3
