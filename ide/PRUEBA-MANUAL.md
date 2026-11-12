@@ -300,11 +300,18 @@ Copilot en el perfil (`Sign In` en la barra) tampoco se pudo ver con
 `Local`. Para probarlo: elegir `Local` en el selector del chat, con sesión
 iniciada, y escribir `/sdd`.
 
-- [ ] `/sdd` en el arnés `Copilot`: `toolkit comandos --cliente copilot`
-      escribe además `.github/skills/<nombre>/SKILL.md` (14), así que al
+- [x] `/sdd` en el arnés `Copilot`: `toolkit comandos --cliente copilot`
+      escribe también `.github/skills/<nombre>/SKILL.md` (14), así que al
       tipear `/` aparecen `sdd`, `sdd-status`… como comandos de barra en el
-      arnés que trae el chat por defecto. Comprobar también que la misma `/`
-      sigue listándolos con el arnés `Local` y el prompt file.
+      arnés que trae el chat por defecto.
+      *Visto*: 2026-11-12, VS Code 1.142.0 con `--user-data-dir` aislado y
+      `/tmp/sdd-manual` recién preparado; con el arnés `Copilot` y
+      `Auto / Balance` en el pie del composer, `/sdd` despliega las catorce
+      filas con su descripción (`/sdd` · «Qué hacer ahora: tablero y próximo
+      comando recomendado», `/sdd-status` · «Estado del proyecto: fase,
+      progreso y bloqueos») y las catorce se cuentan desplazando la lista.
+      Sin sesión de GitHub no se ejecutó ninguna. Con el arnés `Local` el
+      chat sigue pidiendo sesión y el desplegable no llega a abrirse.
 
 - [ ] Escribir `/sdd` en el chat y comprobar que aparecen los comandos.
 - [ ] `/sdd-status`: la salida de la CLI llega tal cual, sin resumen.
