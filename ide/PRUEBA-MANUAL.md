@@ -33,8 +33,7 @@ siguiente` y el fallo de `build PLAN-999`—, más el clic derecho en el flujo
 tercera pasada comprobó el progreso y su «Cancelar» —dos casillas más— y una
 cuarta midió el tope `timeoutMinutos`, una quinta el `pin` de dos datos, el
 vacío obligatorio y `Escape`, y una sexta el estado vacío y la CLI rota:
-dieciséis en total. El resto sigue sin marcar: el vacío de los comandos
-opcionales, el «Cancelar» con `pytest` en marcha, las dos de `SDD: Inicializar
+diecisiete en total. El resto sigue sin marcar: el «Cancelar» con `pytest` en marcha, las dos de `SDD: Inicializar
 proyecto` y todas las de comandos de barra (no hay sesión de Copilot en ese
 perfil).
 
@@ -207,8 +206,13 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
       corrida deja `pin PLAN-001 --task TASK-001 (código 0)` en el canal, con
       `Escape` en el segundo no se suma ninguna línea y el vacío tampoco
       ejecuta.
-- [ ] Vacío en un comando opcional: `SDD: Generar / ver SPEC` con vacío corre
+- [x] Vacío en un comando opcional: `SDD: Generar / ver SPEC` con vacío corre
       `specify --list`; `SDD: Mensaje final de fase` con vacío corre `cierre`.
+      *Visto*: los cuadros avisan `SDD: ENR-ID (vacío = listar)` y
+      `SDD: TASK-ID o PLAN-ID (vacío = foto)`; el canal registró
+      `specify --list   (código 0)` y `cierre   (código 0)`, el segundo con
+      «Foto actual sin cerrar una fase concreta: use `cierre TASK-ID` o
+      `cierre PLAN-ID`».
 - [x] Vacío en un comando que exige ID: aparece
       «SDD: falta el identificador pedido.» y no se ejecuta nada.
       *Visto* en el segundo cuadro de `SDD: Spec pinning`: el aviso sale y el
