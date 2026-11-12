@@ -6,8 +6,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+## [0.2.0] — 2026-11-12
+
 ### Añadido
 
+- El mismo programa se instala con dos nombres: **`sdd`** y `toolkit`. `sdd`
+  permite el flujo de spec-kit —instalar una vez y escribir `sdd init` dentro
+  de cualquier proyecto— sin renunciar al nombre largo.
 - `init` deja un `.gitignore` cuando el proyecto no tiene uno, con
   `.vscode/settings.json` y `.specify/cache/`, que guardan rutas absolutas de la
   máquina. Si ya existe no lo toca: muestra esas dos reglas para copiarlas a
@@ -38,6 +43,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   encontrada» si nadie había instalado el paquete.
 - El README explica la instalación en el proyecto en dos pasos —chat
   obligatorio, extensión opcional— antes de la tabla de superficies.
+- El README documenta qué se commitea —`specs/` y `.specify/` sí;
+  `.vscode/settings.json` y `.specify/cache/` no— y añade una primera sesión
+  completa, de la idea al primer build, con la salida real de cada fase.
 - El README separa las tres superficies —chat del IDE, extensión y terminal—
   y dice qué necesita cada una: integrar el chat es escribir
   `.github/skills/` en el proyecto, la extensión es opcional y la terminal
@@ -45,6 +53,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- `clarify --skip CLA-013 --skip CLA-014` sin ningún `--answer` terminaba en
+  `TypeError`: `args.answer` llega en `None` cuando solo se omite. Ahora las
+  omite, las registra en el historial y el fallo del Gate 1 baja.
 - Las skills de `sdd` y `sdd-status` ya no dicen «pasa el texto detrás del
   comando»: `siguiente` y `status` no aceptan argumentos y la CLI respondía
   `unrecognized arguments`. En Claude tampoco llevan `$ARGUMENTS`.
@@ -528,7 +539,8 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.1.6...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.0
 [0.1.6]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.6
 [0.1.5]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.5
 [0.1.4]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.4
