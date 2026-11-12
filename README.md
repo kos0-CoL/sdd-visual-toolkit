@@ -102,7 +102,7 @@ por proyecto:
 
 ```bash
 cd ~/kiosko
-sdd init --cliente copilot
+sdd init --cliente cline   # el tuyo: copilot, claude, kilo, cursor, windsurf, antigravity
 sdd status
 ```
 
@@ -145,10 +145,33 @@ Deja el estado (`.specify/`, `specs/`), los ajustes del IDE
 **14 skills** en `.github/skills/`. Eso es el menú `/sdd…` del chat: archivos en
 el proyecto, nada instalado en el editor.
 
-- Otros agentes: `--cliente claude`, `--cliente cursor`, `--cliente windsurf`,
-  `--cliente antigravity`, `--cliente cline`, `--cliente kilo`. Es repetible:
-  `init --cliente copilot --cliente cline`.
-- ¿El proyecto ya estaba inicializado? Entonces solo `comandos --cliente copilot`.
+**Cómo elegir el agente.** `--cliente` decide qué archivos de comandos se
+escriben. Sin él, `init` **no deja los comandos hechos**:
+
+| Situación | Qué hace `init` |
+|---|---|
+| `init --cliente cline` | escribe los 14 comandos de ese agente y no pregunta nada |
+| `init` en una terminal interactiva | pregunta una vez: un nombre, varios separados por comas, `todos`, o vacío para ninguno |
+| `init` desde un script, un hook o la extensión | no pregunta y no escribe comandos: imprime la orden para lanzarla después |
+| `init --sin-comandos` | ni pregunta ni escribe comandos; el estado y los ajustes del IDE sí |
+
+Valores de `--cliente`: `copilot`, `claude`, `cline`, `kilo`, `cursor`,
+`windsurf`, `antigravity`. Es repetible, para dos agentes a la vez:
+
+```bash
+sdd init --cliente cline --cliente kilo
+```
+
+Si ya inicializaste y cambias de agente, no repitas `init`:
+
+```bash
+sdd comandos --cliente cline
+```
+
+Y `sdd comandos` sin `--cliente` escribe los siete a la vez (7 × 14 archivos);
+solo tiene sentido si estás probando varios agentes. Después, `sdd status` y el
+resto de comandos son idénticos cambies o no de agente. Si no instalaste el
+paquete global, donde dice `sdd` va `python3 /ruta/al/toolkit/cli/main.py`.
 
 **Paso 2 — la extensión (opcional).** Añade la vista `Fases y tareas`, la barra
 de estado y la paleta `SDD: …`:
