@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-455%20passed-green)
+![Tests](https://img.shields.io/badge/tests-456%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -86,6 +86,31 @@ Con eso la CLI ya funciona desde la terminal. Para usarla **dentro de su
 proyecto** y tener los comandos `/sdd…` en el chat, siga «Instalar en tu
 proyecto (2 pasos)».
 
+### Ponerlo global: `sdd` en cualquier carpeta
+
+Sin instalar, cada orden lleva la ruta al `cli/main.py`. Si prefiere el flujo
+de spec-kit —entrar a la carpeta del proyecto y escribir `sdd init`— instale
+el paquete una vez:
+
+```bash
+pipx install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
+# con uv en lugar de pipx: uv tool install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
+```
+
+Deja dos comandos con el mismo programa: **`sdd`** y **`toolkit`**. Después,
+por proyecto:
+
+```bash
+cd ~/kiosko
+sdd init --cliente copilot
+sdd status
+```
+
+`init` escribe en `.vscode/settings.json` la ruta del `cli/main.py` de la copia
+instalada y el intérprete que la tiene instalada, así que no hay nada más que
+apuntar a mano. Verificado instalando desde el repositorio en un entorno
+limpio: `sdd init` deja el proyecto listo y `sdd status` responde.
+
 ### Si va a desarrollarlo
 
 ```bash
@@ -95,7 +120,7 @@ python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\ac
 # 2. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 3. Verificar que todo funciona (455 tests, ~40 s; ~20 s con -n 2)
+# 3. Verificar que todo funciona (456 tests, ~40 s; ~20 s con -n 2)
 python3 -m pytest tests/ -q
 python3 -m pytest tests/ -q -m "not lento"   # sin el arnés de la extensión
 ```
@@ -614,7 +639,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (455 tests, uno o más por RF)
+tests/      Suite pytest (456 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)

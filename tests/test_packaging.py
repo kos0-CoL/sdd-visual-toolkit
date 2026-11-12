@@ -63,6 +63,13 @@ class TestEmpaquetado(unittest.TestCase):
         importado = importlib.import_module(modulo)
         self.assertTrue(callable(getattr(importado, atributo)))
 
+    def test_guion_sdd_es_el_mismo_programa(self):
+        """`sdd` es el nombre corto para usar dentro del proyecto; no puede
+        apuntar a otra función ni quedar como alias huérfano."""
+        guiones = _config()["project"]["scripts"]
+        self.assertEqual(guiones.get("sdd"), "cli.main:main")
+        self.assertEqual(guiones["toolkit"], guiones["sdd"])
+
     def test_patrones_cubren_todos_los_paquetes(self):
         patrones = _find()["include"]
         self.assertTrue(patrones)

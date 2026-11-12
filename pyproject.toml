@@ -12,6 +12,9 @@ license = { text = "MIT" }
 
 [project.scripts]
 toolkit = "cli.main:main"
+# Mismo programa con el nombre corto: `sdd init` dentro de la carpeta del
+# proyecto, como en spec-kit. Los dos apuntan al mismo `main`.
+sdd = "cli.main:main"
 
 [tool.setuptools.packages.find]
 # Paquetes de espacio de nombres (sin __init__.py en la raíz del repo).
