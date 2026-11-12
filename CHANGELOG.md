@@ -23,6 +23,8 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Documentación
 
+- El README explica la instalación en el proyecto en dos pasos —chat
+  obligatorio, extensión opcional— antes de la tabla de superficies.
 - El README separa las tres superficies —chat del IDE, extensión y terminal—
   y dice qué necesita cada una: integrar el chat es escribir
   `.github/skills/` en el proyecto, la extensión es opcional y la terminal
