@@ -16,7 +16,7 @@ después de dejar su registro en `ide/COMPATIBILIDAD.md` según «Cómo se anota
 | Bloque | Qué cubren los tests (no es prueba de editor) | En editor real |
 |---|---|---|
 | VS Code — extensión | `tests/test_ide.py` (manifiesto, paleta, vistas, canal, cancelación, tope, clic derecho) · `tests/test_extension_headless.py` y `tests/js/arnes_extension.js` (el `extension.js` con un stub de `vscode` contra un proyecto real) · `tests/test_cli_init.py::TestInitDejaElIDEListo` (`.vscode/settings.json` y `tasks.json`) · `tests/test_export.py` (contrato del que lee la vista) | sin probar |
-| VS Code — comandos de barra | `tests/test_agent_commands.py` (los catorce, formato por cliente y ruta absoluta en el cuerpo) | sin probar |
+| VS Code — comandos de barra | `tests/test_agent_commands.py` (los catorce, formato por cliente y ruta absoluta en el cuerpo) | parcial (2026-11-12) |
 | Antigravity | lo anterior, más `tests/test_compatibilidad_formato.py` y la matriz de la extensión | sin probar |
 
 La pasada del 2026-11-11 se hizo **sin editor** (arnés headless, 41/41 en
@@ -290,14 +290,22 @@ que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
 
 Con el paso de preparación hecho, `.github/prompts/` tiene 14 archivos.
 
+Pasada del 2026-11-12 en VS Code 1.142.0, perfil aislado con la cuenta
+`kos0-CoL` de GitHub: los 14 archivos se listan en **Chat: Run Prompt...**
+con su descripción, pero el menú `/` del chat no los ofrece —sí las skills
+y los comandos del agente— y al ejecutar uno el chat pide sesión de
+Copilot (`Continue with GitHub`), así que no llegó ninguna salida.
+
 - [ ] Escribir `/sdd` en el chat y comprobar que aparecen los comandos.
 - [ ] `/sdd-status`: la salida de la CLI llega tal cual, sin resumen.
 - [ ] `/sdd-plan PLAN-001`: el ID se pasa al final del comando.
 - [ ] `/sdd-plan` sin ID: lo pide antes de ejecutar; no lo inventa.
 - [ ] `/sdd-build PLAN-999`: se detiene y muestra `⛔ plan inexistente:
       PLAN-999` sin rodearlo de otros comandos ni tocar el estado.
-- [ ] Comprobar que la ruta de la CLI del archivo generado es la absoluta
+- [x] Comprobar que la ruta de la CLI del archivo generado es la absoluta
       del repo, no `cli/main.py` relativa.
+      *Visto* en el prompt de `sdd-status`: la orden es
+      `/usr/bin/python3 "/home/naza/sdd/sdd-visual-toolkit/cli/main.py" --root . status`.
 
 ## Antigravity
 
