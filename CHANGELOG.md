@@ -10,8 +10,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 - `init` deja un `.gitignore` cuando el proyecto no tiene uno, con
   `.vscode/settings.json` y `.specify/cache/`, que guardan rutas absolutas de la
-  máquina. Si ya existe no lo toca y lo dice. Los comentarios del archivo van en
-  su propia línea: en gitignore un `#` al final forma parte del patrón.
+  máquina. Si ya existe no lo toca: muestra esas dos reglas para copiarlas a
+  mano. Los comentarios del archivo van en su propia línea: en gitignore un `#`
+  al final forma parte del patrón.
 - Clientes `cline` y `kilo`: `.clinerules/workflows/<nombre>.md` (Cline
   invoca el nombre del archivo, `/sdd-status.md`) y `.kilo/commands/<nombre>.md`
   (Kilo lo invoca como `/sdd-status`). Ninguno de los dos documentos habla de

@@ -68,6 +68,20 @@ class TestInitGitignore(unittest.TestCase):
             original)
         self.assertIn(".gitignore ya existía: no se tocó", salida)
         self.assertNotIn("✓ .gitignore", salida)
+        # Aunque no lo toque, dice qué reglas faltan para copiarlas a mano.
+        self.assertIn("compruebe que ignora las rutas de esta máquina", salida)
+        for regla in (".vscode/settings.json", ".specify/cache/"):
+            self.assertIn(regla, salida)
+
+    def test_el_aviso_no_escribe_en_el_gitignore_ajeno(self):
+        original = ".specify/cache/\n"
+        destino = self.proyecto / ".gitignore"
+        destino.write_text(original, encoding="utf-8")
+        antes = destino.stat().st_mtime_ns
+        self._init()
+        self.assertEqual(destino.read_text(encoding="utf-8"), original)
+        self.assertEqual(destino.stat().st_mtime_ns, antes,
+                         "init no debe reescribir un .gitignore existente")
 
 
 class TestInitConRoot(unittest.TestCase):

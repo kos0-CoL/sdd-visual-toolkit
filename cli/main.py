@@ -150,6 +150,12 @@ def cmd_init(args) -> int:
         print("✓ .gitignore (ajustes y caché de esta máquina)")
     for nombre in existentes:
         print(f"· {nombre} ya existía: no se tocó")
+    # Si el `.gitignore` es del usuario no se toca, pero tampoco se calla: se
+    # muestran las dos reglas que `init` habría escrito, para copiarlas a mano.
+    if ide_entorno.GITIGNORE in existentes:
+        print("  compruebe que ignora las rutas de esta máquina:")
+        for regla in ide_entorno.REGLAS_IGNORADAS:
+            print(f"    {regla}")
     # Los comandos de barra son lo único que `init` no dejaba listo: sin ellos
     # el agente no ve `/sdd-*`. Se generan aquí si el usuario ya dijo el
     # cliente (o lo eligió en la pregunta); si no, se deja la orden a mano.
