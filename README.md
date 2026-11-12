@@ -78,7 +78,7 @@ Deja dos nombres para el mismo programa: **`sdd`** y **`toolkit`**.
 
 ```console
 $ sdd --version
-toolkit 0.1.6
+toolkit 0.2.0
 ```
 
 Si responde `Orden «sdd» no encontrada`, el directorio donde `uv` deja los
@@ -106,7 +106,7 @@ quedó el código y cada orden lleva la ruta en lugar de `sdd`.
 ```bash
 git clone https://github.com/kos0-CoL/sdd-visual-toolkit.git
 cd sdd-visual-toolkit
-python3 cli/main.py --version          # toolkit 0.1.6
+python3 cli/main.py --version          # toolkit 0.2.0
 ```
 
 - **Linux y macOS**: `python3`. En macOS ya viene de serie; en Linux suele
@@ -203,7 +203,7 @@ de la [última release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/
 y instálelo desde la ruta donde quedó:
 
 ```bash
-code --install-extension /ruta/a/sdd-visual-toolkit-0.1.6.vsix
+code --install-extension /ruta/a/sdd-visual-toolkit-0.2.0.vsix
 ```
 
 y recargar la ventana; en el editor también sirve *Extensiones → … → Instalar
