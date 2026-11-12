@@ -21,6 +21,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
   anteriores —solo los que llevan la cabecera del toolkit— y regenera la skill
   aunque el proyecto no tuviera ninguna.
 
+### Documentación
+
+- El README separa las tres superficies —chat del IDE, extensión y terminal—
+  y dice qué necesita cada una: integrar el chat es escribir
+  `.github/skills/` en el proyecto, la extensión es opcional y la terminal
+  solo hace falta para los flags que ningún botón expone.
+
 ### Corregido
 
 - Las skills generadas piden el dato antes de ejecutar. El cuerpo decía «si

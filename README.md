@@ -88,6 +88,47 @@ python3 cli/main.py --version
 
 ---
 
+## Terminal, chat o extensión: qué necesita cada cosa
+
+El toolkit vive **una sola vez** en su máquina: el proyecto del usuario no
+lleva una copia, solo la ruta en `.vscode/settings.json`. Integrarlo con el
+IDE tampoco es instalar nada en el editor; cada superficie se consigue así:
+
+| Superficie | Qué añade | Cómo se consigue |
+|---|---|---|
+| **Chat del IDE** | los comandos `/sdd-enrich`, `/sdd-plan`, `/sdd-test`… | `init --cliente copilot` escribe `.github/skills/` en el proyecto. Nada que instalar |
+| **Extensión de VS Code** | vista `Fases y tareas`, barra de estado, paleta `SDD: …`, aviso de comandos desactualizados | instalar el `.vsix`. **Opcional** |
+| **Terminal** | todos los subcomandos, incluidos los que no tienen botón | `python3 cli/main.py …` desde la raíz del toolkit |
+
+**Basta el chat** para el flujo completo: `/sdd`, `/sdd-enrich`,
+`/sdd-specify`, `/sdd-clarify`, `/sdd-plan`, `/sdd-plan-gate`, `/sdd-tasks`,
+`/sdd-analyze`, `/sdd-build`, `/sdd-test`, `/sdd-status` y `/sdd-cierre`.
+Cada uno ejecuta su subcomando de la CLI: no hay dos caminos, hay dos puertas
+a lo mismo.
+
+**Basta la extensión** para mirar y lanzar ese flujo desde la vista lateral y
+la paleta, con progreso, «Cancelar», «Ver salida» y el aviso para regenerar
+los comandos cuando mueve el repositorio del toolkit.
+
+La paleta `SDD: …` cubre los subcomandos habituales (`status`, `tablero`,
+`plan`, `tasks`, `test`, `traza`, `diff`…); la terminal hace falta para los
+**flags** que ningún botón expone:
+
+- aceptar un enriquecimiento: `enrich --accept ENR-001`;
+- cerrar una tarea justificando las observaciones:
+  `build PLAN-001 --done TASK-001 --nota "…"`;
+- `--root` para actuar sobre otra carpeta sin entrar en ella;
+- `comandos --regenerar` si movió el repo del toolkit (la vista lateral también
+  lo ofrece desde su aviso, así que aquí es el plan B);
+- el servidor MCP (`python3 mcp/server.py`), CI y scripts.
+
+Y ni siquiera esos son obligatorios a mano: se le piden al chat con el dato en
+la misma frase («ejecuta `enrich --accept ENR-001`») y el agente corre la CLI
+por usted. El atajo `toolkit` solo acorta lo que se escribe en una terminal; no
+cambia ningún comportamiento.
+
+---
+
 ## Guía rápida: su primer proyecto en 10 pasos
 
 ```bash
