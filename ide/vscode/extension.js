@@ -62,6 +62,20 @@ function carpeta() {
   return f ? f.uri.fsPath : null;
 }
 
+/* La vista y la paleta leen el estado del proyecto, así que sin carpeta no hay
+ * nada que mostrar. El aviso ofrece abrirla: «abra una carpeta primero» a
+ * secas no dice desde dónde. */
+function sinCarpeta() {
+  vscode.window.showErrorMessage(
+    'SDD: abra una carpeta primero (Archivo → Abrir carpeta…).',
+    'Abrir carpeta…',
+  ).then((elegir) => {
+    if (elegir) {
+      vscode.commands.executeCommand('workbench.action.files.openFolder');
+    }
+  });
+}
+
 function terminal() {
   let t = vscode.window.terminals.find((x) => x.name === 'SDD Toolkit');
   if (!t) t = vscode.window.createTerminal('SDD Toolkit');
@@ -359,7 +373,7 @@ function validarYTerminal(dir, argv) {
 function ejecutar(cliArgs) {
   const dir = carpeta();
   if (!dir) {
-    vscode.window.showErrorMessage('SDD: abra una carpeta primero.');
+    sinCarpeta();
     return;
   }
   const argv = Array.isArray(cliArgs) ? cliArgs : cliArgs.trim().split(/\s+/);
@@ -508,7 +522,7 @@ async function abrirArtefacto(nodo) {
     return;
   }
   if (!dir) {
-    vscode.window.showErrorMessage('SDD: abra una carpeta primero.');
+    sinCarpeta();
     return;
   }
   const ruta = path.isAbsolute(relativo) ? relativo : path.join(dir, relativo);

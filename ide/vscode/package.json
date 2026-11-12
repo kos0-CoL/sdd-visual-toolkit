@@ -42,6 +42,18 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "sddFases",
+        "when": "workspaceFolderCount == 0",
+        "contents": "Esta vista lee el estado del proyecto, así que necesita una carpeta abierta.\n[Abrir carpeta](command:workbench.action.files.openFolder)\nSi la carpeta es nueva, después [inicializa el proyecto](command:sdd.init)."
+      },
+      {
+        "view": "sddFlujo",
+        "when": "workspaceFolderCount == 0",
+        "contents": "Abra la carpeta del proyecto para ver sus fases.\n[Abrir carpeta](command:workbench.action.files.openFolder)"
+      }
+    ],
     "views": {
       "sdd-explorer": [
         {
