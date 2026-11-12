@@ -58,33 +58,47 @@ extensión de VS Code, cualquier cliente MCP y sus propios hooks
 
 ## Instalación paso a paso
 
-Requisitos: **Python ≥ 3.11**, Git. Cero dependencias en tiempo de ejecución.
+Requisitos: **Python ≥ 3.11**; Git solo para clonar. Cero dependencias en
+tiempo de ejecución.
+
+### Si solo va a usarlo
+
+El toolkit no se instala: se ejecuta desde la carpeta donde quedó el código.
+No hay dependencias ni hace falta entorno virtual.
 
 ```bash
-# 1. Clonar
 git clone https://github.com/kos0-CoL/sdd-visual-toolkit.git
 cd sdd-visual-toolkit
-
-# 2. (Opcional pero recomendado) entorno virtual
-python3 -m venv .venv && source .venv/bin/activate
-
-# 3. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
-python3 -m pip install -r requirements-dev.txt
-
-# 4. Verificar que todo funciona (454 tests, ~40 s; ~20 s con -n 2)
-python3 -m pytest tests/ -q
-
-#    Ciclo rápido: deja fuera el arnés de la extensión (marcado "lento")
-python3 -m pytest tests/ -q -m "not lento"
-
-# 5. Probar la CLI
-python3 cli/main.py --help
-python3 cli/main.py --version
+python3 cli/main.py --version          # toolkit 0.1.6
 ```
 
-> **Sin instalación:** el proyecto se ejecuta desde su raíz con
-> `python3 cli/main.py …`. Si prefiere el comando global `toolkit`,
-> `pip install -e .` lo expone (ver `pyproject.toml`).
+- **Linux y macOS**: `python3`. En macOS ya viene de serie; en Linux suele
+  estar instalado.
+- **Windows**: use `py` o `python` en lugar de `python3` (PowerShell, CMD o
+  Git Bash); el resto de comandos es igual. *No probado en Windows*: ver
+  `ide/COMPATIBILIDAD.md`.
+- **Sin Git**: *Code → Download ZIP* en GitHub y descomprimir; el resultado
+  es el mismo.
+- Opcional: `python3 -m pip install -e .` deja el comando `toolkit`
+  disponible en cualquier carpeta (ver `pyproject.toml`).
+
+Con eso la CLI ya funciona desde la terminal. Para usarla **dentro de su
+proyecto** y tener los comandos `/sdd…` en el chat, siga «Instalar en tu
+proyecto (2 pasos)».
+
+### Si va a desarrollarlo
+
+```bash
+# 1. Entorno virtual (opcional pero recomendado)
+python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+
+# 2. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
+python3 -m pip install -r requirements-dev.txt
+
+# 3. Verificar que todo funciona (454 tests, ~40 s; ~20 s con -n 2)
+python3 -m pytest tests/ -q
+python3 -m pytest tests/ -q -m "not lento"   # sin el arnés de la extensión
+```
 
 ---
 
