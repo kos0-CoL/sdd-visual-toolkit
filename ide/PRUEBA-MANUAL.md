@@ -321,10 +321,17 @@ arnés `Copilot` sí ejecuta; el prompt file solo se puede probar eligiendo
       [approved]`, `Fase actual: 🧪 Pruebas`, `Progreso: [█···] 1/18`,
       `Próxima acción: build PLAN-001` y la navegación con sus cuatro
       opciones. `Estado: se mantiene (solo lectura, nada se ejecutó)`.
-- [ ] `/sdd-plan PLAN-001`: el ID se pasa al final del comando.
+- [x] `/sdd-plan PLAN-001`: el ID se pasa al final del comando.
+      *Visto*: 2026-11-12, arnés `Copilot`: el chat leyó la skill y corrió
+      `plan PLAN-001`; la CLI contestó `⛔ PLAN-001 no pasó por clarify;
+      ejecute \`clarify PLAN-001\` primero` y el chat se detuvo ahí, sin
+      reintentar ni tocar el estado.
 - [ ] `/sdd-plan` sin ID: lo pide antes de ejecutar; no lo inventa.
-- [ ] `/sdd-build PLAN-999`: se detiene y muestra `⛔ plan inexistente:
+- [x] `/sdd-build PLAN-999`: se detiene y muestra `⛔ plan inexistente:
       PLAN-999` sin rodearlo de otros comandos ni tocar el estado.
+      *Visto*: 2026-11-12, arnés `Copilot`: la orden que corrió fue
+      `… --root . build PLAN-999` y la respuesta quedó en `⛔ plan
+      inexistente: PLAN-999`; el tablero siguió en `1/18` y `🧪 Pruebas`.
 - [x] Comprobar que la ruta de la CLI del archivo generado es la absoluta
       del repo, no `cli/main.py` relativa.
       *Visto* en el prompt de `sdd-status`: la orden es
