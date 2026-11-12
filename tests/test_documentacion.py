@@ -46,7 +46,8 @@ _NO_ES_RUTA = re.compile(r"[<>{}*…\s]|::|^[./~]|X\.Y\.Z|\.\.\.")
 
 # Carpetas que el toolkit escribe en el proyecto del usuario, no en este repo.
 GENERADAS = (".claude/skills/", ".cursor/commands/", ".github/prompts/",
-             ".windsurf/workflows/", ".agents/skills/", ".specify/")
+             ".github/skills/", ".windsurf/workflows/", ".agents/skills/",
+             ".specify/")
 # Notas y versiones con hueco: `release-notes-vX.Y.Z.md` es una plantilla.
 PLANTILLAS = ("release-notes-vX.Y.Z.md",)
 

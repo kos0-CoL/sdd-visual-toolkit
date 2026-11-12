@@ -160,6 +160,8 @@ class TestInitGeneraLosComandos(unittest.TestCase):
         self.assertEqual(
             len(list((self.raiz / ".github" / "prompts").glob("*.md"))), 14)
         self.assertEqual(
+            len(list((self.raiz / ".github" / "skills").glob("*/SKILL.md"))), 14)
+        self.assertEqual(
             len(list((self.raiz / ".claude" / "skills").glob("*/SKILL.md"))), 14)
         self.assertFalse((self.raiz / ".cursor").exists())
 
