@@ -156,6 +156,23 @@ class TestCLIClarify(unittest.TestCase):
             cmd_clarify.despachar(self._ns_cla(texto="SPEC-001", gate=True)), 0
         )
 
+    def test_skip_sin_answer_omite_la_pregunta(self):
+        """`--skip` a solas es una orden válida: antes reventaba con
+        TypeError porque `args.answer` llega en None."""
+        self.assertEqual(
+            cmd_clarify.despachar(self._ns_cla(list="SPEC-001")), 0
+        )
+        preguntas, _h = cmd_clarify._preguntas_de(self.root, "SPEC-001")
+        pid = preguntas[0].id
+        self.assertEqual(
+            cmd_clarify.despachar(self._ns_cla(texto="SPEC-001", skip=[pid])), 0
+        )
+        despues, historial = cmd_clarify._preguntas_de(self.root, "SPEC-001")
+        self.assertEqual(
+            next(p for p in despues if p.id == pid).estado, "omitida"
+        )
+        self.assertTrue(any(h["pregunta"] == pid for h in historial))
+
     def test_list_muestra_pendientes_y_historial_registra_cambios(self):
         self.assertEqual(
             cmd_clarify.despachar(self._ns_cla(list="SPEC-001")), 0

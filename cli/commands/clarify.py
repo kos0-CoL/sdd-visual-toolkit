@@ -139,7 +139,7 @@ def cmd_clarify_answer(args) -> int:
         print(f"⛔ {error}")
         return 1
     codigo = 0
-    for pid, respuesta in args.answer:
+    for pid, respuesta in args.answer or []:
         if _aplicar_respuesta(raiz, spec, preguntas, historial, pid, respuesta):
             codigo = 1
     for pid in args.skip or []:
