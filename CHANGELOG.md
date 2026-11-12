@@ -31,6 +31,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Documentación
 
+- El README abre la instalación por «instalar el comando» (`uv tool install`),
+  como spec-kit, y deja «usar la ruta» como segunda opción: antes lo primero que
+  se veía era `python3 …/cli/main.py`, y `sdd init` fallaba con «Orden no
+  encontrada» si nadie había instalado el paquete.
 - El README explica la instalación en el proyecto en dos pasos —chat
   obligatorio, extensión opcional— antes de la tabla de superficies.
 - El README separa las tres superficies —chat del IDE, extensión y terminal—
