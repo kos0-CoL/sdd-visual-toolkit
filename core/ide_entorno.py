@@ -14,6 +14,17 @@ import pathlib
 CARPETA = ".vscode"
 AJUSTES = "settings.json"
 TAREAS = "tasks.json"
+GITIGNORE = ".gitignore"
+
+# Lo que `init` deja escrito con rutas absolutas de esta máquina. Los
+# comentarios van en su propia línea a propósito: en `.gitignore` un `#` al
+# final no comenta nada, se vuelve parte del patrón y la regla deja de
+# aplicarse.
+IGNORAR = (
+    "# generado por `toolkit init`: rutas de esta máquina\n"
+    ".vscode/settings.json\n"
+    ".specify/cache/\n"
+)
 
 # Una tarea del IDE no puede pedir un PLAN-ID ni un TASK-ID, así que se ofrecen
 # solo los comandos que se ejecutan solos y leen el estado actual.
@@ -51,10 +62,11 @@ def _tareas(python: str, cli: pathlib.Path) -> dict:
 
 
 def preparar(raiz, cli, python: str) -> tuple[list[str], list[str]]:
-    """Escribe los ajustes y las tareas del IDE que falten.
+    """Escribe los ajustes y las tareas del IDE que falten, y el `.gitignore`.
 
     Devuelve `(escritos, existentes)` con las rutas relativas a la raíz, para
-    que `init` pueda decir qué hizo sin afirmar de más.
+    que `init` pueda decir qué hizo sin afirmar de más. El `.gitignore` solo
+    se crea cuando no existe: el del usuario no se toca.
     """
     raiz = pathlib.Path(raiz)
     escritos: list[str] = []
@@ -74,4 +86,10 @@ def preparar(raiz, cli, python: str) -> tuple[list[str], list[str]]:
             encoding="utf-8",
         )
         escritos.append(relativo)
+    destino = raiz / GITIGNORE
+    if destino.exists():
+        existentes.append(GITIGNORE)
+    else:
+        destino.write_text(IGNORAR, encoding="utf-8")
+        escritos.append(GITIGNORE)
     return escritos, existentes

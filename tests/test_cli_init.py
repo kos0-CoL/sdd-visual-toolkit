@@ -31,8 +31,8 @@ def _despachar(argv):
     return codigo, salida.getvalue()
 
 
-class TestInitNoTocaGitignore(unittest.TestCase):
-    """Decisión del README: `init` no crea ni edita `.gitignore`."""
+class TestInitGitignore(unittest.TestCase):
+    """`init` crea `.gitignore` si falta y nunca toca uno existente."""
 
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
@@ -44,19 +44,30 @@ class TestInitNoTocaGitignore(unittest.TestCase):
         codigo, salida = _despachar(
             ["--root", str(self.proyecto), "init", "--sin-comandos"])
         self.assertEqual(codigo, 0, salida)
+        return salida
 
-    def test_no_crea_gitignore_si_no_existe(self):
-        self._init()
+    def test_crea_gitignore_con_las_reglas_recomendadas(self):
+        salida = self._init()
         self.assertTrue((self.proyecto / ".specify").is_dir())
-        self.assertFalse((self.proyecto / ".gitignore").exists())
+        lineas = (self.proyecto / ".gitignore").read_text(
+            encoding="utf-8").splitlines()
+        reglas = [l for l in lineas if l and not l.startswith("#")]
+        self.assertEqual(reglas, [".vscode/settings.json", ".specify/cache/"])
+        # En gitignore un `#` solo comenta al principio de la línea: al final
+        # se vuelve parte del patrón y la regla deja de ignorar nada.
+        for regla in reglas:
+            self.assertNotIn("#", regla)
+        self.assertIn("✓ .gitignore", salida)
 
     def test_no_modifica_un_gitignore_existente(self):
         original = "# mío\nnode_modules/\n"
         (self.proyecto / ".gitignore").write_text(original, encoding="utf-8")
-        self._init()
+        salida = self._init()
         self.assertEqual(
             (self.proyecto / ".gitignore").read_text(encoding="utf-8"),
             original)
+        self.assertIn(".gitignore ya existía: no se tocó", salida)
+        self.assertNotIn("✓ .gitignore", salida)
 
 
 class TestInitConRoot(unittest.TestCase):
