@@ -370,7 +370,8 @@ arnés `Copilot` sí ejecuta; el prompt file solo se puede probar eligiendo
 
 No hay nada verificado aquí: la extensión puede no instalarse y las skills
 pueden no aparecer. Cada casilla se anota con lo que pase, incluido «no
-aplica».
+aplica». El orden para probarlas en una máquina con ese editor está en
+[`GUIA-ANTIGRAVITY.md`](GUIA-ANTIGRAVITY.md).
 
 ```bash
 python3 cli/main.py --root /tmp/sdd-manual comandos --cliente antigravity
