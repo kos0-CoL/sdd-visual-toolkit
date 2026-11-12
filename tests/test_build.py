@@ -1,6 +1,8 @@
 """Pruebas de RF-09 — Ejecución de implementación (§11)."""
 
 import argparse
+import contextlib
+import io
 import sys
 import tempfile
 import unittest
@@ -178,6 +180,44 @@ class TestCLIBuild(unittest.TestCase):
         self.assertEqual(cmd_build.despachar(self._b(texto="PLAN-001")), 0)
         _info, tareas = cmd_tasks._cargar_tareas(self.root, "PLAN-001")
         self.assertEqual(tareas[0].estado, "en_curso")
+
+    def _implementar(self, tarea):
+        for a in tarea.archivos:
+            (self.root / a).parent.mkdir(parents=True, exist_ok=True)
+            if a.startswith("tests/") and a.endswith(".py"):
+                (self.root / a).write_text(
+                    "import unittest\n\n\nclass TestHumano(unittest.TestCase):"
+                    "\n    def test_implementado(self):\n"
+                    "        self.assertTrue(True)\n",
+                    encoding="utf-8")
+            else:
+                (self.root / a).write_text("# implementado\n", encoding="utf-8")
+
+    def test_done_sin_plan_id_lo_deduce_de_la_tarea(self):
+        self._pipeline_hasta_tasks()
+        cmd_analyze.despachar(argparse.Namespace(
+            root=str(self.root), texto="PLAN-001", gate=None))
+        cmd_build.despachar(self._b(texto="PLAN-001"))
+        _info, tareas = cmd_tasks._cargar_tareas(self.root, "PLAN-001")
+        self._implementar(tareas[0])
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = cmd_build.despachar(self._b(done=tareas[0].id, nota="sin plan"))
+        self.assertEqual(codigo, 0, salida.getvalue())
+        self.assertIn("completada", salida.getvalue())
+        _i2, despues = cmd_tasks._cargar_tareas(self.root, "PLAN-001")
+        self.assertEqual(despues[0].estado, "completada")
+
+    def test_done_con_tarea_inexistente_lo_dice_claro(self):
+        self._pipeline_hasta_tasks()
+        salida = io.StringIO()
+        with contextlib.redirect_stdout(salida):
+            codigo = cmd_build.despachar(self._b(done="TASK-999"))
+        self.assertEqual(codigo, 1)
+        texto = salida.getvalue()
+        self.assertIn("tarea inexistente: TASK-999", texto)
+        self.assertIn("build PLAN-001 --done TASK-999", texto)
+        self.assertNotIn("None", texto)
 
     def test_done_y_fail_registran_en_diario(self):
         self._pipeline_hasta_tasks()
