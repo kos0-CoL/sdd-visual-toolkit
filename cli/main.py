@@ -148,7 +148,8 @@ def cmd_init(args) -> int:
     # La capa visual (§29): sin esto la extensión no sabe qué `cli/main.py`
     # ejecutar y las tareas SDD no aparecen al abrir la carpeta en el IDE.
     escritos, existentes, añadidas = ide_entorno.preparar(
-        raiz, cli, sys.executable or "python3")
+        raiz, cli, sys.executable or "python3",
+        gitignore=not getattr(args, "sin_gitignore", False))
     print(f"🟢 PROYECTO INICIALIZADO: {raiz}")
     print("Estado:")
     print("✓ .specify/ (memoria con estado e historial, checkpoints)")
@@ -266,6 +267,9 @@ def construir_parser() -> argparse.ArgumentParser:
     p_init.add_argument(
         "--sin-comandos", action="store_true",
         help="no preguntar ni generar comandos de barra")
+    p_init.add_argument(
+        "--sin-gitignore", action="store_true",
+        help="no escribir ni modificar el .gitignore del proyecto")
     p_init.set_defaults(func=cmd_init)
 
     p_req = sub.add_parser("req", help="gestionar requerimientos (RF-01)")

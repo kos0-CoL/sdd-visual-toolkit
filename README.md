@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-478%20passed-green)
+![Tests](https://img.shields.io/badge/tests-480%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -121,7 +121,7 @@ python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\ac
 # 2. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 3. Verificar que todo funciona (478 tests, ~40 s; ~20 s con -n 2)
+# 3. Verificar que todo funciona (480 tests, ~40 s; ~20 s con -n 2)
 python3 -m pytest tests/ -q
 python3 -m pytest tests/ -q -m "not lento"   # sin el arnés de la extensión
 ```
@@ -155,6 +155,7 @@ escriben. Sin él, `init` **no deja los comandos hechos**:
 | `init` en una terminal interactiva | pregunta una vez: un nombre, varios separados por comas, `todos`, o vacío para ninguno |
 | `init` desde un script, un hook o la extensión | no pregunta y no escribe comandos: imprime la orden para lanzarla después |
 | `init --sin-comandos` | ni pregunta ni escribe comandos; el estado y los ajustes del IDE sí |
+| `init --sin-gitignore` | no escribe el `.gitignore` ni añade reglas al que ya existe |
 
 Valores de `--cliente`: `copilot`, `claude`, `cline`, `kilo`, `cursor`,
 `windsurf`, `antigravity`. Es repetible, para dos agentes a la vez:
@@ -241,6 +242,10 @@ Una carpeta ya ignorada cuenta: con `.vscode/` en el archivo no se añade
 `.vscode/settings.json`. Si no falta nada dice `· .gitignore ya existía: no se
 tocó` y el archivo queda byte a byte igual. `tests/test_cli_init.py` cubre los
 cuatro casos, incluido un archivo sin salto de línea al final.
+
+Si el proyecto ya lleva su `.gitignore` y no quiere que se lo toquen, añada
+`--sin-gitignore`: el resto de `init` (`.specify/`, `specs/` y los ajustes del
+IDE) sigue igual y el archivo queda como estaba, o no se crea si no existía.
 
 `.vscode/tasks.json` también lleva el intérprete y el `cli/main.py` absolutos si
 lo escribió `init`. Si el proyecto ya tenía tareas propias, no lo ignore.
@@ -640,7 +645,8 @@ Detalles útiles:
   línea (`· cliente: copilot`); `--cliente copilot` (repetible) lo hace sin
   preguntar y
   `--sin-comandos` lo omite. Sin terminal —extensión, hook o script— no
-  pregunta e imprime la orden para hacerlo después.
+  pregunta e imprime la orden para hacerlo después. `--sin-gitignore` deja el
+  `.gitignore` del proyecto sin escribir ni modificar.
 
   La vista **Flujo SDD** es la capa visual del método: una fila por fase con
   su estado, el artefacto que deja (`specs/SPEC-001.md`,
@@ -741,7 +747,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (478 tests, uno o más por RF)
+tests/      Suite pytest (480 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)

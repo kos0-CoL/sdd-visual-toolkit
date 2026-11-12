@@ -115,13 +115,15 @@ def _ya_ignorada(regla: str, lineas: list[str]) -> bool:
     return False
 
 
-def preparar(raiz, cli, python: str) -> tuple[list[str], list[str], list[str]]:
+def preparar(raiz, cli, python: str, gitignore: bool = True
+             ) -> tuple[list[str], list[str], list[str]]:
     """Escribe los ajustes y las tareas del IDE que falten, y el `.gitignore`.
 
     Devuelve `(escritos, existentes, añadidas)`: rutas relativas a la raíz de lo
     creado y de lo que ya estaba, y las reglas que se añadieron a un
     `.gitignore` que ya existía. Las reglas que ya cubre no se duplican y se
-    respeta el contenido previo tal cual.
+    respeta el contenido previo tal cual. Con `gitignore=False` (lo que pide
+    `init --sin-gitignore`) no lo escribe ni lo toca.
     """
     raiz = pathlib.Path(raiz)
     escritos: list[str] = []
@@ -142,6 +144,8 @@ def preparar(raiz, cli, python: str) -> tuple[list[str], list[str], list[str]]:
             encoding="utf-8",
         )
         escritos.append(relativo)
+    if not gitignore:
+        return escritos, existentes, añadidas
     destino = raiz / GITIGNORE
     if not destino.exists():
         destino.write_text(IGNORAR, encoding="utf-8")

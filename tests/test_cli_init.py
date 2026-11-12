@@ -40,9 +40,9 @@ class TestInitGitignore(unittest.TestCase):
         self.proyecto = Path(tmp.name).resolve() / "proyecto"
         self.proyecto.mkdir()
 
-    def _init(self):
+    def _init(self, *extra):
         codigo, salida = _despachar(
-            ["--root", str(self.proyecto), "init", "--sin-comandos"])
+            ["--root", str(self.proyecto), "init", "--sin-comandos", *extra])
         self.assertEqual(codigo, 0, salida)
         return salida
 
@@ -91,6 +91,23 @@ class TestInitGitignore(unittest.TestCase):
         self.assertNotIn(".vscode/settings.json", contenido,
                          ".vscode/ ya lo ignora")
         self.assertIn(".specify/cache/", contenido)
+
+    def test_sin_gitignore_no_crea_el_archivo(self):
+        """Quien ya lleva su `.gitignore` no quiere que se lo escriban."""
+        salida = self._init("--sin-gitignore")
+        self.assertTrue((self.proyecto / ".specify").is_dir())
+        self.assertTrue((self.proyecto / ".vscode" / "settings.json").is_file())
+        self.assertFalse((self.proyecto / ".gitignore").exists())
+        self.assertNotIn(".gitignore", salida)
+
+    def test_sin_gitignore_no_toca_el_que_ya_existe(self):
+        original = "node_modules/\n"
+        destino = self.proyecto / ".gitignore"
+        destino.write_text(original, encoding="utf-8")
+        antes = destino.stat().st_mtime_ns
+        self._init("--sin-gitignore")
+        self.assertEqual(destino.read_text(encoding="utf-8"), original)
+        self.assertEqual(destino.stat().st_mtime_ns, antes)
 
     def test_respeta_un_archivo_sin_salto_final(self):
         (self.proyecto / ".gitignore").write_text("node_modules/",
