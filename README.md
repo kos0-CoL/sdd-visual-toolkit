@@ -58,14 +58,50 @@ extensión de VS Code, cualquier cliente MCP y sus propios hooks
 
 ## Instalación paso a paso
 
-Requisitos: **Python ≥ 3.11** y nada más: cero dependencias en tiempo de
-ejecución. Con el ZIP o el clon funciona igual; Git solo hace falta para
-instalar el paquete desde el repositorio («Ponerlo global»).
+Hay dos cosas que se llaman «instalar» y conviene no mezclar: **el comando**
+(una vez por máquina) y **el proyecto** (una vez por proyecto, con `sdd init`).
+Lo primero es lo que permite escribir `sdd init` dentro de cualquier carpeta,
+como `specify` en spec-kit. Requisitos: **Python ≥ 3.11** y nada más; cero
+dependencias en tiempo de ejecución.
 
-### Si solo va a usarlo
+### 1. Instalar el comando (una vez por máquina)
 
-El toolkit no se instala: se ejecuta desde la carpeta donde quedó el código.
-No hay dependencias ni hace falta entorno virtual.
+Hace falta `uv` o `pipx`, y **Git**, porque se instala desde el repositorio:
+
+```bash
+uv tool install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
+# con pipx: pipx install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
+# sin ninguno de los dos: python3 -m pip install . dentro de un clon
+```
+
+Deja dos nombres para el mismo programa: **`sdd`** y **`toolkit`**.
+
+```console
+$ sdd --version
+toolkit 0.1.6
+```
+
+Si responde `Orden «sdd» no encontrada`, el directorio donde `uv` deja los
+binarios (`~/.local/bin`) no está en el `PATH`: añádalo o llame al binario por
+su ruta (`~/.local/bin/sdd`).
+
+Después, por proyecto:
+
+```bash
+cd ~/kiosco
+sdd init --cliente copilot   # el tuyo: claude, cline, kilo, cursor, windsurf, antigravity
+sdd status
+```
+
+`init` escribe en `.vscode/settings.json` la ruta del `cli/main.py` instalado y
+el intérprete que lo tiene, así que no hay nada más que apuntar a mano.
+Verificado instalando desde el repositorio en un entorno limpio: `sdd init`
+deja el proyecto listo y `sdd status` responde.
+
+### 2. Sin instalarlo: usar la ruta
+
+El toolkit también funciona sin instalar nada: se ejecuta desde la carpeta donde
+quedó el código y cada orden lleva la ruta en lugar de `sdd`.
 
 ```bash
 git clone https://github.com/kos0-CoL/sdd-visual-toolkit.git
@@ -80,41 +116,12 @@ python3 cli/main.py --version          # toolkit 0.1.6
   `ide/COMPATIBILIDAD.md`.
 - **Sin Git**: *Code → Download ZIP* en GitHub y descomprimir; el resultado
   es el mismo.
-- Si prefiere escribir `sdd` o `toolkit` en vez de la ruta, vea «Ponerlo global»:
-  hay una sola receta y su alternativa sin `pipx`.
 
-Con eso la CLI ya funciona desde la terminal. Para usarla **dentro de su
-proyecto** y tener los comandos `/sdd…` en el chat, siga «Instalar en tu
-proyecto (2 pasos)».
+Con eso la CLI ya funciona desde la terminal, y `python3 /ruta/al/toolkit/cli/main.py
+init` sustituye a `sdd init`. Para tener los comandos `/sdd…` en el chat, siga
+«Instalar en tu proyecto (2 pasos)».
 
-### Ponerlo global: `sdd` en cualquier carpeta
-
-Sin instalar, cada orden lleva la ruta al `cli/main.py`. Si prefiere el flujo
-de spec-kit —entrar a la carpeta del proyecto y escribir `sdd init`— instale
-el paquete una vez. Hace falta `pipx` (o `uv`) y **Git**, porque instala desde
-el repositorio:
-
-```bash
-pipx install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
-# con uv en lugar de pipx: uv tool install git+https://github.com/kos0-CoL/sdd-visual-toolkit.git
-# sin pipx ni uv: python3 -m pip install . dentro del clon deja los mismos dos comandos
-```
-
-Deja dos comandos con el mismo programa: **`sdd`** y **`toolkit`**. Después,
-por proyecto:
-
-```bash
-cd ~/kiosko
-sdd init --cliente cline   # el tuyo: copilot, claude, kilo, cursor, windsurf, antigravity
-sdd status
-```
-
-`init` escribe en `.vscode/settings.json` la ruta del `cli/main.py` de la copia
-instalada y el intérprete que la tiene instalada, así que no hay nada más que
-apuntar a mano. Verificado instalando desde el repositorio en un entorno
-limpio: `sdd init` deja el proyecto listo y `sdd status` responde.
-
-### Si va a desarrollarlo
+### 3. Si va a desarrollarlo
 
 ```bash
 # 1. Entorno virtual (opcional pero recomendado)
@@ -132,15 +139,17 @@ python3 -m pytest tests/ -q -m "not lento"   # sin el arnés de la extensión
 
 ## Instalar en tu proyecto (2 pasos)
 
-Sirve para cualquier proyecto, nuevo o existente. No hace falta `pip install` ni
-copiar el toolkit dentro del proyecto: se queda donde está y el proyecto guarda
-su ruta.
+Sirve para cualquier proyecto, nuevo o existente. El toolkit no se copia dentro
+del proyecto: se instala una vez y el proyecto solo guarda su ruta (ver «1.
+Instalar el comando»).
 
 **Paso 1 — el chat (obligatorio).** Desde la carpeta del proyecto:
 
 ```bash
 cd ~/mi-proyecto
-python3 /ruta/al/toolkit/cli/main.py init --cliente copilot
+sdd init --cliente copilot
+# sin instalar el comando:
+# python3 /ruta/al/toolkit/cli/main.py init --cliente copilot
 ```
 
 Deja el estado (`.specify/`, `specs/`), los ajustes del IDE
