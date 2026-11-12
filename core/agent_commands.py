@@ -1,8 +1,8 @@
 """Comandos de barra para agentes de código (§31, §30).
 
 Un agente solo descubre lo que está en su workspace: `.claude/skills/`,
-`.cursor/commands/`, `.github/skills/`, `.windsurf/workflows/` y
-`.agents/skills/`. Este módulo guarda el catálogo una
+`.cursor/commands/`, `.github/skills/`, `.windsurf/workflows/`,
+`.agents/skills/`, `.clinerules/workflows/` y `.kilo/commands/`. Este módulo guarda el catálogo una
 vez y lo escribe en el formato de cada cliente, con la ruta absoluta de la CLI
 dentro del
 proyecto del usuario —la extensión del IDE hace lo mismo y por eso también
@@ -100,12 +100,18 @@ CLIENTES: dict[str, str] = {
     "copilot": ".github/skills/{nombre}/SKILL.md",
     "windsurf": ".windsurf/workflows/{nombre}.md",
     "antigravity": ".agents/skills/{nombre}/SKILL.md",
+    # Cline: el nombre del archivo es el comando y se invoca como
+    # `/sdd-status.md`; los workflows no llevan frontmatter.
+    "cline": ".clinerules/workflows/{nombre}.md",
+    # Kilo Code: comandos de barra en `.kilo/commands/`, invocados `/sdd-status`.
+    # (Los `.kilocode/workflows/` antiguos se migran solos a esta carpeta.)
+    "kilo": ".kilo/commands/{nombre}.md",
 }
 
 
 # Clientes cuyo formato no lleva frontmatter (Cursor lo ignora y el cuerpo
 # solo es lo documentado).
-SIN_FRONTMATTER = {"cursor"}
+SIN_FRONTMATTER = {"cursor", "cline", "kilo"}
 
 # Clientes que sustituyen `$ARGUMENTS` por lo que el usuario escribe detrás
 # del comando. En el resto, el cuerpo pide los datos si faltan.

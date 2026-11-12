@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-453%20passed-green)
+![Tests](https://img.shields.io/badge/tests-454%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -71,7 +71,7 @@ python3 -m venv .venv && source .venv/bin/activate
 # 3. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 4. Verificar que todo funciona (453 tests, ~40 s; ~20 s con -n 2)
+# 4. Verificar que todo funciona (454 tests, ~40 s; ~20 s con -n 2)
 python3 -m pytest tests/ -q
 
 #    Ciclo rápido: deja fuera el arnés de la extensión (marcado "lento")
@@ -106,8 +106,9 @@ Deja el estado (`.specify/`, `specs/`), los ajustes del IDE
 **14 skills** en `.github/skills/`. Eso es el menú `/sdd…` del chat: archivos en
 el proyecto, nada instalado en el editor.
 
-- Otros IDEs: `--cliente claude`, `--cliente cursor`, `--cliente windsurf`,
-  `--cliente antigravity`. Es repetible: `init --cliente copilot --cliente cursor`.
+- Otros agentes: `--cliente claude`, `--cliente cursor`, `--cliente windsurf`,
+  `--cliente antigravity`, `--cliente cline`, `--cliente kilo`. Es repetible:
+  `init --cliente copilot --cliente cline`.
 - ¿El proyecto ya estaba inicializado? Entonces solo `comandos --cliente copilot`.
 
 **Paso 2 — la extensión (opcional).** Añade la vista `Fases y tareas`, la barra
@@ -338,7 +339,7 @@ El agente solo ve lo que está en su workspace, así que el toolkit escribe los
 comandos en la carpeta de cada cliente:
 
 ```bash
-toolkit comandos                     # los cinco clientes
+toolkit comandos                     # todos los clientes
 toolkit comandos --cliente cursor    # repetible; solo los que use
 toolkit comandos --verificar         # ¿siguen existiendo las rutas grabadas?
 toolkit comandos --regenerar         # reescribir con la ruta actual y limpiar
@@ -364,6 +365,8 @@ la skill antes de retirarlos.
 | Copilot (VS Code) | `.github/skills/<nombre>/SKILL.md` (arneses `Copilot` y `Local`) | `/sdd-status` |
 | Windsurf | `.windsurf/workflows/<nombre>.md` | `/sdd-status` |
 | Antigravity | `.agents/skills/<nombre>/SKILL.md` | `/sdd-status` |
+| Cline | `.clinerules/workflows/<nombre>.md` | `/sdd-status.md` |
+| Kilo Code | `.kilo/commands/<nombre>.md` | `/sdd-status` |
 
 Son catorce, uno por paso del flujo. Cada uno ejecuta un subcomando de la
 CLI con `--root .`; el catálogo vive en `core/agent_commands.py` y es el que
@@ -411,7 +414,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (453 tests, uno o más por RF)
+tests/      Suite pytest (454 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)

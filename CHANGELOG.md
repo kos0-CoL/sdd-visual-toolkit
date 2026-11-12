@@ -8,6 +8,10 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+- Clientes `cline` y `kilo`: `.clinerules/workflows/<nombre>.md` (Cline
+  invoca el nombre del archivo, `/sdd-status.md`) y `.kilo/commands/<nombre>.md`
+  (Kilo lo invoca como `/sdd-status`). Ninguno de los dos documentos habla de
+  frontmatter, así que el archivo empieza por el cuerpo.
 - El cliente `copilot` escribe `.github/skills/<nombre>/SKILL.md`. En VS Code
   1.142 una skill la listan los dos arneses del chat: `Copilot`, el que trae
   por defecto, y `Local`, en retirada para febrero de 2027.
