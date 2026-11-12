@@ -13,6 +13,7 @@ import fnmatch
 import importlib
 import io
 import re
+import tempfile
 import tomllib
 import unittest
 from pathlib import Path
@@ -31,17 +32,26 @@ def _find() -> dict:
     return _config()["tool"]["setuptools"]["packages"]["find"]
 
 
-def _paquetes_reales() -> set[str]:
+# Carpetas que el empaquetado deja dentro del clon: `pip install .` y
+# `python -m build` crean build/ y dist/, y setuptools deja *.egg-info/.
+GENERADAS = frozenset({"build", "dist"})
+
+
+def _paquetes_reales(raiz: Path = RAIZ) -> set[str]:
     """Carpetas de la raíz con módulos Python, excluyendo lo que no se instala.
 
     `tests`, `docs`, `ide` y `scripts` son suite, documentación y herramientas
     de mantenimiento: se ejecutan desde el árbol, no forman parte del paquete.
+    Las carpetas generadas al empaquetar tampoco: incluirlas hacía fallar esta
+    prueba justo después de un `pip install .` en el propio clon.
     """
     encontrados = set()
-    for carpeta in sorted(RAIZ.iterdir()):
+    for carpeta in sorted(raiz.iterdir()):
         if not carpeta.is_dir() or carpeta.name.startswith("."):
             continue
-        if carpeta.name in {"tests", "docs", "ide", "scripts"}:
+        if carpeta.name in {"tests", "docs", "ide", "scripts"} | GENERADAS:
+            continue
+        if carpeta.name.endswith((".egg-info", ".eggs")):
             continue
         if any(carpeta.rglob("*.py")):
             encontrados.add(carpeta.name)
@@ -76,6 +86,17 @@ class TestEmpaquetado(unittest.TestCase):
         for paquete in _paquetes_reales():
             self.assertTrue(any(fnmatch.fnmatch(paquete, p) for p in patrones),
                             f"el paquete {paquete!r} no está incluido en {patrones}")
+
+    def test_ignora_carpetas_generadas_al_empaquetar(self):
+        """`pip install .` deja build/ y *.egg-info/ dentro del clon; no son
+        paquetes del proyecto y no deben romper esta prueba."""
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            for nombre in ("build/lib/cli", "dist/cli",
+                           "sdd_toolkit.egg-info", "core", "docs"):
+                (raiz / nombre).mkdir(parents=True)
+                (raiz / nombre / "x.py").write_text("", encoding="utf-8")
+            self.assertEqual(_paquetes_reales(raiz), {"core"})
 
     def test_namespaces_habilitado(self):
         find = _find()
