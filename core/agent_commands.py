@@ -14,8 +14,10 @@ la verdad: el agente no reemplaza el estado por un resumen de memoria.
 
 from __future__ import annotations
 
+import argparse
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 
@@ -117,17 +119,54 @@ SIN_FRONTMATTER = {"cursor", "cline", "kilo"}
 # del comando. En el resto, el cuerpo pide los datos si faltan.
 CON_ARGUMENTOS = {"claude"}
 
-# Comandos que no aceptan nada detrás: `siguiente` y `status` no tienen
-# posicionales y, con texto, argparse responde `unrecognized arguments`. Su
-# skill no puede invitar a escribir nada —ni llevar `$ARGUMENTS` en Claude—, o
-# el agente convierte «/sdd quiero un kiosco» en una orden inválida.
-SIN_ARGUMENTOS = frozenset({"sdd", "sdd-status"})
+def _mapa_de_subcomandos(parser: argparse.ArgumentParser) -> dict:
+    """Subcomandos del parser de la CLI por nombre."""
+    for accion in parser._actions:
+        if isinstance(accion, argparse._SubParsersAction):
+            return accion._name_parser_map
+    raise ValueError("la CLI no tiene subcomandos")
+
+
+def _posicionales(parser: argparse.ArgumentParser) -> list[str]:
+    return [accion.dest for accion in parser._actions
+            if not accion.option_strings
+            and not isinstance(accion, argparse._SubParsersAction)]
+
+
+@lru_cache(maxsize=1)
+def comandos_sin_argumentos() -> frozenset[str]:
+    """Nombres del catálogo cuyo subcomando no acepta nada detrás.
+
+    Se lee del parser real de la CLI, no de una lista escrita a mano: si
+    `status` gana mañana un filtro posicional, su skill deja de decir que no
+    lleva argumentos. Con texto, argparse responde `unrecognized arguments`, y
+    el agente convertiría «/sdd quiero un kiosco» en una orden inválida.
+
+    Un posicional opcional cuenta como argumento: `cierre` acepta un TASK-ID o
+    PLAN-ID detrás, así que conserva la regla de pasarlo.
+
+    El import es perezoso porque `cli.main` importa `cli.commands`, que importa
+    este módulo; arriba del archivo sería circular.
+    """
+    from cli.main import construir_parser
+
+    mapa = _mapa_de_subcomandos(construir_parser())
+    fuera = set()
+    for comando in COMANDOS:
+        sub = mapa.get(comando.argv.split()[0])
+        if sub is None:
+            raise ValueError(
+                f"{comando.nombre!r} ejecuta {comando.argv!r}, que la CLI no "
+                "conoce; revisa el catálogo o el parser")
+        if not _posicionales(sub):
+            fuera.add(comando.nombre)
+    return frozenset(fuera)
 
 _CABECERA = "<!-- generado por `toolkit comandos`; se sobrescribe -->"
 
 
 def _cuerpo(comando: Comando, python: str, cli: Path, cliente: str) -> str:
-    con_argumentos = comando.nombre not in SIN_ARGUMENTOS
+    con_argumentos = comando.nombre not in comandos_sin_argumentos()
     orden = f'{python} "{cli}" --root . {comando.argv}'
     if cliente in CON_ARGUMENTOS and con_argumentos:
         orden = f"{orden} $ARGUMENTS"
