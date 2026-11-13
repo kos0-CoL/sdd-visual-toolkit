@@ -318,7 +318,10 @@ class RegistroEnriquecimientos:
         self._items: list[Enriquecimiento] = list(items or [])
 
     def siguiente_id(self) -> str:
-        return f"ENR-{len(self._items) + 1:03d}"
+        """El mayor de los existentes + 1: borrar uno del medio no repite IDs."""
+        numeros = [int(enr.id.split("-")[-1]) for enr in self._items
+                   if enr.id.split("-")[-1].isdigit()]
+        return f"ENR-{max(numeros, default=0) + 1:03d}"
 
     def agregar(self, texto: str) -> Enriquecimiento:
         enr = analizar(texto, self.siguiente_id())
@@ -333,6 +336,12 @@ class RegistroEnriquecimientos:
 
     def listar(self) -> list[Enriquecimiento]:
         return list(self._items)
+
+    def quitar(self, enr_id: str) -> Enriquecimiento:
+        """Saca un enriquecimiento que quedó sin elementos al podarlo."""
+        enr = self.obtener(enr_id)
+        self._items = [e for e in self._items if e.id != enr_id]
+        return enr
 
     def to_list(self) -> list[dict]:
         return [e.to_dict() for e in self._items]

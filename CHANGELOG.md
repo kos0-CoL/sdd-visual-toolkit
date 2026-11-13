@@ -11,6 +11,9 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - Las píldoras del panel que traen un hueco (`enrich «idea»`) ya no mandan el
   hueco literal como argumento: piden el dato con el mismo cuadro de texto que
   la paleta y después ejecutan la orden completa, con los flags que traía.
+- Podar el último elemento de un enriquecimiento dejaba un ENR vacío para
+  siempre en `enrich --list`: ahora se elimina con su último elemento, y el
+  siguiente número sale del mayor existente, así que no repite un ID ya usado.
 
 ## [0.2.1] — 2026-11-12
 
