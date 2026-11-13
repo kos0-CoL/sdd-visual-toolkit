@@ -8,6 +8,7 @@ const vscode = require('vscode');
 const { execFile, spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const chat = require('./chat');
 
 /* id de paleta, título, CLI y pregunta por el argumento cuando lo exige. */
 const COMMANDS = [
@@ -459,6 +460,33 @@ async function pedirYCorrer(entrada, extras = []) {
   ejecutar(argv.concat(extras));
 }
 
+/* Ejecución capturada para el chat: el mismo binario que la paleta, sin canal
+ * ni notificaciones, porque la respuesta se dibuja como burbuja en el panel. */
+function correrParaChat(dir, argv) {
+  return new Promise((resolve) => {
+    const resuelta = cli(dir);
+    if (!resuelta.existe) {
+      resolve({ codigo: 127, salida:
+        `No encuentro la CLI en ${resuelta.ruta}. Ajuste «sddToolkit.cliPath» ` +
+        'o instale el comando con «uv tool install …».' });
+      return;
+    }
+    execFile(resuelta.bin || cfg().python,
+      [...resuelta.args, '--root', dir, ...argv],
+      { cwd: dir, timeout: cfg().timeoutMinutos * 60000,
+        maxBuffer: 8 * 1024 * 1024 },
+      (error, stdout, stderr) => {
+        const salida = [stdout, stderr].filter(Boolean).join('\n');
+        const codigo = error
+          ? (typeof error.code === 'number' ? error.code : 1) : 0;
+        resolve({
+          codigo,
+          salida: salida || (error ? String(error.message || error) : ''),
+        });
+      });
+  });
+}
+
 /* Foto del estado para las vistas (§32): una lectura de `export` por refresco. */
 function cargarDoc() {
   return new Promise((resolve) => {
@@ -697,7 +725,22 @@ function activate(contexto) {
   });
   /* Ejecutor genérico para los nodos clicables de la vista lateral. */
   contexto.subscriptions.push(
-    vscode.commands.registerCommand('sdd.ejecutar', (cliArgs) => ejecutarOrden(cliArgs))
+    vscode.commands.registerCommand('sdd.ejecutar', (cliArgs) => ejecutarOrden(cliArgs)),
+    /* Chat propio: VS Code no permite dibujar botones dentro de Copilot Chat
+     * (los chat participants están deprecados), así que el flujo guiado vive
+     * en un panel con píldoras clickeables. */
+    vscode.commands.registerCommand('sdd.chat', () => {
+      const dir = carpeta();
+      if (!dir) {
+        sinCarpeta();
+        return;
+      }
+      chat.abrir({
+        ejecutar: (argv) => correrParaChat(carpeta() || dir, argv),
+        exportar: () => cargarDoc(),
+        proyecto: dir,
+      });
+    })
   );
   /* Menú contextual del panel de flujo. */
   contexto.subscriptions.push(

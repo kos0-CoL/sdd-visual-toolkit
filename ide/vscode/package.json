@@ -67,6 +67,7 @@
       ]
     },
     "commands": [
+      {"command": "sdd.chat", "title": "SDD: Abrir chat", "icon": "$(comment-discussion)"},
       {"command": "sdd.init", "title": "SDD: Inicializar proyecto"},
       {"command": "sdd.status", "title": "SDD: Estado + siguiente"},
       {"command": "sdd.tablero", "title": "SDD: Ver tablero"},
@@ -101,6 +102,10 @@
       {"command": "sdd.abrirArtefacto", "title": "SDD: Abrir artefacto de la fase", "icon": "$(file-symlink-file)"}
     ],
     "menus": {
+      "view/title": [
+        {"command": "sdd.chat", "when": "view == sddFases", "group": "navigation@1"},
+        {"command": "sdd.chat", "when": "view == sddFlujo", "group": "navigation@1"}
+      ],
       "view/item/context": [
         {"command": "sdd.abrirArtefacto", "when": "view == sddFlujo && viewItem == sddFaseConArtefacto", "group": "inline@1"},
         {"command": "sdd.abrirArtefacto", "when": "view == sddFlujo && viewItem == sddFaseConArtefacto", "group": "navigation@1"},

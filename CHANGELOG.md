@@ -6,6 +6,13 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Añadido
+
+- `SDD: Abrir chat`: panel de chat propio, con burbujas y **píldoras
+  clickeables** que ejecutan el paso siguiente. Escribir la idea la enriquece;
+  las píldoras que necesitan un dato lo piden antes de correr. El estado sale de
+  `export`, igual que las vistas laterales.
+
 ### Corregido
 
 - Las píldoras del panel que traen un hueco (`enrich «idea»`) ya no mandan el

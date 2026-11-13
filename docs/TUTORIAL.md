@@ -122,7 +122,17 @@ disparar un paso suelto, no para conversar.
 Si una píldora dice `enrich «idea»`, el panel te pide la idea en un cuadro de
 texto antes de ejecutar: nunca manda «idea» literal.
 
-**Recomendado:** chat para el flujo completo y el código; panel para ver dónde
+**C. Chat SDD, dentro de VS Code.** `Ctrl+Shift+P → SDD: Abrir chat`: un panel
+con burbujas y **píldoras clickeables**. Escribís la idea, el panel la ejecuta y
+contesta con la salida real; cada paso siguiente aparece como botón. Si una
+píldora necesita un dato (`enrich «idea»`), el panel te lo pide y completa la
+orden. No escribe código: para eso seguís con el agente (camino A).
+
+Por qué un panel y no dentro de Copilot: VS Code **deprecó los chat
+participants** para el arnés Copilot, así que ninguna extensión puede dibujar
+botones dentro de ese chat.
+
+**Recomendado:** chat del agente para el flujo completo y el código; panel para ver dónde
 estás y para los comandos que no necesitan datos (`/sdd`, `/sdd-status`).
 
 ---
