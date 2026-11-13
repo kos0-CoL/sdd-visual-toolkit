@@ -45,6 +45,7 @@ const COMMANDS = [
   { id: 'sdd.restricciones', cli: 'restricciones', prompt: 'SPEC-ID o TASK-ID (vacío = activa)', opcional: true },
   { id: 'sdd.diff', cli: 'diff', prompt: 'TASK-ID' },
   { id: 'sdd.export', cli: 'export' },
+  { id: 'sdd.update', cli: 'update' },
 ];
 
 function cfg() {
@@ -867,6 +868,7 @@ function activate(contexto) {
   contexto.subscriptions.push(
     vscode.window.registerTreeDataProvider('sddFases', vista),
     vscode.window.registerTreeDataProvider('sddFlujo', flujo),
+    vscode.commands.registerCommand('sdd.update', actualizarToolkit),
     vscode.commands.registerCommand('sdd.actualizar', actualizarToolkit)
   );
   /* Panel de estado: fase actual + siguiente recomendado. */
@@ -895,6 +897,29 @@ function activate(contexto) {
   refrescarBarra();
   const intervalo = setInterval(refrescarBarra, 30000);
   contexto.subscriptions.push({ dispose: () => clearInterval(intervalo) });
+
+  /* Notificación proactiva: al activar la extensión se consulta PyPI una vez.
+   * Si hay versión nueva, se avisa al usuario con una notificación discreta
+   * que ofrece actualizar. Nunca se actualiza solo: el usuario decide.
+   * Se ejecuta tras un pequeño retraso para no bloquear el arranque. */
+  setTimeout(() => {
+    const dir = carpeta();
+    if (!dir) return;
+    correrParaChat(dir, ['update', '--verificar']).then((r) => {
+      const salida = r.salida || '';
+      const match = salida.match(/Hay una versión nueva disponible:\s*(\S+)/);
+      const instalada = salida.match(/Versión instalada:\s*(\S+)/);
+      const disponible = match ? match[1] : null;
+      const verInstalada = instalada ? instalada[1] : 'desconocida';
+      if (!disponible) return;
+      vscode.window.showInformationMessage(
+        `SDD: hay una versión nueva del toolkit (${disponible}, instalada ${verInstalada}).`,
+        'Actualizar ahora'
+      ).then((elegido) => {
+        if (elegido === 'Actualizar ahora') actualizarToolkit();
+      });
+    });
+  }, 2000);
 }
 
 function deactivate() {}
