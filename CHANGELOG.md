@@ -6,6 +6,12 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ## [No publicado]
 
+### Corregido
+
+- Las píldoras del panel que traen un hueco (`enrich «idea»`) ya no mandan el
+  hueco literal como argumento: piden el dato con el mismo cuadro de texto que
+  la paleta y después ejecutan la orden completa, con los flags que traía.
+
 ## [0.2.1] — 2026-11-12
 
 ### Añadido
