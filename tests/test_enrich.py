@@ -142,6 +142,20 @@ class TestCLIEnrich(unittest.TestCase):
         self.assertEqual(cmd_enrich.despachar(self.ns(show="ENR-001")), 0)
         self.assertEqual(cmd_enrich.despachar(self.ns(show="ENR-999")), 1)
 
+    def test_podar_todo_borra_el_enriquecimiento(self):
+        """Podar el último elemento dejaba un ENR vacío en la lista."""
+        cmd_enrich.despachar(self.ns(texto=KIOSCO))
+        registro = cmd_enrich._registro(self.root)
+        ids = [i.item_id for i in registro.obtener("ENR-001").items]
+        self.assertEqual(
+            cmd_enrich.despachar(self.ns(drop=["ENR-001"] + ids)), 0)
+        self.assertEqual(cmd_enrich._registro(self.root).listar(), [])
+        # Sin el ENR-001 en el medio, el siguiente no repite el número.
+        cmd_enrich.despachar(self.ns(texto=KIOSCO))
+        cmd_enrich.despachar(self.ns(texto=KIOSCO))
+        ids = [e.id for e in cmd_enrich._registro(self.root).listar()]
+        self.assertEqual(ids, ["ENR-001", "ENR-002"])
+
     def test_sin_texto_falla_claro(self):
         self.assertEqual(cmd_enrich.despachar(self.ns()), 1)
 

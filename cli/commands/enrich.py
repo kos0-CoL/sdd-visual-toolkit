@@ -130,13 +130,21 @@ def cmd_enrich_drop(args) -> int:
     raiz = _raiz(args)
     registro = _registro(raiz)
     try:
-        quitados = registro.obtener(args.enr_id).quitar(args.items)
+        enr = registro.obtener(args.enr_id)
+        quitados = enr.quitar(args.items)
+        # Podar el último elemento dejaba un ENR vacío que nadie puede usar:
+        # se va con su último elemento.
+        vacio = not enr.items
+        if vacio:
+            registro.quitar(enr.id)
         _guardar(raiz, registro)
     except (EnriquecimientoError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
     for item in quitados:
         print(f"🗑️ {item.item_id} eliminado: {item.texto}")
+    if vacio:
+        print(f"🗑️ {enr.id} eliminado: se quedó sin elementos")
     return 0
 
 
