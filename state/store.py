@@ -117,3 +117,96 @@ def escribir_json(ruta: Path, contenido) -> None:
 
 def ruta_requerimientos(raiz: Path) -> Path:
     return raiz / SPECIFY_DIR / REQUERIMIENTOS_FILE
+
+
+MODO_GESTOR = "gestor"
+MODO_ORQUESTADOR = "orquestador"
+MODO_FILE = "modo.json"
+
+
+def leer_modo_operacion(raiz: Path) -> str:
+    """Lee el modo operativo actual. Default: gestor."""
+    ruta = raiz / SPECIFY_DIR / MODO_FILE
+    if not ruta.exists():
+        return MODO_GESTOR
+    try:
+        datos = leer_json(ruta)
+    except StoreError:
+        return MODO_GESTOR
+    modo = datos.get("modo")
+    if modo not in (MODO_GESTOR, MODO_ORQUESTADOR):
+        return MODO_GESTOR
+    return modo
+
+
+def escribir_modo_operacion(raiz: Path, modo: str) -> None:
+    """Persiste el modo operativo en `.specify/modo.json`."""
+    if modo not in (MODO_GESTOR, MODO_ORQUESTADOR):
+        raise StoreError(f"modo inválido: {modo!r} (use {MODO_GESTOR} o {MODO_ORQUESTADOR})")
+    escribir_json(raiz / SPECIFY_DIR / MODO_FILE, {"modo": modo})
+
+
+class TransaccionStore:
+    """Almacén transacional para agrupar múltiples escrituras de estado.
+
+    Las escrituras se acumulan en memoria y se confirman como una sola
+    unidad atómica con `commit()`. Si alguna escritura falla, las ya
+    ejecutadas se deshacen restaurando backups. `rollback()` descarta todo.
+    """
+
+    def __init__(self, raiz: Path) -> None:
+        self.raiz = raiz
+        self._operaciones: list[tuple[Path, object, bool]] = []
+        self._backups: dict[Path, object] = {}
+
+    def __enter__(self) -> "TransaccionStore":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> bool:
+        if exc_type is not None:
+            self.rollback()
+        return False
+
+    def escribir(self, ruta: Path, contenido, texto: bool = False) -> None:
+        """Acumula una operación de escritura (no se ejecuta hasta commit)."""
+        self._operaciones.append((ruta.resolve(), contenido, texto))
+
+    def commit(self) -> None:
+        """Ejecuta todas las escrituras atómicamente.
+
+        Si alguna falla, deshace las ya ejecutadas restaurando backups.
+        """
+        pendientes = list(self._operaciones)
+        self._operaciones = []
+        self._backups = {}
+        for ruta, contenido, texto in pendientes:
+            # Hacer backup del archivo existente si lo hay
+            if ruta.exists():
+                backup = ruta.with_suffix(ruta.suffix + ".bak-trans")
+                try:
+                    backup.write_bytes(ruta.read_bytes())
+                    self._backups[ruta] = backup
+                except OSError:
+                    pass
+            try:
+                _escritura_atomica(ruta, contenido, texto=texto)
+            except BaseException:
+                # Deshacer las ya ejecutadas restaurando backups
+                for ruta_hecha, backup in self._backups.items():
+                    try:
+                        backup.replace(ruta_hecha)
+                    except OSError:
+                        pass
+                self._backups = {}
+                raise
+        self._backups = {}
+
+    def rollback(self) -> None:
+        """Descarta todas las operaciones pendientes sin escribir nada."""
+        self._operaciones = []
+        self._backups = {}
+
+
+def transaccion(raiz: Path) -> TransaccionStore:
+    """Factory que retorna una TransaccionStore para el proyecto dado."""
+    return TransaccionStore(raiz)

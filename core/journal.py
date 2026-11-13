@@ -155,6 +155,31 @@ def _reescribir_atomico(ruta: Path, texto: str) -> None:
         raise
 
 
+def debe_compactar(raiz, umbral: int = 500) -> bool:
+    """Retorna True si el historial supera el umbral de eventos."""
+    ruta = _memoria(Path(raiz)) / HISTORY_FILE
+    if not ruta.exists():
+        return False
+    n = 0
+    with open(ruta, encoding="utf-8") as fh:
+        for _ in fh:
+            n += 1
+            if n > umbral:
+                return True
+    return False
+
+
+def compactar_si_necesario(raiz, plan_id: str | None = None,
+                           umbral: int = 500) -> dict | None:
+    """Ejecuta `compactar` solo si el historial supera el umbral.
+
+    Devuelve el resultado de `compactar` o None si no hubo nada que hacer.
+    """
+    if not debe_compactar(raiz, umbral):
+        return None
+    return compactar(raiz, plan_id=plan_id, conservar=COMPACTAR_POR_DEFECTO)
+
+
 def compactar(raiz, plan_id: str | None = None,
               conservar: int = COMPACTAR_POR_DEFECTO) -> dict:
     """Compacta el JSONL conservando los últimos N eventos por plan (§13).

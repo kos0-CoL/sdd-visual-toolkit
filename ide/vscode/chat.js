@@ -183,6 +183,9 @@ function html(webview) {
     if (nav.recomendada && !lista.some((p) => p.comando === nav.recomendada)) {
       lista.unshift({ etiqueta: 'Siguiente paso', comando: nav.recomendada, recomendada: true });
     }
+    /* Píldora para actualizar el toolkit: consulta PyPI, pregunta al usuario
+     * y aplica solo si acepta. Nunca es automática. */
+    lista.push({ etiqueta: 'Actualizar toolkit', comando: 'update', recomendada: false });
     for (const p of lista) {
       const boton = document.createElement('button');
       boton.className = 'pildora'
@@ -277,6 +280,15 @@ function html(webview) {
       ocupado = true;
       enviarBoton.disabled = true;
       burbuja('sdd', 'ejecutando ' + msg.orden + '…');
+      return;
+    }
+    if (msg.tipo === 'ordenDesdePanel') {
+      /* Una orden que vino del panel integrado (fase, tarea, píldora).
+       * Se muestra como burbuja de usuario y se ejecuta igual que si la
+       * hubiera escrito el usuario. */
+      const comando = msg.comando || '';
+      burbuja('yo', comando);
+      vscode.postMessage({ tipo: 'orden', comando });
       return;
     }
   });

@@ -145,7 +145,7 @@ def _operar(nombre: str, argumentos: dict) -> dict:
     else:
         resultado = str((argumentos or {}).get("resultado") or "").strip()
         if resultado == "fallida":
-            evento = mod_build.registrar_fail(tarea, nota)
+            evento = mod_build.registrar_fail(tarea, raiz, nota)
         elif resultado == "completada":
             evento = mod_build.registrar_done(tarea, tareas, raiz, nota=nota)
         else:

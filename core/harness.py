@@ -475,3 +475,33 @@ def render(capas: list[dict], task_id: str, ok: bool) -> str:
         pct = round(100.0 * cob["pasadas"] / cob["total"])
         lineas.append(f"📊 cobertura: {pct}% de {cob['total']} líneas")
     return "\n".join(lineas)
+
+
+ARCHIVOS_TEST_POR_RUNNER = {
+    "npm": ("*.test.js", "*.test.ts", "*.spec.js", "*.spec.ts"),
+    "go": ("*_test.go",),
+    "cargo": ("*.rs",),
+    "pytest": ("tests/*.py",),
+    "unittest": ("tests/*.py",),
+}
+
+
+def archivos_test_por_runner(raiz, archivos_tarea):
+    """Devuelve los archivos de test que le corresponden a la tarea según el
+    runner detectado del repo (§19/RF-43).
+
+    Para runners externos (npm/go/cargo) el repo manda: si no hay archivos
+    de test con la convención de ese lenguaje, no se inventan resultados.
+    """
+    import glob  # noqa: PLC0415
+    runner = detectar_runner(raiz)
+    patrones = ARCHIVOS_TEST_POR_RUNNER.get(runner, ("tests/*.py",))
+    raiz = Path(raiz)
+    encontrados = []
+    for patron in patrones:
+        encontrados.extend(str(p.relative_to(raiz)) for p in raiz.glob(patron))
+    # Intersecar con los archivos autorizados de la tarea, si vienen.
+    if archivos_tarea:
+        autorizados = set(archivos_tarea)
+        encontrados = [a for a in encontrados if a in autorizados]
+    return sorted(set(encontrados))

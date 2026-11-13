@@ -32,12 +32,14 @@ from cli.commands import traza as cmd_traza  # noqa: E402
 from cli.commands import historia as cmd_historia  # noqa: E402
 from cli.commands import tablero as cmd_tablero  # noqa: E402
 from cli.commands import arbol as cmd_arbol  # noqa: E402
+from cli.commands import update as cmd_update  # noqa: E402
 from cli.commands import restricciones as cmd_restricciones  # noqa: E402
 from cli.commands import diff as cmd_diff  # noqa: E402
 from cli.commands import siguiente as cmd_siguiente  # noqa: E402
 from cli.commands import status as cmd_status  # noqa: E402
 from cli.commands import cierre as cmd_cierre  # noqa: E402
 from cli.commands import export as cmd_export  # noqa: E402
+from cli.commands import modo as cmd_modo  # noqa: E402
 from cli.commands import tasks as cmd_tasks  # noqa: E402
 from cli.commands import specify as cmd_specify  # noqa: E402
 from core.requirements import (  # noqa: E402
@@ -480,6 +482,22 @@ def construir_parser() -> argparse.ArgumentParser:
                               help="foto JSON para IDE/MCP (RF-38)")
     p_export.set_defaults(func=cmd_export.despachar)
 
+    p_update = sub.add_parser(
+        "update", help="verificar y aplicar actualizaciones del toolkit")
+    p_update.add_argument(
+        "--verificar", action="store_true",
+        help="solo consultar PyPI y reportar si hay versión nueva (solo lectura)")
+    p_update.add_argument(
+        "--aplicar", action="store_true",
+        help="actualizar el core y refrescar archivos del proyecto si hay versión nueva")
+    p_update.add_argument(
+        "--forzar", action="store_true",
+        help="aplicar sin pedir confirmación (solo para scripts)")
+    p_update.add_argument(
+        "--sin-gitignore", action="store_true",
+        help="no tocar el .gitignore del proyecto")
+    p_update.set_defaults(func=cmd_update.despachar)
+
     p_comandos = sub.add_parser(
         "comandos", help="comandos de barra para agentes (§31)")
     p_comandos.add_argument(
@@ -493,6 +511,10 @@ def construir_parser() -> argparse.ArgumentParser:
     p_comandos.add_argument(
         "--regenerar", action="store_true",
         help="reescribir solo los clientes ya instalados, con la ruta actual")
+    p_comandos.add_argument(
+        "--verificar-cliente", metavar="CLIENTE",
+        choices=sorted(cmd_comandos.agent_commands.CLIENTES),
+        help="compruebe que los comandos de un cliente existen y tienen la ruta de CLI actual")
     p_comandos.set_defaults(func=cmd_comandos.despachar)
 
     p_impl = sub.add_parser("implement", help="alias de build (RF-36)")
@@ -513,6 +535,12 @@ def construir_parser() -> argparse.ArgumentParser:
     p_specs_list.set_defaults(func=cmd_specify.despachar, list=True,
                               show=None, approve=None, revise=None,
                               motivo=None, texto=None)
+
+    p_modo = sub.add_parser("modo", help="modo operativo: gestor u orquestador")
+    p_modo.add_argument("valor", nargs="?", default=None,
+                        choices=[store.MODO_GESTOR, store.MODO_ORQUESTADOR],
+                        help="gestor (humano implementa, motor verifica) o orquestador")
+    p_modo.set_defaults(func=cmd_modo.despachar)
 
     return parser
 

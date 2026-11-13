@@ -51,10 +51,48 @@ def _verificar(raiz: pathlib.Path) -> int:
     return 1
 
 
+def _verificar_cliente(raiz: pathlib.Path, cliente: str) -> int:
+    """Comprueba que los archivos generados para un cliente existan y tengan
+    la ruta absoluta correcta de la CLI.
+
+    Devuelve 0 si todo está bien, 1 si hay archivos faltantes o rutas muertas.
+    """
+    if cliente not in agent_commands.CLIENTES:
+        print(f"⛔ cliente desconocido: {cliente}")
+        print(f"   clientes soportados: {', '.join(sorted(agent_commands.CLIENTES))}")
+        return 1
+    plantilla = agent_commands.CLIENTES[cliente]
+    carpeta = raiz / plantilla.split("{nombre}")[0]
+    cli_actual = str(_cli_actual())
+    problemas = 0
+    if not carpeta.is_dir():
+        print(f"⛔ {cliente}: no hay carpeta de comandos ({carpeta})")
+        print(f"   genere con: {_sugerencia()} --cliente {cliente}")
+        return 1
+    for ruta in sorted(carpeta.rglob("*.md")):
+        try:
+            contenido = ruta.read_text(encoding="utf-8")
+        except OSError:
+            problemas += 1
+            print(f"⛔ {ruta}: ilegible")
+            continue
+        if cli_actual not in contenido:
+            problemas += 1
+            print(f"⛔ {ruta}: ruta de CLI desactualizada o ausente")
+    if problemas:
+        print(f"  regenere con: {_sugerencia()} --cliente {cliente}")
+        return 1
+    cuantos = sum(1 for _ in carpeta.rglob("*.md"))
+    print(f"🟢 {cliente}: {cuantos} archivo(s) de comando en {plantilla}; rutas correctas")
+    return 0
+
+
 def despachar(args) -> int:
     raiz = _raiz(args)
     if getattr(args, "verificar", False):
         return _verificar(raiz)
+    if getattr(args, "verificar_cliente", None):
+        return _verificar_cliente(raiz, args.verificar_cliente)
     clientes = list(getattr(args, "cliente", None) or [])
     if getattr(args, "regenerar", False):
         # Solo los clientes que ya tienen archivos: regenerar no debe estrenar

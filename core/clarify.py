@@ -88,6 +88,7 @@ class Pregunta:
     ref: str = ""
     estado: str = PENDIENTE
     respuesta: str | None = None
+    esencial: bool = False  # si es prioritaria para el modo esencial (3-7 preguntas)
 
     def clave(self) -> str:
         return f"{self.kind}::{self.ref}"
@@ -108,6 +109,7 @@ class Pregunta:
                 ref=str(datos.get("ref", "")),
                 estado=str(datos.get("estado", PENDIENTE)),
                 respuesta=datos.get("respuesta"),
+                esencial=bool(datos.get("esencial", False)),
             )
         except (KeyError, TypeError) as error:
             raise ClarifyError(f"pregunta corrupta: {error}") from error
@@ -120,7 +122,8 @@ def detectar(spec, reqs: list, existentes: list[Pregunta] | None = None) -> list
     nuevas: list[Pregunta] = []
 
     def agregar(kind: str, ref: str, texto: str, contexto: str,
-               tipo: str = "libre", opciones: list | None = None) -> None:
+               tipo: str = "libre", opciones: list | None = None,
+               esencial: bool = False) -> None:
         clave = f"{kind}::{ref}"
         if clave in previas:
             return
@@ -133,6 +136,7 @@ def detectar(spec, reqs: list, existentes: list[Pregunta] | None = None) -> list
                 tipo=tipo,
                 opciones=opciones or [],
                 ref=ref,
+                esencial=esencial,
             )
         )
 
@@ -155,22 +159,23 @@ def detectar(spec, reqs: list, existentes: list[Pregunta] | None = None) -> list
                 )
 
     # §7.2: supuestos pendientes (faltantes del ENR).
-    for sup in spec.supuestos:
+    for i, sup in enumerate(spec.supuestos):
         if sup.startswith("✓"):
             continue
         agregar("supuesto", sup, f"Pendiente de aclarar: {sup}",
-                "§14 Suposiciones pendientes.")
+                "§14 Suposiciones pendientes.",
+                esencial=(i == 0))  # el primer supuesto es esencial
 
     # Placeholders sin definir (§7.2: decisiones técnicas / dependencias).
     if spec.no_funcionales == ["Sin definir (pendiente de clarify)"]:
         agregar("rnf", "rnf", "¿Hay algún requerimiento no funcional (rendimiento, seguridad, disponibilidad)?",
-                "§5 sin definir.")
+                "§5 sin definir.", esencial=True)
     if spec.reglas == ["Sin reglas declaradas (pendiente de clarify)"]:
         agregar("regla", "regla", "¿Hay alguna regla de negocio (precios, descuentos, permisos)?",
                 "§7 sin definir.")
     if spec.dependencias == ["No declaradas (pendiente de plan)"]:
         agregar("dependencia", "dependencia", "¿El sistema depende de algo externo (hardware, servicio, planilla actual)?",
-                "§10 sin definir.")
+                "§10 sin definir.", esencial=True)
 
     # §7.2: requerimientos incompletos (pendientes de validación).
     for req_id, ftexto, estado in spec.funcionales:

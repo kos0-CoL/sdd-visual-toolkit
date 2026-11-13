@@ -10,6 +10,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
+from state.store import MODO_ORQUESTADOR  # noqa: E402
+
 EN_CURSO = "en_curso"
 COMPLETADA = "completada"
 FALLIDA = "fallida"
@@ -61,12 +63,19 @@ def ejecutar_pruebas(tarea, raiz: Path, timeout: int = 120) -> tuple[str, str]:
     """Corre los tests de la tarea con el runner detectado (§19/RF-43) y
     devuelve (estado, salida) con estado en {“pasadas”, “fallidas”,
     “sin_pruebas”}. Nunca se inventa un resultado verde sin ejecutar."""
-    archivos = [a for a in tarea.archivos
-                if a.startswith("tests/") and a.endswith(".py")
-                and (Path(raiz) / a).exists()]
+    from core.harness import detectar_runner, archivos_test_por_runner, correr_archivos  # noqa: PLC0415
+    runner = detectar_runner(raiz)
+    if runner in ("npm", "go", "cargo"):
+        # §51: el runner del repo ejecuta el suite completo por su cuenta;
+        # los archivos de test de la tarea no se pasan sueltos.
+        r = correr_archivos(raiz, [], fase="unitarios", timeout=180)
+        if r.get("ok") and (r.get("fallidas") or 0) == 0:
+            return "pasadas", r.get("errores") or "pruebas OK"
+        return "fallidas", r.get("errores") or "pruebas en rojo"
+    archivos = archivos_test_por_runner(raiz, tarea.archivos)
+    archivos = [a for a in archivos if (Path(raiz) / a).exists()]
     if not archivos:
-        return "sin_pruebas", "sin pruebas ejecutables todavía (ningún archivo tests/ existe)"
-    from core.harness import correr_archivos  # noqa: PLC0415
+        return "sin_pruebas", "sin pruebas ejecutables todavía (ningún archivo de test para el runner detectado)"
     r = correr_archivos(raiz, archivos, fase="unitarios", timeout=timeout)
     if r.get("ok") and (r.get("fallidas") or 0) == 0:
         return "pasadas", r.get("errores") or "pruebas OK"
@@ -75,25 +84,34 @@ def ejecutar_pruebas(tarea, raiz: Path, timeout: int = 120) -> tuple[str, str]:
 
 def registrar_done(tarea, tareas: list, raiz: Path, nota: str = "",
                    evidencia: dict | None = None,
-                   vigilancia: dict | None = None) -> dict:
+                   vigilancia: dict | None = None,
+                   modo: str | None = None) -> dict:
     """Verifica archivos + pruebas y completa. No oculta fallos (§46.13).
 
     §18.5: el cierre conserva evidencia (hashes de tests + última
     corrida registrada); `evidencia` la aporta el CLI desde el journal.
+
+    En modo `orquestador`, se permite cerrar con `sin_pruebas` si hay una
+    nota de justificación (no bloquea, pero advierte).
     """
     if tarea.estado != EN_CURSO:
         raise BuildError(f"{tarea.id} no está en curso; avance con `build` primero")
     faltan = archivos_faltantes(tarea, raiz)
     if faltan:
         raise BuildError(f"archivos objetivo inexistentes: {', '.join(faltan)}")
+    if modo is None:
+        from state.store import leer_modo_operacion  # noqa: PLC0415
+        modo = leer_modo_operacion(raiz)
     estado, salida = ejecutar_pruebas(tarea, raiz)
     tarea.intentos += 1
     if estado == "sin_pruebas":
         # RF-09/§11: sin evidencia ejecutable no se cierra la tarea.
-        raise BuildError(
-            f"{tarea.id}: NOT_VERIFIED — sin pruebas ejecutables para los "
-            f"archivos autorizados; escriba al menos un test por criterio de "
-            f"aceptación antes de cerrar (§11).")
+        if modo != MODO_ORQUESTADOR or not nota.strip():
+            raise BuildError(
+                f"{tarea.id}: NOT_VERIFIED — sin pruebas ejecutables para los "
+                f"archivos autorizados; escriba al menos un test por criterio de "
+                f"aceptación antes de cerrar (§11).")
+        # Modo orquestador con justificación: cierra con advertencia.
     from core.harness import hashes_tests  # noqa: PLC0415
     evento = {
         "fecha": _ahora(), "tarea": tarea.id, "evento": "completada",
@@ -110,18 +128,25 @@ def registrar_done(tarea, tareas: list, raiz: Path, nota: str = "",
     if not evento["pruebas_ok"]:
         tarea.estado = FALLIDA
         evento["evento"] = "fallida"
-        return evento
-    tarea.estado = COMPLETADA
+    else:
+        tarea.estado = COMPLETADA
+    from core.journal import compactar_si_necesario  # noqa: PLC0415
+    plan_id = getattr(tarea, "plan_id", None)
+    compactar_si_necesario(raiz, plan_id=plan_id)
     return evento
 
 
-def registrar_fail(tarea, nota: str) -> dict:
+def registrar_fail(tarea, raiz: Path, nota: str) -> dict:
     if not nota.strip():
         raise BuildError("registre la situación con --nota (no se avanza en silencio)")
     tarea.intentos += 1
     tarea.estado = FALLIDA
-    return {"fecha": _ahora(), "tarea": tarea.id, "evento": "fallida",
+    evento = {"fecha": _ahora(), "tarea": tarea.id, "evento": "fallida",
             "pruebas_ok": False, "pruebas": "", "nota": nota}
+    from core.journal import compactar_si_necesario  # noqa: PLC0415
+    plan_id = getattr(tarea, "plan_id", None)
+    compactar_si_necesario(raiz, plan_id=plan_id)
+    return evento
 
 
 def sugerir(tarea, raiz: Path, plan_id: str, texto: str,

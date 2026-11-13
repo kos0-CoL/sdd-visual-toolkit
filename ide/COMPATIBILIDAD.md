@@ -7,17 +7,17 @@ y la otra no.
 
 ## Estado
 
-| Entorno | Extensión | Comandos de barra |
-|---|---|---|
-| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (25 de 29 casillas)** | ✅ `.github/skills/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **visto en el chat** (arneses `Copilot` y `Local`) |
-| Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar |
-| Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar |
-| Antigravity | ⚠️ pendiente de verificación | ✅ `.agents/skills/`, 14 archivos generados; **sin probar en el agente** |
-| Cline | — no aplica: es una extensión de VS Code, no un IDE | ✅ `.clinerules/workflows/`; **sin probar** (se invoca `/sdd-status.md`) |
-| Kilo Code | — no aplica: es una extensión de VS Code, no un IDE | ✅ `.kilo/commands/`; **sin probar** (se invoca `/sdd-status`) |
-| Claude Code (CLI) | — no aplica: no es un IDE | ✅ `.claude/skills/`; sin probar |
-| Solo terminal / CLI | — | — la CLI es completa sin IDE (RF-36) |
-| Vía MCP | — | ✅ `tests/test_mcp.py` |
+| Entorno | Extensión | Comandos de barra | Estado real |
+|---|---|---|---|
+| VS Code | ✅ `node --check` + `tests/test_ide.py` + `tests/test_extension_headless.py`; **visto en editor el 2026-11-11 (25 de 29 casillas)** | ✅ `.github/skills/`, 14 archivos con la ruta absoluta y `comandos --verificar` en verde; **visto en el chat** (arneses `Copilot` y `Local`) | ✅ verificado (extensión parcial 25/29 casillas; comandos de barra probados en chat) |
+| Cursor | ✅ compatible por diseño; sin prueba manual | ✅ `.cursor/commands/`; sin probar | pendiente (generar con `comandos --cliente cursor`, comprobar `$ARGUMENTS` vs prompt) |
+| Windsurf | ✅ compatible por diseño; sin prueba manual | ✅ `.windsurf/workflows/`; sin probar | pendiente (generar con `comandos --cliente windsurf`, comprobar desde Cascade) |
+| Antigravity | ⚠️ pendiente de verificación | ✅ `.agents/skills/`, 14 archivos generados; **sin probar en el agente** | pendiente (verificar que las skills aparecen y que el agente ejecuta shell) |
+| Cline | — no aplica: es una extensión de VS Code, no un IDE | ✅ `.clinerules/workflows/`; **sin probar** (se invoca `/sdd-status.md`) | pendiente (invocar `/sdd-status.md` y comprobar salida) |
+| Kilo Code | — no aplica: es una extensión de VS Code, no un IDE | ✅ `.kilo/commands/`; **sin probar** (se invoca `/sdd-status`) | pendiente (invocar `/sdd-status` y comprobar salida) |
+| Claude Code (CLI) | — no aplica: no es un IDE | ✅ `.claude/skills/`; sin probar | pendiente (verificar `/sdd-specify ENR-001` con `$ARGUMENTS`) |
+| Solo terminal / CLI | — | — la CLI es completa sin IDE (RF-36) | ✅ operativo (RF-36) |
+| Vía MCP | — | ✅ `tests/test_mcp.py` | ✅ operativo |
 
 Ningún ✅ de la columna de comandos significa «visto funcionando». Significa
 que el archivo se escribe en la ruta y con el formato que ese cliente

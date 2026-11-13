@@ -90,6 +90,10 @@ let refrescar = () => {};
 /* Canal de salida: hace de consola de la paleta y conserva lo que imprimió
  * la CLI, que ya no corre en un terminal. */
 let canal = null;
+/* Referencia al panel de chat abierto (si existe), para enviar órdenes
+ * desde el panel integrado y que se ejecuten en el chat en lugar de ir a
+ * terminal directamente. */
+let panelChat = null;
 
 /* Comandos que preguntan por stdin: solo tienen sentido en un terminal, donde
  * se puede escribir la respuesta. `clarify` sin `--answer` es ese caso. */
@@ -348,6 +352,74 @@ function inicializar(dir) {
   });
 }
 
+/* Auto-actualización del toolkit desde el panel integrado (§40).
+ *
+ * Consulta PyPI (solo lectura), muestra el diálogo de confirmación con la
+ * versión instalada vs disponible, y aplica solo si el usuario acepta.
+ * Nunca se actualiza automáticamente: el usuario decide.
+ */
+async function actualizarToolkit() {
+  const dir = carpeta();
+  if (!dir) {
+    sinCarpeta();
+    return;
+  }
+  /* Paso 1: consultar si hay versión nueva (solo lectura). */
+  const verificacion = await correrParaChat(dir, ['update', '--verificar']);
+  const salida = verificacion.salida || '';
+  const match = salida.match(/Hay una versión nueva disponible:\s*(\S+)/);
+  const instaladaMatch = salida.match(/Versión instalada:\s*(\S+)/);
+  const disponible = match ? match[1] : null;
+  const instalada = instaladaMatch ? instaladaMatch[1] : 'desconocida';
+
+  if (!disponible) {
+    if (salida.includes('Ya tienes la versión más reciente')) {
+      await vscode.window.showInformationMessage(
+        `SDD: ya tienes la versión más reciente (${instalada}).`);
+    } else if (verificacion.codigo !== 0) {
+      await vscode.window.showErrorMessage(
+        'SDD: no se pudo consultar si hay una versión nueva del toolkit.');
+    } else {
+      await vscode.window.showWarningMessage(
+        'SDD: no se pudo determinar si hay una versión nueva del toolkit.');
+    }
+    return;
+  }
+
+  /* Paso 2: preguntar al usuario si quiere actualizar. Diálogo modal, el
+   * usuario elige. Nunca es automático. */
+  const elegir = await vscode.window.showInformationMessage(
+    `SDD: hay una versión nueva del toolkit (${disponible}, instalada ${instalada}). ¿Actualizar ahora?`,
+    { modal: true },
+    'Actualizar',
+    'Cancelar'
+  );
+  if (elegir !== 'Actualizar') return;
+
+  /* Paso 3: aplicar con consentimiento explícito. Barra de progreso mientras
+   * corre `pip install -U` y refresca los archivos del proyecto. */
+  let aplicando;
+  await vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: 'SDD: actualizando toolkit',
+    cancellable: false,
+  }, async () => {
+    aplicando = await correrParaChat(dir, ['update', '--aplicar', '--forzar']);
+  });
+
+  if (aplicando.codigo !== 0) {
+    await vscode.window.showErrorMessage(
+      'SDD: no se pudo actualizar el toolkit. Usá "Ver salida" para detalles.');
+    mostrarSalida('toolkit update --aplicar', aplicando.codigo, aplicando.salida);
+    return;
+  }
+
+  /* Paso 4: refrescar vistas y barra, y notificar resultado. */
+  refrescar();
+  await vscode.window.showInformationMessage(
+    `SDD: toolkit actualizado a ${disponible}. Los archivos del proyecto se refrescaron.`);
+}
+
 /* `clarify` pregunta por stdin, así que corre en el terminal; pero un SPEC-ID
  * inexistente falla antes de preguntar nada y ese ⛔ se perdía al fondo. Se
  * valida con `--list`, que solo lee, y el terminal se abre si pasa. */
@@ -380,6 +452,12 @@ function ejecutar(cliArgs) {
   const argv = Array.isArray(cliArgs) ? cliArgs : cliArgs.trim().split(/\s+/);
   if (argv[0] === 'init') {
     inicializar(dir);
+    return;
+  }
+  /* `update` no se ejecuta como un comando cualquiera: abre el diálogo de
+   * confirmación y aplica solo si el usuario acepta. Nunca automático. */
+  if (argv[0] === 'update') {
+    actualizarToolkit();
     return;
   }
   if (INTERACTIVOS.has(argv[0])) {
@@ -539,7 +617,7 @@ class VistaFlujo {
     if (!doc) {
       const it = new vscode.TreeItem('⛔ ' + error,
         vscode.TreeItemCollapsibleState.None);
-      it.command = { command: 'sdd.ejecutar', title: 'Ejecutar', arguments: ['init'] };
+      it.command = { command: 'sdd.ejecutarEnChat', title: 'Ejecutar en chat', arguments: ['init'] };
       return [it];
     }
     return (doc.flujo || []).map((fila) => {
@@ -559,8 +637,8 @@ class VistaFlujo {
       it._raiz = dir;
       if (fila.comando) {
         it.command = {
-          command: 'sdd.ejecutar',
-          title: 'Ejecutar',
+          command: 'sdd.ejecutarEnChat',
+          title: 'Ejecutar en chat',
           arguments: [fila.comando],
         };
       }
@@ -628,7 +706,9 @@ class VistaFases {
     const item = (texto, cliArgs, icono) => {
       const it = new vscode.TreeItem(texto, vscode.TreeItemCollapsibleState.None);
       if (cliArgs) {
-        it.command = { command: 'sdd.ejecutar', title: 'Ejecutar', arguments: [cliArgs] };
+        /* Clic normal: envía la orden al chat (no va directo a terminal).
+         * Para ejecutar directamente, usá el menú contextual o la paleta. */
+        it.command = { command: 'sdd.ejecutarEnChat', title: 'Ejecutar en chat', arguments: [cliArgs] };
       }
       if (icono) it.iconPath = new vscode.ThemeIcon(icono);
       return it;
@@ -725,7 +805,7 @@ function activate(contexto) {
   });
   /* Ejecutor genérico para los nodos clicables de la vista lateral. */
   contexto.subscriptions.push(
-    vscode.commands.registerCommand('sdd.ejecutar', (cliArgs) => ejecutarOrden(cliArgs)),
+    vscode.commands.registerCommand('sdd.ejecutarEnChat', (cliArgs) => ejecutarOrden(cliArgs)),
     /* Chat propio: VS Code no permite dibujar botones dentro de Copilot Chat
      * (los chat participants están deprecados), así que el flujo guiado vive
      * en un panel con píldoras clickeables. */
@@ -735,11 +815,47 @@ function activate(contexto) {
         sinCarpeta();
         return;
       }
-      chat.abrir({
+      panelChat = chat.abrir({
         ejecutar: (argv) => correrParaChat(carpeta() || dir, argv),
         exportar: () => cargarDoc(),
         proyecto: dir,
+        ejecutarActualizacion: () => actualizarToolkit(),
       });
+    }),
+    /* Ejecutar una orden desde el panel integrado (fase, tarea, píldora) en
+     * el chat, como si el usuario la hubiera escrito allí. Si el chat no está
+     * abierto, se abre primero y luego se envía la orden. */
+    vscode.commands.registerCommand('sdd.ejecutarEnChat', (comando) => {
+      const dir = carpeta();
+      if (!dir) {
+        sinCarpeta();
+        return;
+      }
+      const argv = Array.isArray(comando) ? comando : String(comando || '').trim().split(/\s+/);
+      if (!argv || !argv[0]) return;
+      if (!panelChat) {
+        try {
+          /* Abrir el chat y luego enviar la orden una vez listo. */
+          panelChat = chat.abrir({
+            ejecutar: (a) => correrParaChat(carpeta() || dir, a),
+            exportar: () => cargarDoc(),
+            proyecto: dir,
+          });
+          panelChat.webview.onDidReceiveMessage((mensaje) => {
+            if (mensaje.tipo === 'listo') {
+              panelChat.webview.postMessage({ tipo: 'ordenDesdePanel', comando: argv.join(' ') });
+            }
+          }, undefined, contexto.subscriptions);
+          return;
+        } catch (e) {
+          /* No se pudo abrir el chat (entorno sin editor real): ejecutar
+           * directamente como fallback. */
+          panelChat = null;
+          ejecutar(argv);
+          return;
+        }
+      }
+      panelChat.webview.postMessage({ tipo: 'ordenDesdePanel', comando: argv.join(' ') });
     })
   );
   /* Menú contextual del panel de flujo. */
@@ -751,20 +867,20 @@ function activate(contexto) {
   contexto.subscriptions.push(
     vscode.window.registerTreeDataProvider('sddFases', vista),
     vscode.window.registerTreeDataProvider('sddFlujo', flujo),
-    vscode.commands.registerCommand('sdd.actualizar', () => {
-      vista.actualizar();
-      flujo.actualizar();
-    })
+    vscode.commands.registerCommand('sdd.actualizar', actualizarToolkit)
   );
   /* Panel de estado: fase actual + siguiente recomendado. */
   const barra = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-  barra.command = 'sdd.status';
+  barra.command = 'sdd.ejecutarEnChat';
   const refrescarBarra = async () => {
     await vista.cargar();
     if (vista.doc) {
       barra.text = `$(graph) SDD: ${vista.doc.fase}`;
       barra.tooltip = vista.doc.navegacion.recomendada
-        ? `Siguiente: ${vista.doc.navegacion.recomendada}` : 'Ver estado';
+        ? `Siguiente: ${vista.doc.navegacion.recomendada} (clic: ejecutar en chat)` : 'Ver estado';
+      barra.command = vista.doc.navegacion.recomendada
+        ? { command: 'sdd.ejecutarEnChat', title: 'Ejecutar siguiente en chat', arguments: [vista.doc.navegacion.recomendada] }
+        : { command: 'sdd.status', title: 'Estado', arguments: [] };
       barra.show();
     } else {
       barra.hide();
