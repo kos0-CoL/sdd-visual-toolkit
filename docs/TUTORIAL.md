@@ -98,6 +98,35 @@ pocos segundos).
 
 ---
 
+## Cómo se trabaja: dos caminos para lo mismo
+
+Hay una sola fuente de verdad (`.specify/` y `specs/`) y dos formas de moverla.
+Elegí una; se pueden mezclar.
+
+**A. Desde el chat (lo normal para escribir código).** Escribís el comando en
+el chat del agente, el agente ejecuta la CLI y te muestra la salida ahí mismo:
+
+```text
+/sdd-enrich "Quiero un sistema para el kiosco: cargar productos con precio y stock…"
+```
+
+Así trabajás todo el flujo: `/sdd-specify`, `/sdd-clarify`, `/sdd-plan`,
+`/sdd-tasks`, `/sdd-build`. Cuando toca escribir código, `/sdd-build` le dice al
+agente qué archivos puede tocar, y el agente los escribe. Vos seguís en el chat.
+
+**B. Desde el panel de VS Code.** Hacés clic en la fase o en una píldora del
+panel y la CLI corre igual; la salida aparece en el canal **SDD Toolkit**
+(abajo, junto a *Terminal* → *Salida*). El panel sirve para mirar el estado y
+disparar un paso suelto, no para conversar.
+
+Si una píldora dice `enrich «idea»`, el panel te pide la idea en un cuadro de
+texto antes de ejecutar: nunca manda «idea» literal.
+
+**Recomendado:** chat para el flujo completo y el código; panel para ver dónde
+estás y para los comandos que no necesitan datos (`/sdd`, `/sdd-status`).
+
+---
+
 ## Paso 5. El primer prompt, en el chat
 
 Abrí el chat de tu agente (`Copilot`, `Claude`, el que hayas elegido) y escribí

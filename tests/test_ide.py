@@ -137,6 +137,21 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("no encontré «", fuente)
         self.assertIn("uv tool install", fuente)
 
+    def test_las_pildoras_con_hueco_piden_el_dato(self):
+        """La píldora `enrich «idea»` mandaba «idea» literal a la CLI."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("const HUECO = /«[^»]*»/;", fuente)
+        cuerpo = re.search(r"function ejecutarOrden\(comando\).*?\n\}",
+                           fuente, re.S)
+        self.assertIsNotNone(cuerpo, "falta el manejo del hueco")
+        texto = cuerpo.group(0)
+        self.assertIn("pedirYCorrer(entrada, partes.slice(hueco + 1))", texto)
+        self.assertIn("necesita un dato", texto)
+        # Todo clic del panel y de las píldoras pasa por `ejecutarOrden`.
+        self.assertIn(
+            "registerCommand('sdd.ejecutar', (cliArgs) => ejecutarOrden(cliArgs))",
+            fuente)
+
     def test_sin_carpeta_ofrece_abrirla(self):
         """El panel lee el estado de una carpeta: sin ella el aviso debe decir
         cómo abrirla, y la vista vacía trae el enlace para hacerlo."""

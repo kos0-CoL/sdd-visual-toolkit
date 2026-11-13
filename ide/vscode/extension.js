@@ -394,23 +394,52 @@ function ejecutar(cliArgs) {
   correr(dir, argv);
 }
 
+/* Las píldoras del tablero traen la forma de la orden con un hueco
+ * (`enrich «idea»`). Ejecutarla tal cual manda «idea» literal, que la CLI
+ * acepta como texto: se pide el dato con la misma pregunta de la paleta. */
+const HUECO = /«[^»]*»/;
+
+function ejecutarOrden(comando) {
+  /* Los nodos del árbol ya traen el argv armado: no hay hueco que resolver. */
+  if (Array.isArray(comando)) {
+    ejecutar(comando);
+    return;
+  }
+  const texto = String(comando || '').trim();
+  if (!texto) return;
+  if (!HUECO.test(texto)) {
+    ejecutar(texto);
+    return;
+  }
+  const partes = texto.split(/\s+/);
+  const hueco = partes.findIndex((parte) => HUECO.test(parte));
+  const entrada = COMMANDS.find((c) => c.cli === partes[0]);
+  if (!entrada || !entrada.prompt) {
+    vscode.window.showInformationMessage(
+      `SDD: la orden «${texto}» necesita un dato; córrela desde la paleta.`);
+    return;
+  }
+  /* Lo que va después del hueco son flags de la píldora (`--list`, …). */
+  pedirYCorrer(entrada, partes.slice(hueco + 1));
+}
+
 /* `null` si se canceló, para distinguirlo de un campo vacío. */
 async function pedir(texto) {
   const valor = await vscode.window.showInputBox({ prompt: 'SDD: ' + texto });
   return valor === undefined ? null : (valor || '').trim();
 }
 
-async function pedirYCorrer(entrada) {
+async function pedirYCorrer(entrada, extras = []) {
   if (!entrada.prompt) {
-    ejecutar([entrada.cli]);
+    ejecutar([entrada.cli].concat(extras));
     return;
   }
   const valor = await pedir(entrada.prompt);
   if (valor === null) return; // cancelado
   if (!valor) {
     if (entrada.opcional) {
-      ejecutar(entrada.siVacio
-        ? [entrada.cli, entrada.siVacio] : [entrada.cli]);
+      ejecutar((entrada.siVacio
+        ? [entrada.cli, entrada.siVacio] : [entrada.cli]).concat(extras));
       return;
     }
     vscode.window.showErrorMessage('SDD: falta el identificador pedido.');
@@ -427,7 +456,7 @@ async function pedirYCorrer(entrada) {
     }
     argv.push(entrada.siguiente.flag, extra);
   }
-  ejecutar(argv);
+  ejecutar(argv.concat(extras));
 }
 
 /* Foto del estado para las vistas (§32): una lectura de `export` por refresco. */
@@ -668,7 +697,7 @@ function activate(contexto) {
   });
   /* Ejecutor genérico para los nodos clicables de la vista lateral. */
   contexto.subscriptions.push(
-    vscode.commands.registerCommand('sdd.ejecutar', (cliArgs) => ejecutar(cliArgs))
+    vscode.commands.registerCommand('sdd.ejecutar', (cliArgs) => ejecutarOrden(cliArgs))
   );
   /* Menú contextual del panel de flujo. */
   contexto.subscriptions.push(
