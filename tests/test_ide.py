@@ -175,10 +175,16 @@ class TestManifiesto(unittest.TestCase):
         fuente = (IDE / "chat.js").read_text(encoding="utf-8")
         self.assertIn("createWebviewPanel(", fuente)
         self.assertIn("'sddChat'", fuente)
-        self.assertIn("const HUECO = /«[^»]*»/;", fuente)
+        self.assertIn("const HUECO = /«[^»]*»|…/;", fuente)
         # Las píldoras se construyen como botones y avisan a la extensión.
         self.assertIn("createElement('button')", fuente)
         self.assertIn("postMessage({ tipo: 'orden'", fuente)
+        # Las píldoras reales traen `…` de hueco, no solo «».
+        self.assertIn("const HUECO = /«[^»]*»|…/;", fuente)
+        # La orden se parte respetando comillas: la respuesta de clarify lleva
+        # espacios y sin esto llegaba partida en varias palabras.
+        self.assertIn("function partirOrden(texto)", fuente)
+        self.assertIn("if (letra === '\"')", fuente)
         manifiesto = json.loads((IDE / "package.json").read_text(
             encoding="utf-8"))
         ids = {c["command"] for c in manifiesto["contributes"]["commands"]}

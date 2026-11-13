@@ -11,7 +11,11 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 - `SDD: Abrir chat`: panel de chat propio, con burbujas y **píldoras
   clickeables** que ejecutan el paso siguiente. Escribir la idea la enriquece;
   las píldoras que necesitan un dato lo piden antes de correr. El estado sale de
-  `export`, igual que las vistas laterales.
+  `export`, igual que las vistas laterales. Abre con un resumen (proyecto, SPEC,
+  fase, progreso y próxima acción) para que no arranque vacío. Los huecos se
+  reconocen tanto en `«idea»` como en `…` —el que usan las píldoras reales de
+  `clarify`— y la orden se parte respetando comillas, así `--answer CLA-001
+  "texto con espacios"` llega como un solo argumento.
 
 ### Corregido
 

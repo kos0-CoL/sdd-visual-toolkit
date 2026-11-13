@@ -9,3 +9,6 @@ venv/
 build/
 dist/
 *.vsix
+
+# captura local del panel (no se versiona)
+docs/capturas/

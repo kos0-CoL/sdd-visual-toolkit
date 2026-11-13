@@ -9,8 +9,28 @@
 
 const vscode = require('vscode');
 
-/* El hueco de una píldora (`enrich «idea»`) no se ejecuta: se completa. */
-const HUECO = /«[^»]*»/;
+/* Un hueco en una píldora (`enrich «idea»`, `clarify SPEC-001 --answer …`) no
+ * se ejecuta tal cual: se completa en el campo de texto. */
+const HUECO = /«[^»]*»|…/;
+
+/* Separa una orden respetando las comillas dobles: `clarify SPEC-001 --answer
+ * CLA-001 "sí"` son cinco argumentos, no seis. */
+function partirOrden(texto) {
+  const partes = [];
+  let actual = '';
+  let comillas = false;
+  for (const letra of String(texto || '')) {
+    if (letra === '"') { comillas = !comillas; continue; }
+    if (!comillas && /\s/.test(letra)) {
+      if (actual) partes.push(actual);
+      actual = '';
+      continue;
+    }
+    actual += letra;
+  }
+  if (actual) partes.push(actual);
+  return partes;
+}
 
 function escapeHtml(texto) {
   return String(texto == null ? '' : texto)
@@ -45,7 +65,10 @@ function html(webview) {
     max-width: 92%; padding: 8px 10px; border-radius: 8px; font-size: 12.5px;
     white-space: pre-wrap; word-break: break-word; line-height: 1.45;
   }
-  .yo .burbuja { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
+  .yo .burbuja {
+    background: var(--vscode-button-background, #0e639c);
+    color: var(--vscode-button-foreground, #ffffff);
+  }
   .sdd .burbuja {
     background: var(--vscode-textBlockQuote-background, rgba(127,127,127,.12));
     border-left: 3px solid var(--vscode-textLink-foreground);
@@ -55,13 +78,14 @@ function html(webview) {
   #pildoras { padding: 8px 12px 0; display: flex; flex-wrap: wrap; gap: 6px; }
   button.pildora {
     font-family: inherit; font-size: 12px; padding: 6px 10px; cursor: pointer;
-    color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
+    color: var(--vscode-button-secondaryForeground, var(--vscode-foreground, #ccc));
     background: var(--vscode-button-secondaryBackground, rgba(127,127,127,.18));
     border: 1px solid var(--vscode-panel-border); border-radius: 20px;
   }
   button.pildora:hover { background: var(--vscode-button-secondaryHoverBackground, rgba(127,127,127,.3)); }
   button.pildora.recomendada {
-    background: var(--vscode-button-background); color: var(--vscode-button-foreground);
+    background: var(--vscode-button-background, #0e639c);
+    color: var(--vscode-button-foreground, #ffffff);
     border-color: transparent; font-weight: 600;
   }
   button.pildora.bloqueada { opacity: .55; cursor: not-allowed; }
@@ -69,13 +93,14 @@ function html(webview) {
   #pista { font-size: 11px; color: var(--vscode-descriptionForeground); margin-bottom: 6px; }
   .entrada { display: flex; gap: 6px; }
   textarea {
-    flex: 1; resize: none; height: 44px; padding: 8px; font-family: inherit; font-size: 12.5px;
+    flex: 1; resize: none; height: 62px; padding: 8px; font-family: inherit; font-size: 12.5px;
     color: var(--vscode-input-foreground); background: var(--vscode-input-background);
     border: 1px solid var(--vscode-input-border, transparent); border-radius: 4px;
   }
   button.enviar {
     padding: 0 14px; font-family: inherit; font-size: 12.5px; cursor: pointer;
-    color: var(--vscode-button-foreground); background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground, #ffffff);
+    background: var(--vscode-button-background, #0e639c);
     border: none; border-radius: 4px;
   }
   button.enviar:disabled { opacity: .5; cursor: default; }
@@ -103,9 +128,36 @@ function html(webview) {
   const pista = document.getElementById('pista');
   const texto = document.getElementById('texto');
   const enviarBoton = document.getElementById('enviar');
+  const PLACEHOLDER = 'ej: Quiero un sistema para el kiosco: cargar productos con precio y stock…';
   let ocupado = false;
+  /* El hueco de una píldora se completa en el campo: enrich «idea» o
+   * clarify SPEC-001 --answer …. Se declara aquí dentro porque este script
+   * corre en el webview, aislado del módulo de la extensión. */
+  const HUECO = /«[^»]*»|…/;
+  let presentado = false;
   /* Modo por defecto: lo que se escribe en el campo es la idea a enriquecer. */
   let modo = { tipo: 'idea' };
+
+  /* Primer mensaje: qué proyecto, en qué fase y qué toca ahora. Sin esto el
+   * panel abría vacío y parecía que no había pasado nada. */
+  function presentar(doc) {
+    if (presentado || !doc) return;
+    presentado = true;
+    const progreso = doc.progreso || {};
+    const lineas = [
+      'Proyecto: ' + (doc.proyecto || '—'),
+      (doc.spec_id ? doc.spec_id + ' (' + doc.spec_status + ')' : 'Todavía sin SPEC'),
+      'Fase: ' + (doc.fase || '—'),
+      'Progreso: ' + (progreso.hechas || 0) + '/' + (progreso.total || 0),
+    ];
+    const nav = doc.navegacion || {};
+    if (nav.recomendada) lineas.push('', 'Siguiente: ' + nav.recomendada);
+    if (doc.proxima) lineas.push('Por qué: ' + doc.proxima);
+    const bloqueos = nav.bloqueos || [];
+    if (bloqueos.length) lineas.push('', ...bloqueos.map((b) => '⛔ ' + b));
+    lineas.push('', 'Escribí tu idea abajo, o elegí una píldora.');
+    burbuja('sdd', lineas.join(String.fromCharCode(10)));
+  }
 
   function burbuja(quien, contenido, opciones) {
     const fila = document.createElement('div');
@@ -149,8 +201,8 @@ function html(webview) {
 
   function usarPildora(comando, etiqueta) {
     if (ocupado) return;
-    if (/«[^»]*»/.test(comando)) {
-      modo = { tipo: 'orden', base: comando.replace(/«[^»]*»/, '').trim() };
+    if (HUECO.test(comando)) {
+      modo = { tipo: 'orden', base: comando.replace(HUECO, '').trim() };
       pista.textContent = 'Completá: ' + (etiqueta || comando);
       texto.value = '';
       texto.placeholder = etiqueta || comando;
@@ -172,6 +224,7 @@ function html(webview) {
     if (modo.tipo === 'orden') {
       const comando = (modo.base + ' ' + valor).trim();
       texto.value = '';
+      texto.placeholder = PLACEHOLDER;
       modo = { tipo: 'idea' };
       pista.textContent = 'Escribí lo que querés hacer o usá las píldoras.';
       enviarOrden(comando);
@@ -203,6 +256,7 @@ function html(webview) {
             + '/' + ((doc.progreso && doc.progreso.total) || 0),
         ].join(' · ');
         pintarPildoras(doc);
+        presentar(doc);
       } else {
         contexto.textContent = msg.error || 'sin inicializar';
         pintarPildoras(null);
@@ -260,7 +314,7 @@ function abrir({ ejecutar, exportar, proyecto }) {
       argv = ['enrich', mensaje.texto];
     } else if (mensaje.tipo === 'orden') {
       orden = mensaje.comando;
-      argv = String(mensaje.comando || '').trim().split(/\s+/);
+      argv = partirOrden(orden);
     }
     if (!argv || !argv[0]) return;
     if (HUECO.test(orden)) {
@@ -277,4 +331,4 @@ function abrir({ ejecutar, exportar, proyecto }) {
   return panel;
 }
 
-module.exports = { abrir, HUECO };
+module.exports = { abrir, HUECO, html, partirOrden };
