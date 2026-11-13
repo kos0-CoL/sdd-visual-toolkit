@@ -14,8 +14,8 @@ import zipfile
 from pathlib import Path
 
 # Lo que `ide/PRUEBA-MANUAL.md` promete que viaja en el paquete.
-ESPERADOS = ("extension/extension.js", "extension/package.json",
-             "extension/readme.md")
+ESPERADOS = ("extension/extension.js", "extension/chat.js",
+             "extension/package.json", "extension/readme.md")
 MANIFIESTO = ("[Content_Types].xml", "extension.vsixmanifest")
 # `vsce` renombra LICENSE a LICENSE.txt: basta con que empiece así.
 LICENCIA = "extension/LICENSE"

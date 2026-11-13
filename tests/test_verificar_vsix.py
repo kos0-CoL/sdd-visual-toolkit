@@ -20,6 +20,7 @@ BASE = {
     "[Content_Types].xml": "<Types/>",
     "extension.vsixmanifest": "<PackageManifest/>",
     "extension/extension.js": "// extension\n",
+    "extension/chat.js": "// chat\n",
     "extension/package.json": '{"name": "sdd-visual-toolkit"}',
     "extension/readme.md": "# SDD\n",
     "extension/LICENSE.txt": "MIT\n",

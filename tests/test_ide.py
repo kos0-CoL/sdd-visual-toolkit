@@ -158,7 +158,8 @@ class TestManifiesto(unittest.TestCase):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         self.assertIn("'Abrir carpeta…'", fuente)
         self.assertIn("workbench.action.files.openFolder", fuente)
-        self.assertEqual(fuente.count("sinCarpeta();"), 2)
+        # Paleta ("ejecutar"), clic derecho ("abrirArtefacto") y chat.
+        self.assertEqual(fuente.count("sinCarpeta();"), 3)
         manifiesto = json.loads((IDE / "package.json").read_text(
             encoding="utf-8"))
         bienvenidas = {v["view"]: v
@@ -168,6 +169,24 @@ class TestManifiesto(unittest.TestCase):
             self.assertIn("workbench.action.files.openFolder",
                           vista["contents"])
             self.assertEqual(vista["when"], "workspaceFolderCount == 0")
+
+    def test_el_chat_dibuja_las_pildoras_en_un_panel(self):
+        """VS Code no deja botones dentro de Copilot Chat: el panel los dibuja."""
+        fuente = (IDE / "chat.js").read_text(encoding="utf-8")
+        self.assertIn("createWebviewPanel(", fuente)
+        self.assertIn("'sddChat'", fuente)
+        self.assertIn("const HUECO = /«[^»]*»/;", fuente)
+        # Las píldoras se construyen como botones y avisan a la extensión.
+        self.assertIn("createElement('button')", fuente)
+        self.assertIn("postMessage({ tipo: 'orden'", fuente)
+        manifiesto = json.loads((IDE / "package.json").read_text(
+            encoding="utf-8"))
+        ids = {c["command"] for c in manifiesto["contributes"]["commands"]}
+        self.assertIn("sdd.chat", ids)
+        self.assertIn("view/title", manifiesto["contributes"]["menus"])
+        extension = (IDE / "extension.js").read_text(encoding="utf-8")
+        self.assertIn("registerCommand('sdd.chat'", extension)
+        self.assertIn("correrParaChat", extension)
 
     def test_clarify_valida_antes_de_abrir_el_terminal(self):
         """`clarify` es interactivo, pero un SPEC-ID inexistente falla antes:
