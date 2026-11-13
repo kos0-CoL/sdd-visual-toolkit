@@ -352,6 +352,74 @@ function inicializar(dir) {
   });
 }
 
+/* Auto-actualización del toolkit desde el panel integrado (§40).
+ *
+ * Consulta PyPI (solo lectura), muestra el diálogo de confirmación con la
+ * versión instalada vs disponible, y aplica solo si el usuario acepta.
+ * Nunca se actualiza automáticamente: el usuario decide.
+ */
+async function actualizarToolkit() {
+  const dir = carpeta();
+  if (!dir) {
+    sinCarpeta();
+    return;
+  }
+  /* Paso 1: consultar si hay versión nueva (solo lectura). */
+  const verificacion = await correrParaChat(dir, ['update', '--verificar']);
+  const salida = verificacion.salida || '';
+  const match = salida.match(/Hay una versión nueva disponible:\s*(\S+)/);
+  const instaladaMatch = salida.match(/Versión instalada:\s*(\S+)/);
+  const disponible = match ? match[1] : null;
+  const instalada = instaladaMatch ? instaladaMatch[1] : 'desconocida';
+
+  if (!disponible) {
+    if (salida.includes('Ya tienes la versión más reciente')) {
+      await vscode.window.showInformationMessage(
+        `SDD: ya tienes la versión más reciente (${instalada}).`);
+    } else if (verificacion.codigo !== 0) {
+      await vscode.window.showErrorMessage(
+        'SDD: no se pudo consultar si hay una versión nueva del toolkit.');
+    } else {
+      await vscode.window.showWarningMessage(
+        'SDD: no se pudo determinar si hay una versión nueva del toolkit.');
+    }
+    return;
+  }
+
+  /* Paso 2: preguntar al usuario si quiere actualizar. Diálogo modal, el
+   * usuario elige. Nunca es automático. */
+  const elegir = await vscode.window.showInformationMessage(
+    `SDD: hay una versión nueva del toolkit (${disponible}, instalada ${instalada}). ¿Actualizar ahora?`,
+    { modal: true },
+    'Actualizar',
+    'Cancelar'
+  );
+  if (elegir !== 'Actualizar') return;
+
+  /* Paso 3: aplicar con consentimiento explícito. Barra de progreso mientras
+   * corre `pip install -U` y refresca los archivos del proyecto. */
+  let aplicando;
+  await vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: 'SDD: actualizando toolkit',
+    cancellable: false,
+  }, async () => {
+    aplicando = await correrParaChat(dir, ['update', '--aplicar', '--forzar']);
+  });
+
+  if (aplicando.codigo !== 0) {
+    await vscode.window.showErrorMessage(
+      'SDD: no se pudo actualizar el toolkit. Usá "Ver salida" para detalles.');
+    mostrarSalida('toolkit update --aplicar', aplicando.codigo, aplicando.salida);
+    return;
+  }
+
+  /* Paso 4: refrescar vistas y barra, y notificar resultado. */
+  refrescar();
+  await vscode.window.showInformationMessage(
+    `SDD: toolkit actualizado a ${disponible}. Los archivos del proyecto se refrescaron.`);
+}
+
 /* `clarify` pregunta por stdin, así que corre en el terminal; pero un SPEC-ID
  * inexistente falla antes de preguntar nada y ese ⛔ se perdía al fondo. Se
  * valida con `--list`, que solo lee, y el terminal se abre si pasa. */
@@ -384,6 +452,12 @@ function ejecutar(cliArgs) {
   const argv = Array.isArray(cliArgs) ? cliArgs : cliArgs.trim().split(/\s+/);
   if (argv[0] === 'init') {
     inicializar(dir);
+    return;
+  }
+  /* `update` no se ejecuta como un comando cualquiera: abre el diálogo de
+   * confirmación y aplica solo si el usuario acepta. Nunca automático. */
+  if (argv[0] === 'update') {
+    actualizarToolkit();
     return;
   }
   if (INTERACTIVOS.has(argv[0])) {
@@ -745,6 +819,7 @@ function activate(contexto) {
         ejecutar: (argv) => correrParaChat(carpeta() || dir, argv),
         exportar: () => cargarDoc(),
         proyecto: dir,
+        ejecutarActualizacion: () => actualizarToolkit(),
       });
     }),
     /* Ejecutar una orden desde el panel integrado (fase, tarea, píldora) en
@@ -792,10 +867,7 @@ function activate(contexto) {
   contexto.subscriptions.push(
     vscode.window.registerTreeDataProvider('sddFases', vista),
     vscode.window.registerTreeDataProvider('sddFlujo', flujo),
-    vscode.commands.registerCommand('sdd.actualizar', () => {
-      vista.actualizar();
-      flujo.actualizar();
-    })
+    vscode.commands.registerCommand('sdd.actualizar', actualizarToolkit)
   );
   /* Panel de estado: fase actual + siguiente recomendado. */
   const barra = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);

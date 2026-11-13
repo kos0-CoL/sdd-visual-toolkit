@@ -115,6 +115,50 @@ def _ya_ignorada(regla: str, lineas: list[str]) -> bool:
     return False
 
 
+def actualizar_ide(raiz, cli, python: str, gitignore: bool = True
+                   ) -> tuple[list[str], list[str], list[str]]:
+    """Sobrescribe los ajustes y tareas del IDE con la copia del toolkit en uso.
+
+    Se invoca tras actualizar el core para que `.vscode/settings.json` y
+    `.vscode/tasks.json` apunten al `cli/main.py` y al intérprete de la nueva
+    versión. Devuelve `(escritos, existentes, añadidas)` como `preparar`.
+    """
+    raiz = pathlib.Path(raiz)
+    escritos: list[str] = []
+    existentes: list[str] = []
+    añadidas: list[str] = []
+    for nombre, contenido in (
+        (AJUSTES, _ajustes(python, pathlib.Path(cli))),
+        (TAREAS, _tareas(python, pathlib.Path(cli))),
+    ):
+        destino = raiz / CARPETA / nombre
+        relativo = f"{CARPETA}/{nombre}"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
+            json.dumps(contenido, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        escritos.append(relativo)
+    if not gitignore:
+        return escritos, existentes, añadidas
+    destino = raiz / GITIGNORE
+    if not destino.exists():
+        destino.write_text(IGNORAR, encoding="utf-8")
+        escritos.append(GITIGNORE)
+    else:
+        previo = destino.read_text(encoding="utf-8")
+        lineas = previo.splitlines()
+        añadidas = [r for r in REGLAS_IGNORADAS if not _ya_ignorada(r, lineas)]
+        if añadidas:
+            separador = "" if not previo or previo.endswith("\n") else "\n"
+            destino.write_text(
+                previo + separador + "\n".join(añadidas) + "\n",
+                encoding="utf-8")
+        else:
+            existentes.append(GITIGNORE)
+    return escritos, existentes, añadidas
+
+
 def preparar(raiz, cli, python: str, gitignore: bool = True
              ) -> tuple[list[str], list[str], list[str]]:
     """Escribe los ajustes y las tareas del IDE que falten, y el `.gitignore`.

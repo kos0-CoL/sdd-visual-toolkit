@@ -98,7 +98,7 @@
       {"command": "sdd.restricciones", "title": "SDD: Panel de restricciones"},
       {"command": "sdd.diff", "title": "SDD: Visual AST diff"},
       {"command": "sdd.export", "title": "SDD: Foto JSON (export)"},
-      {"command": "sdd.actualizar", "title": "SDD: Actualizar vista lateral"},
+      {"command": "sdd.actualizar", "title": "SDD: Actualizar toolkit"},
       {"command": "sdd.abrirArtefacto", "title": "SDD: Abrir artefacto de la fase", "icon": "$(file-symlink-file)"}
     ],
     "menus": {

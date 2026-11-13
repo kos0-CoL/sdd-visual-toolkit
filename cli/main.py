@@ -32,6 +32,7 @@ from cli.commands import traza as cmd_traza  # noqa: E402
 from cli.commands import historia as cmd_historia  # noqa: E402
 from cli.commands import tablero as cmd_tablero  # noqa: E402
 from cli.commands import arbol as cmd_arbol  # noqa: E402
+from cli.commands import update as cmd_update  # noqa: E402
 from cli.commands import restricciones as cmd_restricciones  # noqa: E402
 from cli.commands import diff as cmd_diff  # noqa: E402
 from cli.commands import siguiente as cmd_siguiente  # noqa: E402
@@ -480,6 +481,22 @@ def construir_parser() -> argparse.ArgumentParser:
     p_export = sub.add_parser("export",
                               help="foto JSON para IDE/MCP (RF-38)")
     p_export.set_defaults(func=cmd_export.despachar)
+
+    p_update = sub.add_parser(
+        "update", help="verificar y aplicar actualizaciones del toolkit")
+    p_update.add_argument(
+        "--verificar", action="store_true",
+        help="solo consultar PyPI y reportar si hay versión nueva (solo lectura)")
+    p_update.add_argument(
+        "--aplicar", action="store_true",
+        help="actualizar el core y refrescar archivos del proyecto si hay versión nueva")
+    p_update.add_argument(
+        "--forzar", action="store_true",
+        help="aplicar sin pedir confirmación (solo para scripts)")
+    p_update.add_argument(
+        "--sin-gitignore", action="store_true",
+        help="no tocar el .gitignore del proyecto")
+    p_update.set_defaults(func=cmd_update.despachar)
 
     p_comandos = sub.add_parser(
         "comandos", help="comandos de barra para agentes (§31)")

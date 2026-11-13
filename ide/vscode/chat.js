@@ -183,6 +183,9 @@ function html(webview) {
     if (nav.recomendada && !lista.some((p) => p.comando === nav.recomendada)) {
       lista.unshift({ etiqueta: 'Siguiente paso', comando: nav.recomendada, recomendada: true });
     }
+    /* Píldora para actualizar el toolkit: consulta PyPI, pregunta al usuario
+     * y aplica solo si acepta. Nunca es automática. */
+    lista.push({ etiqueta: 'Actualizar toolkit', comando: 'update', recomendada: false });
     for (const p of lista) {
       const boton = document.createElement('button');
       boton.className = 'pildora'

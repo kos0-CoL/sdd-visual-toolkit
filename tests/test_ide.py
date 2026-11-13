@@ -158,8 +158,9 @@ class TestManifiesto(unittest.TestCase):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         self.assertIn("'Abrir carpeta…'", fuente)
         self.assertIn("workbench.action.files.openFolder", fuente)
-        # Paleta ("ejecutar"), clic derecho ("abrirArtefacto") y chat.
-        self.assertEqual(fuente.count("sinCarpeta();"), 4)
+        # Paleta ("ejecutar"), clic derecho ("abrirArtefacto"), chat y
+        # auto-actualización del toolkit (`actualizarToolkit`).
+        self.assertEqual(fuente.count("sinCarpeta();"), 5)
         manifiesto = json.loads((IDE / "package.json").read_text(
             encoding="utf-8"))
         bienvenidas = {v["view"]: v
