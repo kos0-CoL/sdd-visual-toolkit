@@ -158,7 +158,23 @@ def cmd_clarify_answer(args) -> int:
     return codigo
 
 
+def _mostrar_esencial(p) -> None:
+    print(f"\n❓ {p.id} [{p.kind}]")
+    print(f"   {p.texto}")
+    if p.contexto:
+        print(f"   ↳ {p.contexto}")
+    if p.tipo == "opciones" and p.opciones:
+        for n, op in enumerate(p.opciones, 1):
+            marca_recomendada = " ✓ (recomendado)" if n == 1 else ""
+            print(f"   {n}. {op}{marca_recomendada}")
+        print("   (número, texto libre, o 's' para omitir)")
+    else:
+        print("   (texto libre, o 's' para omitir)")
+
+
 def cmd_clarify_interactivo(args) -> int:
+    """Modo visual por defecto: 3-7 preguntas prioritarias, múltiple choice
+    con opción recomendada (primera). El humano elige qué aclarar."""
     raiz = _raiz(args)
     try:
         spec = mod_specify._cargar_spec(raiz, args.texto)
@@ -168,15 +184,22 @@ def cmd_clarify_interactivo(args) -> int:
     except (ClarifyError, SpecError, store.StoreError) as error:
         print(f"⛔ {error}")
         return 1
-    for pregunta in pendientes(preguntas):
-        mostrar_pregunta(pregunta)
+
+    esenciales = [p for p in preguntas if p.esencial and p.estado == PENDIENTE][:7]
+    if not esenciales:
+        print(f"🟢 No hay preguntas esenciales pendientes para {args.texto}.")
+        return cmd_clarify_gate_ns(raiz, spec.spec_id, esencial=True)
+
+    print(f"🔍 Preguntas prioritarias — {len(esenciales)} pregunta(s):")
+    for pregunta in esenciales:
+        _mostrar_esencial(pregunta)
         try:
             entrada = input("   > ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\n— interrumpido; lo respondido quedó guardado")
             break
         if entrada.lower() in ("s", "omitir", "skip"):
-            pregunta.estado = "omitida"
+            pregunta.estado = OMITIDA
             historial.append(
                 {"pregunta": pregunta.id, "respuesta": None,
                  "cambio": f"{pregunta.id}: omitida explícitamente por el humano"}
@@ -186,10 +209,14 @@ def cmd_clarify_interactivo(args) -> int:
         if _aplicar_respuesta(raiz, spec, preguntas, historial,
                               pregunta.id, entrada):
             continue
-    return cmd_clarify_gate_ns(raiz, spec.spec_id)
+
+    print(f"\n¿Qué desea hacer ahora?")
+    print(f"[ clarify {args.texto} --gate ]  [ clarify {args.texto} --list ]")
+    print(f"[ specify --show {args.texto} ]  [ plan {args.texto} ]")
+    return 0
 
 
-def cmd_clarify_gate_ns(raiz, spec_id: str) -> int:
+def cmd_clarify_gate_ns(raiz, spec_id: str, esencial: bool = False) -> int:
     try:
         spec = mod_specify._cargar_spec(raiz, spec_id)
         preguntas, _h = _asegurar_preguntas(raiz, spec, mod_enrich._registro_req(raiz))
@@ -199,6 +226,26 @@ def cmd_clarify_gate_ns(raiz, spec_id: str) -> int:
     resto = pendientes(preguntas)
     total = len(preguntas)
     hechas = total - len(resto)
+
+    if esencial:
+        esenciales_pendientes = [p for p in preguntas
+                                 if p.esencial and p.estado == PENDIENTE]
+        if esenciales_pendientes:
+            print(f"🔴 QUALITY GATE 1 (esencial): BLOQUEADO — "
+                  f"{len(esenciales_pendientes)} esencial(es) pendiente(s):")
+            for p in esenciales_pendientes:
+                print(f"   ○ {p.id} [{p.kind}] {p.texto}")
+            print(f"¿Qué desea hacer ahora?")
+            print(f"[ clarify {spec_id} ]  [ clarify {spec_id} --list ]")
+            return 1
+        esenciales_total = sum(1 for p in preguntas if p.esencial)
+        print(f"🟢 QUALITY GATE 1 (esencial): SUPERADO — "
+              f"{esenciales_total}/{esenciales_total} esencial(es) aclarada(s).")
+        print(f"{spec_id} lista para /plan (preguntas restantes se pueden dejar para después).")
+        print("¿Qué desea hacer ahora?")
+        print(f"[ specify --show {spec_id} ]  [ plan {spec_id} ]")
+        return 0
+
     if resto:
         print(f"🔴 QUALITY GATE 1: BLOQUEADO — {hechas}/{total} aclaradas, "
               f"{len(resto)} pendiente(s)")
@@ -218,7 +265,7 @@ def despachar(args) -> int:
     if args.list:
         return cmd_clarify_list(args)
     if getattr(args, "gate", False):
-        return cmd_clarify_gate_ns(_raiz(args), args.texto)
+        return cmd_clarify_gate_ns(_raiz(args), args.texto, esencial=False)
     if getattr(args, "answer", None) or getattr(args, "skip", None):
         return cmd_clarify_answer(args)
     if not args.texto:

@@ -226,7 +226,7 @@ const textos = (nodos) => nodos.map((n) => n.label);
     ? aclaraciones.command.arguments[0] : null;
   check('flujo: clic ejecuta clarify',
     aclaraciones && aclaraciones.command
-      && aclaraciones.command.command === 'sdd.ejecutar'
+      && aclaraciones.command.command === 'sdd.ejecutarEnChat'
       && (argvAclarar === 'clarify SPEC-001'
         || JSON.stringify(argvAclarar) === JSON.stringify(['clarify', 'SPEC-001'])),
     aclaraciones && JSON.stringify(aclaraciones.command));
@@ -339,7 +339,7 @@ const textos = (nodos) => nodos.map((n) => n.label);
   registros.mensajes.length = 0;
   registros.canal.length = 0;
   registros.canal_visible = false;
-  registros.comandos['sdd.ejecutar'](['build', 'PLAN-999']);
+  registros.comandos['sdd.ejecutarEnChat'](['build', 'PLAN-999']);
   await hasta(() => registros.mensajes.length);
   check('fallo: notificación con el mensaje de la CLI',
     registros.mensajes.some((m) => m.tipo === 'error' && /plan inexistente: PLAN-999/.test(m.texto)),
@@ -373,7 +373,7 @@ const textos = (nodos) => nodos.map((n) => n.label);
 
   registros.mensajes.length = 0;
   if (hijosAviso[0] && hijosAviso[0].command) {
-    await registros.comandos['sdd.ejecutar'](...hijosAviso[0].command.arguments);
+    await registros.comandos['sdd.ejecutarEnChat'](...hijosAviso[0].command.arguments);
   }
   await hasta(() => registros.mensajes.length);
   check('aviso: confirmación al terminar',

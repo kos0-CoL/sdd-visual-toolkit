@@ -239,7 +239,7 @@ def cmd_build_fail(args) -> int:
         tarea = next((t for t in tareas if t.id == args.fail), None)
         if tarea is None:
             raise BuildError(f"tarea inexistente: {args.fail}")
-        evento = registrar_fail(tarea, args.nota or "")
+        evento = registrar_fail(tarea, raiz, args.nota or "")
         _guardar(raiz, plan.plan_id, spec.spec_id, tareas)
         registrar(raiz, plan.plan_id, evento)
         _disparar_hooks(raiz, plan.plan_id, tarea.id,

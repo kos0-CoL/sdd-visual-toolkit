@@ -38,6 +38,7 @@ from cli.commands import siguiente as cmd_siguiente  # noqa: E402
 from cli.commands import status as cmd_status  # noqa: E402
 from cli.commands import cierre as cmd_cierre  # noqa: E402
 from cli.commands import export as cmd_export  # noqa: E402
+from cli.commands import modo as cmd_modo  # noqa: E402
 from cli.commands import tasks as cmd_tasks  # noqa: E402
 from cli.commands import specify as cmd_specify  # noqa: E402
 from core.requirements import (  # noqa: E402
@@ -493,6 +494,10 @@ def construir_parser() -> argparse.ArgumentParser:
     p_comandos.add_argument(
         "--regenerar", action="store_true",
         help="reescribir solo los clientes ya instalados, con la ruta actual")
+    p_comandos.add_argument(
+        "--verificar-cliente", metavar="CLIENTE",
+        choices=sorted(cmd_comandos.agent_commands.CLIENTES),
+        help="compruebe que los comandos de un cliente existen y tienen la ruta de CLI actual")
     p_comandos.set_defaults(func=cmd_comandos.despachar)
 
     p_impl = sub.add_parser("implement", help="alias de build (RF-36)")
@@ -513,6 +518,12 @@ def construir_parser() -> argparse.ArgumentParser:
     p_specs_list.set_defaults(func=cmd_specify.despachar, list=True,
                               show=None, approve=None, revise=None,
                               motivo=None, texto=None)
+
+    p_modo = sub.add_parser("modo", help="modo operativo: gestor u orquestador")
+    p_modo.add_argument("valor", nargs="?", default=None,
+                        choices=[store.MODO_GESTOR, store.MODO_ORQUESTADOR],
+                        help="gestor (humano implementa, motor verifica) o orquestador")
+    p_modo.set_defaults(func=cmd_modo.despachar)
 
     return parser
 

@@ -90,6 +90,10 @@ let refrescar = () => {};
 /* Canal de salida: hace de consola de la paleta y conserva lo que imprimió
  * la CLI, que ya no corre en un terminal. */
 let canal = null;
+/* Referencia al panel de chat abierto (si existe), para enviar órdenes
+ * desde el panel integrado y que se ejecuten en el chat en lugar de ir a
+ * terminal directamente. */
+let panelChat = null;
 
 /* Comandos que preguntan por stdin: solo tienen sentido en un terminal, donde
  * se puede escribir la respuesta. `clarify` sin `--answer` es ese caso. */
@@ -539,7 +543,7 @@ class VistaFlujo {
     if (!doc) {
       const it = new vscode.TreeItem('⛔ ' + error,
         vscode.TreeItemCollapsibleState.None);
-      it.command = { command: 'sdd.ejecutar', title: 'Ejecutar', arguments: ['init'] };
+      it.command = { command: 'sdd.ejecutarEnChat', title: 'Ejecutar en chat', arguments: ['init'] };
       return [it];
     }
     return (doc.flujo || []).map((fila) => {
@@ -559,8 +563,8 @@ class VistaFlujo {
       it._raiz = dir;
       if (fila.comando) {
         it.command = {
-          command: 'sdd.ejecutar',
-          title: 'Ejecutar',
+          command: 'sdd.ejecutarEnChat',
+          title: 'Ejecutar en chat',
           arguments: [fila.comando],
         };
       }
@@ -628,7 +632,9 @@ class VistaFases {
     const item = (texto, cliArgs, icono) => {
       const it = new vscode.TreeItem(texto, vscode.TreeItemCollapsibleState.None);
       if (cliArgs) {
-        it.command = { command: 'sdd.ejecutar', title: 'Ejecutar', arguments: [cliArgs] };
+        /* Clic normal: envía la orden al chat (no va directo a terminal).
+         * Para ejecutar directamente, usá el menú contextual o la paleta. */
+        it.command = { command: 'sdd.ejecutarEnChat', title: 'Ejecutar en chat', arguments: [cliArgs] };
       }
       if (icono) it.iconPath = new vscode.ThemeIcon(icono);
       return it;
@@ -725,7 +731,7 @@ function activate(contexto) {
   });
   /* Ejecutor genérico para los nodos clicables de la vista lateral. */
   contexto.subscriptions.push(
-    vscode.commands.registerCommand('sdd.ejecutar', (cliArgs) => ejecutarOrden(cliArgs)),
+    vscode.commands.registerCommand('sdd.ejecutarEnChat', (cliArgs) => ejecutarOrden(cliArgs)),
     /* Chat propio: VS Code no permite dibujar botones dentro de Copilot Chat
      * (los chat participants están deprecados), así que el flujo guiado vive
      * en un panel con píldoras clickeables. */
@@ -735,11 +741,46 @@ function activate(contexto) {
         sinCarpeta();
         return;
       }
-      chat.abrir({
+      panelChat = chat.abrir({
         ejecutar: (argv) => correrParaChat(carpeta() || dir, argv),
         exportar: () => cargarDoc(),
         proyecto: dir,
       });
+    }),
+    /* Ejecutar una orden desde el panel integrado (fase, tarea, píldora) en
+     * el chat, como si el usuario la hubiera escrito allí. Si el chat no está
+     * abierto, se abre primero y luego se envía la orden. */
+    vscode.commands.registerCommand('sdd.ejecutarEnChat', (comando) => {
+      const dir = carpeta();
+      if (!dir) {
+        sinCarpeta();
+        return;
+      }
+      const argv = Array.isArray(comando) ? comando : String(comando || '').trim().split(/\s+/);
+      if (!argv || !argv[0]) return;
+      if (!panelChat) {
+        try {
+          /* Abrir el chat y luego enviar la orden una vez listo. */
+          panelChat = chat.abrir({
+            ejecutar: (a) => correrParaChat(carpeta() || dir, a),
+            exportar: () => cargarDoc(),
+            proyecto: dir,
+          });
+          panelChat.webview.onDidReceiveMessage((mensaje) => {
+            if (mensaje.tipo === 'listo') {
+              panelChat.webview.postMessage({ tipo: 'ordenDesdePanel', comando: argv.join(' ') });
+            }
+          }, undefined, contexto.subscriptions);
+          return;
+        } catch (e) {
+          /* No se pudo abrir el chat (entorno sin editor real): ejecutar
+           * directamente como fallback. */
+          panelChat = null;
+          ejecutar(argv);
+          return;
+        }
+      }
+      panelChat.webview.postMessage({ tipo: 'ordenDesdePanel', comando: argv.join(' ') });
     })
   );
   /* Menú contextual del panel de flujo. */
@@ -758,13 +799,16 @@ function activate(contexto) {
   );
   /* Panel de estado: fase actual + siguiente recomendado. */
   const barra = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-  barra.command = 'sdd.status';
+  barra.command = 'sdd.ejecutarEnChat';
   const refrescarBarra = async () => {
     await vista.cargar();
     if (vista.doc) {
       barra.text = `$(graph) SDD: ${vista.doc.fase}`;
       barra.tooltip = vista.doc.navegacion.recomendada
-        ? `Siguiente: ${vista.doc.navegacion.recomendada}` : 'Ver estado';
+        ? `Siguiente: ${vista.doc.navegacion.recomendada} (clic: ejecutar en chat)` : 'Ver estado';
+      barra.command = vista.doc.navegacion.recomendada
+        ? { command: 'sdd.ejecutarEnChat', title: 'Ejecutar siguiente en chat', arguments: [vista.doc.navegacion.recomendada] }
+        : { command: 'sdd.status', title: 'Estado', arguments: [] };
       barra.show();
     } else {
       barra.hide();

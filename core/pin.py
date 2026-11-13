@@ -79,6 +79,26 @@ def _simbolos(fuente: str) -> tuple[dict, dict, dict, dict, dict]:
     return publicas, todas, imports, globales, retornos
 
 
+def _cuerpos(fuente: str) -> dict[str, str]:
+    """{nombre_publico: hash_del_cuerpo_ast} para funciones y clases públicas.
+
+    El cuerpo es el nodo AST sin la firma (decorators, nombre, args, returns).
+    Permite detectar cambios de comportamiento interno que preservan la firma.
+    """
+    cuerpos: dict[str, str] = {}
+    try:
+        arbol = ast.parse(fuente)
+    except SyntaxError:
+        return cuerpos
+    for nodo in arbol.body:
+        if isinstance(nodo, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if nodo.name.startswith("_"):
+                continue
+            cuerpo = ast.dump(nodo, include_attributes=False)
+            cuerpos[nodo.name] = hashlib.sha256(cuerpo.encode("utf-8")).hexdigest()[:16]
+    return cuerpos
+
+
 def snapshot_archivo(ruta: Path) -> dict | None:
     if not ruta.is_file() or ruta.suffix != ".py":
         return None
@@ -87,8 +107,10 @@ def snapshot_archivo(ruta: Path) -> dict | None:
     except OSError:
         return None
     publicas, _todas, imports, globales, retornos = _simbolos(fuente)
+    cuerpos = _cuerpos(fuente)
     return {"sha": _sha256(ruta), "publicas": publicas,
-            "imports": imports, "globales": globales, "retornos": retornos}
+            "imports": imports, "globales": globales, "retornos": retornos,
+            "cuerpos": cuerpos}
 
 
 def tomar_baseline(tarea, raiz: Path) -> dict:
@@ -145,15 +167,17 @@ def verificar_cambios(tarea, baseline: dict, raiz: Path) -> list[Desviacion]:
                     f"firma cambiada en «{nombre}»: {viejas[nombre]} → {firma}; "
                     "verifique compatibilidad con llamadores (§12.B)"))
         if actual["sha"] != anterior["sha"] and not es_prueba:
-            # Cambio de cuerpo interno sin cambio de firma pública: la
-            # desviación queda como B (técnica, con justificación) hasta
-            # corroborarse con evidencia de comportamiento (§12.B).
-            if not any(d.archivo == rel for d in desviaciones):
-                desviaciones.append(Desviacion(
-                    "B", rel,
-                    f"cambio de cuerpo interno en «{rel}» sin cambio de firma "
-                    f"pública (hash {str(anterior.get('sha', ''))[:8]} → "
-                    f"{str(actual.get('sha', ''))[:8]}): verifique comportamiento (§12.B)"))
+            # Si las firmas públicas son iguales, detectar cambio de cuerpo
+            # interno (mismo contrato, distinto comportamiento) como B.
+            if viejas == nuevas:
+                cuerpos_viejos = anterior.get("cuerpos", {})
+                cuerpos_nuevos = actual.get("cuerpos", {})
+                if cuerpos_viejos != cuerpos_nuevos:
+                    if not any(d.archivo == rel for d in desviaciones):
+                        desviaciones.append(Desviacion(
+                            "B", rel,
+                            f"cambio de cuerpo interno en «{rel}» sin cambio de "
+                            f"firma pública: verifique comportamiento (§12.B)"))
 
     # Archivos fuera de los autorizados: se compara la foto amplia de la
     # línea base contra el árbol actual. Incluye archivos NUEVOS (no están

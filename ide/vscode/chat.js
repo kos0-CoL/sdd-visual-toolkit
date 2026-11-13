@@ -279,6 +279,15 @@ function html(webview) {
       burbuja('sdd', 'ejecutando ' + msg.orden + '…');
       return;
     }
+    if (msg.tipo === 'ordenDesdePanel') {
+      /* Una orden que vino del panel integrado (fase, tarea, píldora).
+       * Se muestra como burbuja de usuario y se ejecuta igual que si la
+       * hubiera escrito el usuario. */
+      const comando = msg.comando || '';
+      burbuja('yo', comando);
+      vscode.postMessage({ tipo: 'orden', comando });
+      return;
+    }
   });
 
   vscode.postMessage({ tipo: 'listo' });

@@ -64,7 +64,7 @@ class TestManifiesto(unittest.TestCase):
             encoding="utf-8"))
         en_json = {c["command"] for c in manifiesto["contributes"]["commands"]}
         # La paleta registrada en JS existe en el manifiesto (más 2 internos).
-        self.assertTrue(en_js <= (en_json | {"sdd.ejecutar", "sdd.actualizar"}))
+        self.assertTrue(en_js <= (en_json | {"sdd.ejecutarEnChat", "sdd.actualizar"}))
 
     def test_pin_pide_plan_y_tarea(self):
         """`pin` es por tarea: con un solo campo la paleta respondía ⛔."""
@@ -149,7 +149,7 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("necesita un dato", texto)
         # Todo clic del panel y de las píldoras pasa por `ejecutarOrden`.
         self.assertIn(
-            "registerCommand('sdd.ejecutar', (cliArgs) => ejecutarOrden(cliArgs))",
+            "registerCommand('sdd.ejecutarEnChat', (cliArgs) => ejecutarOrden(cliArgs))",
             fuente)
 
     def test_sin_carpeta_ofrece_abrirla(self):
@@ -159,7 +159,7 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("'Abrir carpeta…'", fuente)
         self.assertIn("workbench.action.files.openFolder", fuente)
         # Paleta ("ejecutar"), clic derecho ("abrirArtefacto") y chat.
-        self.assertEqual(fuente.count("sinCarpeta();"), 3)
+        self.assertEqual(fuente.count("sinCarpeta();"), 4)
         manifiesto = json.loads((IDE / "package.json").read_text(
             encoding="utf-8"))
         bienvenidas = {v["view"]: v
