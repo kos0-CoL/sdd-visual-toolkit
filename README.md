@@ -78,7 +78,7 @@ Deja dos nombres para el mismo programa: **`sdd`** y **`toolkit`**, en
 
 ```console
 $ sdd --version
-toolkit 0.2.5
+toolkit 0.2.6
 ```
 
 Si responde `Orden «sdd» no encontrada`, ese directorio no está en el `PATH`:

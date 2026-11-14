@@ -308,7 +308,7 @@ button.clarif-cancelar { padding: 6px 14px; font-family: inherit; font-size: 12.
     }
     /* Si escriben clarify SPEC-001 directamente en el campo, abrir el panel
      * visual de clarificaciones (no tratarlo como idea). */
-    if (/^clarify\s+SPEC-\d+\s*$/i.test(valor)) {
+    if (/^clarify\\s+SPEC-\\d+\\s*$/i.test(valor)) {
       burbuja('yo', valor);
       vscode.postMessage({ tipo: 'orden', comando: valor + ' --panel' });
       texto.value = '';
@@ -452,7 +452,7 @@ function aplicarClarificaciones() {
     // Construir el comando: clarify SPEC --answer CLA-ID valor1 valor2 ...
     /* Un valor con espacios se manda entre comillas: la CLI recibe una sola
      * respuesta, no una lista de palabras sueltas. */
-    const citados = valores.map((v) => (/[\s"]/.test(v) ? '"' + v.replace(/"/g, '') + '"' : v));
+    const citados = valores.map((v) => (/[\\s"]/.test(v) ? '"' + v.replace(/"/g, '') + '"' : v));
     const comando = 'clarify ' + clarifSpecId + ' --answer ' + idPreg + ' ' + citados.join(' ');
     respuestas.push(comando);
   }

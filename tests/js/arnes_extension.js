@@ -460,6 +460,16 @@ const textos = (nodos) => nodos.map((n) => n.label);
     textos(nodos).join(' | '));
   settings['sddToolkit.python'] = PYTHON;
 
+  /* El script del webview viaja dentro de un template literal: una barra
+   * invertida suelta se pierde al armar el HTML (`\s` queda como `s`) y el
+   * regex deja de servir. Se revisa el HTML ya servido, no el fuente. */
+  const chat = require(path.join(REPO, 'ide', 'vscode', 'chat.js'));
+  const servido = chat.html({ cspSource: 'vscode-webview:' });
+  const inline = (servido.match(/<script nonce="[^"]*">([\s\S]*?)<\/script>/) || [])[1] || '';
+  check('webview: el escapado sobrevive al template',
+    inline.includes('/[\\s"]/') && inline.includes('clarify\\s+SPEC-\\d+'),
+    inline.includes('/[s"]/') ? 'el regex perdió la barra invertida' : '');
+
   const fallos = resultados.filter((r) => !r.ok).length;
   console.log(`\n== ${resultados.length - fallos}/${resultados.length} comprobaciones en verde ==`);
   process.exit(fallos ? 1 : 0);

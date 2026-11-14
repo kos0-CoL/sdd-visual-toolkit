@@ -25,7 +25,7 @@ Comprobá que quedó:
 
 ```console
 $ sdd --version
-toolkit 0.2.5
+toolkit 0.2.6
 ```
 
 Si dice `Orden «sdd» no encontrada`, `~/.local/bin` no está en tu `PATH`:
@@ -35,12 +35,12 @@ agregalo y abrí una terminal nueva.
 
 ## Paso 2. Instalá la extensión (una vez por usuario)
 
-Bajá `sdd-visual-toolkit-0.2.5.vsix` de la
+Bajá `sdd-visual-toolkit-0.2.6.vsix` de la
 [página de la última release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/latest)
 y pegá:
 
 ```bash
-code --install-extension ~/Descargas/sdd-visual-toolkit-0.2.5.vsix
+code --install-extension ~/Descargas/sdd-visual-toolkit-0.2.6.vsix
 ```
 
 En VS Code también sirve *Extensiones → ⋯ → Instalar desde VSIX…*. Después,
