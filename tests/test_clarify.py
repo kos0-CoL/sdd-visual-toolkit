@@ -58,7 +58,8 @@ class TestDeteccion(unittest.TestCase):
         contra = [p for p in preguntas if p.kind == "contradiccion"]
         self.assertEqual(len(contra), 1)
         self.assertEqual(contra[0].tipo, "opciones")
-        self.assertIn("Todavía no lo sé", contra[0].opciones)
+        etiquetas = [getattr(o, "etiqueta", str(o)) for o in contra[0].opciones]
+        self.assertIn("Todavía no lo sé", etiquetas)
 
     def test_sin_duplicados_y_sin_repetir_contestadas(self):
         spec, reqs = _spec_con_evidencia()

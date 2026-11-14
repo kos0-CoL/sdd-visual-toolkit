@@ -14,9 +14,20 @@ RESPONDIDA = "respondida"
 PENDIENTE = "pendiente"
 OMITIDA = "omitida"
 
+# Respuestas que la gente escribe a mano y valen por una opción concreta: así
+# «Aceptado» o «sí» no obligan a copiar el valor exacto del panel.
+SINONIMOS_OPCION = {
+    "confirmar": ("aceptar", "aceptado", "aceptada", "confirmado", "si", "ok",
+                  "vale"),
+    "descartar": ("rechazar", "rechazado", "rechazada", "descartado", "no"),
+    "dentro": ("dentro del alcance", "aceptar", "aceptado", "confirmar", "si"),
+    "fuera": ("fuera del alcance", "rechazar", "rechazado", "descartar", "no"),
+}
+
 INDEFINIDAS = {
     "todavia no lo se",
     "no lo se",
+    "ns",
     "ns/nc",
     "no se",
     "pendiente",
@@ -78,6 +89,15 @@ class ClarifyError(ValueError):
 
 
 @dataclass
+class Opcion:
+    """Una respuesta posible de una pregunta de múltiple choice."""
+    valor: str          # lo que se guarda si se elige
+    etiqueta: str       # texto que se le muestra al humano
+    descripcion: str    # «qué es y para qué sirve» esta opción
+    recomendada: bool = False  # si el sistema la sugiere por defecto
+
+
+@dataclass
 class Pregunta:
     id: str
     kind: str  # contradiccion | supuesto | rnf | regla | dependencia | confirmar_req | entidad_datos
@@ -89,27 +109,49 @@ class Pregunta:
     estado: str = PENDIENTE
     respuesta: str | None = None
     esencial: bool = False  # si es prioritaria para el modo esencial (3-7 preguntas)
+    descripcion: str = ""   # texto explicativo de la pregunta para el panel
+    es_multiple: bool = False  # si se puede elegir más de una opción
 
     def clave(self) -> str:
         return f"{self.kind}::{self.ref}"
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        datos = asdict(self)
+        datos["opciones"] = [
+            {"valor": o.valor, "etiqueta": o.etiqueta, "descripcion": o.descripcion,
+             "recomendada": o.recomendada}
+            if isinstance(o, Opcion) else o
+            for o in self.opciones
+        ]
+        return datos
 
     @classmethod
     def from_dict(cls, datos: dict) -> "Pregunta":
         try:
+            opciones = []
+            for o in datos.get("opciones", []):
+                if isinstance(o, dict):
+                    opciones.append(Opcion(
+                        valor=str(o.get("valor", o.get("etiqueta", ""))),
+                        etiqueta=str(o.get("etiqueta", "")),
+                        descripcion=str(o.get("descripcion", "")),
+                        recomendada=bool(o.get("recomendada", False)),
+                    ))
+                else:
+                    opciones.append(o)
             return cls(
                 id=str(datos["id"]),
                 kind=str(datos["kind"]),
                 texto=str(datos["texto"]),
                 contexto=str(datos.get("contexto", "")),
                 tipo=str(datos.get("tipo", "libre")),
-                opciones=list(datos.get("opciones", [])),
+                opciones=opciones,
                 ref=str(datos.get("ref", "")),
                 estado=str(datos.get("estado", PENDIENTE)),
                 respuesta=datos.get("respuesta"),
                 esencial=bool(datos.get("esencial", False)),
+                descripcion=str(datos.get("descripcion", "")),
+                es_multiple=bool(datos.get("es_multiple", False)),
             )
         except (KeyError, TypeError) as error:
             raise ClarifyError(f"pregunta corrupta: {error}") from error
@@ -123,7 +165,8 @@ def detectar(spec, reqs: list, existentes: list[Pregunta] | None = None) -> list
 
     def agregar(kind: str, ref: str, texto: str, contexto: str,
                tipo: str = "libre", opciones: list | None = None,
-               esencial: bool = False) -> None:
+               esencial: bool = False, descripcion: str = "",
+               es_multiple: bool = False) -> None:
         clave = f"{kind}::{ref}"
         if clave in previas:
             return
@@ -137,6 +180,8 @@ def detectar(spec, reqs: list, existentes: list[Pregunta] | None = None) -> list
                 opciones=opciones or [],
                 ref=ref,
                 esencial=esencial,
+                descripcion=descripcion,
+                es_multiple=es_multiple,
             )
         )
 
@@ -155,7 +200,19 @@ def detectar(spec, reqs: list, existentes: list[Pregunta] | None = None) -> list
                     f"«{ftexto}» comparte tema ({detalle}) con algo fuera de alcance: «{excl}». ¿Está dentro o fuera?",
                     f"Posible contradicción entre {req_id} y §13 Fuera de alcance.",
                     tipo="opciones",
-                    opciones=["Dentro del alcance", "Fuera del alcance", "Todavía no lo sé"],
+                    opciones=[
+                        Opcion("dentro", "Dentro del alcance",
+                               "El requerimiento se mantiene dentro del alcance del proyecto.",
+                               recomendada=True),
+                        Opcion("fuera", "Fuera del alcance",
+                               "El requerimiento se descarta; no es parte del proyecto.",
+                               recomendada=False),
+                        Opcion("ns", "Todavía no lo sé",
+                               "Se deja pendiente para decidir después.",
+                               recomendada=False),
+                    ],
+                    descripcion="Decide si este requerimiento forma parte del alcance del sistema o no.",
+                    es_multiple=False,
                 )
 
     # §7.2: supuestos pendientes (faltantes del ENR).
@@ -186,7 +243,19 @@ def detectar(spec, reqs: list, existentes: list[Pregunta] | None = None) -> list
                 f"¿Se confirma este requerimiento? «{ftexto}»",
                 f"{req_id} está en estado {estado}.",
                 tipo="opciones",
-                opciones=["Confirmar", "Descartar", "Todavía no lo sé"],
+                opciones=[
+                    Opcion("confirmar", "Confirmar",
+                           "El requerimiento se acepta y pasa a estado aceptado.",
+                           recomendada=True),
+                    Opcion("descartar", "Descartar",
+                           "El requerimiento se rechaza y se excluye de la SPEC.",
+                           recomendada=False),
+                    Opcion("ns", "Todavía no lo sé",
+                           "Se deja pendiente para decidir después.",
+                           recomendada=False),
+                ],
+                descripcion="Valida si este requerimiento forma parte del sistema o se descarta.",
+                es_multiple=False,
             )
 
     # §7.2: tipos de datos ambiguos (entidades sin atributos).
@@ -217,28 +286,86 @@ def pendientes(preguntas: list[Pregunta]) -> list[Pregunta]:
     return [p for p in preguntas if p.estado == PENDIENTE]
 
 
-def responder(pregunta: Pregunta, respuesta: str, spec, registro_req) -> str:
+def preguntas_para_panel(preguntas: list[Pregunta]) -> list[dict]:
+    """Serializa las preguntas pendientes para el panel webview visual."""
+    resultado = []
+    for p in preguntas:
+        if p.estado != PENDIENTE:
+            continue
+        resultado.append({
+            "id": p.id,
+            "kind": p.kind,
+            "texto": p.texto,
+            "contexto": p.contexto,
+            "descripcion": p.descripcion,
+            "tipo": p.tipo,
+            "es_multiple": p.es_multiple,
+            "opciones": [
+                {
+                    "valor": o.valor,
+                    "etiqueta": o.etiqueta,
+                    "descripcion": o.descripcion,
+                    "recomendada": o.recomendada,
+                } if isinstance(o, Opcion) else {"valor": str(o), "etiqueta": str(o), "descripcion": "", "recomendada": False}
+                for o in p.opciones
+            ],
+        })
+    return resultado
+
+
+def responder(pregunta: Pregunta, respuesta: str | list[str], spec, registro_req) -> str:
     """Aplica una respuesta humana: actualiza la SPEC y devuelve qué cambió
-    (§7.4). Nunca inventa contenido: solo registra lo que el humano dijo."""
+    (§7.4). Nunca inventa contenido: solo registra lo que el humano dijo.
+    `respuesta` puede ser un texto o una lista de valores (múltiple choice)."""
     if pregunta.estado != PENDIENTE:
         raise ClarifyError(f"{pregunta.id} ya fue contestada; no se repite (§7.4)")
-    respuesta = respuesta.strip()
-    if not respuesta:
-        raise ClarifyError("respuesta vacía; use --skip para omitir explícitamente")
-    if pregunta.tipo == "opciones" and respuesta.isdigit():
-        indice = int(respuesta) - 1
-        if 0 <= indice < len(pregunta.opciones):
-            respuesta = pregunta.opciones[indice]
-    pregunta.respuesta = respuesta
+
+    # Normalizar a lista para manejar uniforme
+    if isinstance(respuesta, str):
+        respuesta = respuesta.strip()
+        if not respuesta:
+            raise ClarifyError("respuesta vacía; use --skip para omitir explícitamente")
+        valores = [respuesta]
+    else:
+        valores = [v.strip() for v in respuesta if v.strip()]
+        if not valores:
+            raise ClarifyError("respuesta vacía; use --skip para omitir explícitamente")
+
+    if pregunta.tipo == "opciones":
+        # Índices, valores (lo que manda el panel) y etiquetas (lo que se
+        # escribe a mano) terminan en el valor canónico de la opción.
+        canonicos: dict[str, str] = {}
+        for opcion in pregunta.opciones:
+            if isinstance(opcion, Opcion):
+                canonicos[normalizar(opcion.valor)] = opcion.valor
+                canonicos[normalizar(opcion.etiqueta)] = opcion.valor
+                for sinonimo in SINONIMOS_OPCION.get(opcion.valor, ()):
+                    canonicos[normalizar(sinonimo)] = opcion.valor
+            else:
+                canonicos[normalizar(str(opcion))] = str(opcion)
+        normalizados = []
+        for v in valores:
+            if v.isdigit():
+                indice = int(v) - 1
+                if 0 <= indice < len(pregunta.opciones):
+                    op = pregunta.opciones[indice]
+                    normalizados.append(op.valor if isinstance(op, Opcion) else str(op))
+                    continue
+            normalizados.append(canonicos.get(normalizar(v), v))
+        valores = normalizados
+
+    # Si es múltiple, unir con separador para guardar; si es simple, usar el primero
+    respuesta_guardar = ", ".join(valores) if len(valores) > 1 else valores[0]
+    pregunta.respuesta = respuesta_guardar
     pregunta.estado = RESPONDIDA
 
     kind, ref = pregunta.kind, pregunta.ref
-    if es_indefinida(respuesta):
+    if es_indefinida(respuesta_guardar):
         return f"{pregunta.id}: sin definir por ahora; se conserva como pendiente de futuro"
 
     if kind == "supuesto":
         spec.supuestos = [s for s in spec.supuestos if s != ref]
-        spec.supuestos.append(f"✓ Aclarado ({pregunta.id}): {ref} → {respuesta}")
+        spec.supuestos.append(f"✓ Aclarado ({pregunta.id}): {ref} → {respuesta_guardar}")
         return f"{pregunta.id}: supuesto resuelto y movido a aclarados"
 
     if kind in ("rnf", "regla", "dependencia"):
@@ -246,20 +373,22 @@ def responder(pregunta: Pregunta, respuesta: str, spec, registro_req) -> str:
                    "dependencia": "dependencias"}[kind]
         actual = getattr(spec, destino)
         if len(actual) == 1 and "pendiente" in actual[0]:
-            setattr(spec, destino, [f"{respuesta} ({pregunta.id})"])
+            setattr(spec, destino, [f"{respuesta_guardar} ({pregunta.id})"])
         else:
-            actual.append(f"{respuesta} ({pregunta.id})")
+            actual.append(f"{respuesta_guardar} ({pregunta.id})")
         return f"{pregunta.id}: § actualizada con lo declarado por el humano"
 
     if kind == "entidad_datos":
         spec.entidades = [
-            f"{e} (datos: {respuesta})" if e == ref else e for e in spec.entidades
+            f"{e} (datos: {respuesta_guardar})" if e == ref else e for e in spec.entidades
         ]
         return f"{pregunta.id}: entidad «{ref}» ahora con atributos declarados"
 
     if kind == "confirmar_req":
         req = next((r for r in registro_req.listar() if r.id == ref), None)
-        if respuesta == "Descartar":
+        # Responder con la primera opción elegida (o la única)
+        opcion_elegida = valores[0] if valores else respuesta_guardar
+        if opcion_elegida == "descartar":
             if req is not None:
                 registro_req.cambiar_estado(req.id, "rechazado")
             spec.funcionales = [f for f in spec.funcionales if f[0] != ref]
@@ -277,7 +406,10 @@ def responder(pregunta: Pregunta, respuesta: str, spec, registro_req) -> str:
 
     if kind == "contradiccion":
         req_id, _, excl = ref.partition("::")
-        if respuesta == "Dentro del alcance":
+        opcion_elegida = valores[0] if valores else respuesta_guardar
+        # Solo «fuera» saca el requerimiento; cualquier otra respuesta conserva
+        # el alcance, que es la opción recomendada y no rompe nada.
+        if opcion_elegida != "fuera":
             spec.fuera_alcance = [e for e in spec.fuera_alcance if e != excl]
             return f"{pregunta.id}: «{excl}» sale de fuera de alcance; {req_id} prevalece"
         spec.funcionales = [f for f in spec.funcionales if f[0] != req_id]

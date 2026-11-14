@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sdd-toolkit"
-version = "0.2.1"
+version = "0.2.5"
 description = "Herramienta visual de Desarrollo Guiado por Especificaciones (SDD): orquesta, asiste y controla el desarrollo con IA sin burocracia."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -20,6 +20,11 @@ sdd = "cli.main:main"
 # Paquetes de espacio de nombres (sin __init__.py en la raíz del repo).
 include = ["cli*", "core*", "state*", "mcp*"]
 namespaces = true
+
+[tool.setuptools.data-files]
+# El .vsix viaja con el paquete: `sdd init` lo instala sin que el usuario
+# tenga que buscarlo ni abrir el Marketplace.
+"share/sdd-toolkit" = ["ide/vscode/*.vsix"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

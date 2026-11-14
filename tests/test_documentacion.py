@@ -124,7 +124,10 @@ _NO_ES_RUTA_PROYECTO = re.compile(r"[<>{}*…\s]|::|^[~/]|X\.Y\.Z|\.\.\.")
 # Documentadas, pero solo existen si la persona las crea (un hook, una revisión
 # de la SPEC, una sugerencia). Ahí se exige que la CLI las conozca.
 _SOLO_A_PEDIDO = (".specify/hooks/", ".specify/spec_history/",
-                  ".specify/sugerencias/")
+                  ".specify/sugerencias/",
+                  # Lo escribe `clarify SPEC --panel` cuando va a abrir el
+                  # webview, y se borra al consumirse.
+                  ".specify/.clarify-panel-request.json")
 
 
 def _correr(cli: list[str], *args: str) -> str:

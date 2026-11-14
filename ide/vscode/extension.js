@@ -5,7 +5,7 @@
 'use strict';
 
 const vscode = require('vscode');
-const { execFile, spawn, spawnSync } = require('child_process');
+const { execFile, execFileSync, spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const chat = require('./chat');
@@ -45,7 +45,9 @@ const COMMANDS = [
   { id: 'sdd.restricciones', cli: 'restricciones', prompt: 'SPEC-ID o TASK-ID (vacío = activa)', opcional: true },
   { id: 'sdd.diff', cli: 'diff', prompt: 'TASK-ID' },
   { id: 'sdd.export', cli: 'export' },
-  { id: 'sdd.update', cli: 'update' },
+  /* sdd.update NO va en COMMANDS: se registra manualmente más abajo en activate()
+   * para evitar el error "command 'sdd.update' already exists" que impide
+   * que la extensión se active y por tanto que abra el panel visual. */
 ];
 
 function cfg() {
@@ -95,6 +97,59 @@ let canal = null;
  * desde el panel integrado y que se ejecuten en el chat en lugar de ir a
  * terminal directamente. */
 let panelChat = null;
+/* Contexto de activación, para suscribir los disposable del webview. */
+let contextoActivacion = null;
+
+/* Estado guardado antes de cerrar el panel, para no perderlo al reabrir. */
+let estadoGuardado = null;
+
+/* Crea el panel de chat webview con manejo de ciclo de vida: cuando el
+ * usuario cierra el panel, panelChat se resetea a null para evitar
+ * enviar mensajes a un webview ya destruido ("webview is disposed").
+ * Si ya hay un panel abierto, se reutiliza en lugar de crear uno nuevo. */
+function crearPanelChat(dir, opciones = {}) {
+  if (panelChat) {
+    panelChat.reveal();
+    return panelChat;
+  }
+  const panel = chat.abrir({
+    /* Las píldoras traen `clarify SPEC-001` sin `--panel`: sin esto la CLI
+     * entra en modo interactivo y el panel muestra texto plano. Los modos no
+     * interactivos (--answer, --list, --gate, --skip) se respetan. */
+    ejecutar: (a) => correrParaChat(carpeta() || dir, ordenParaPanel(a)),
+    exportar: () => cargarDoc(),
+    proyecto: dir,
+    ejecutarActualizacion: opciones.ejecutarActualizacion,
+  });
+  /* El webview avisa «listo» cuando su script arrancó. Recordarlo evita
+   * esperar 10 s cada vez que se reabre un panel ya creado. */
+  panel.webview.onDidReceiveMessage((mensaje) => {
+    if (mensaje && mensaje.tipo === 'listo') panel._sddListo = true;
+  });
+  const alCerrar = () => { panelChat = null; };
+  /* `abrirPanelClarificaciones` también se llama desde el watcher y desde la
+   * auto-apertura, donde no hay `contexto` de activación a mano: sin este
+   * respaldo reventaba con «Cannot read properties of undefined». */
+  const contexto = opciones.contexto || contextoActivacion;
+  /* `onDidDispose` vive en el panel, no en `panel.webview`: llamarlo en el
+   * webview lanzaba TypeError y el panel quedaba creado pero vacío. */
+  if (contexto && Array.isArray(contexto.subscriptions)) {
+    panel.onDidDispose(alCerrar, undefined, contexto.subscriptions);
+  } else {
+    panel.onDidDispose(alCerrar);
+  }
+  panelChat = panel;
+  return panel;
+}
+
+/* Agrega `--panel` a las órdenes `clarify` que no piden otra cosa: la CLI
+ * responde con el JSON que dibuja el webview; sin el flag imprime texto. */
+const SIN_PANEL = new Set(['--panel', '--answer', '--skip', '--list', '--gate']);
+function ordenParaPanel(argv) {
+  if (!Array.isArray(argv) || argv[0] !== 'clarify') return argv;
+  if (argv.some((arg) => SIN_PANEL.has(arg))) return argv;
+  return [...argv, '--panel'];
+}
 
 /* Comandos que preguntan por stdin: solo tienen sentido en un terminal, donde
  * se puede escribir la respuesta. `clarify` sin `--answer` es ese caso. */
@@ -239,6 +294,123 @@ function matarArbol(hijo) {
 /* Los comandos rápidos no deben dejar un parpadeo de progreso; a partir de
  * aquí el usuario ya está esperando y necesita saber que algo corre. */
 const ESPERA_PROGRESO = 400;
+
+/* Abre el panel webview de clarificaciones para un SPEC-ID directo,
+ * ejecutando `clarify SPEC-ID --panel` y renderizando el JSON devuelto.
+ * Se invoca desde la paleta (sdd.clarifyDesdeTerminal) o desde el watcher
+ * del archivo de señalización que escribe la CLI cuando corre en la
+ * terminal integrada de VS Code (VSCODE_PID). No usa ordenDesdePanel para
+ * evitar el bucle infinito.
+ *
+ * Espera a que el webview confirme `listo` antes de enviar el mensaje
+ * de clarificaciones, para no perderlo por una condición de carrera. */
+async function abrirPanelClarificaciones(specId, contexto) {
+  const dir = carpeta();
+  if (!dir) {
+    sinCarpeta();
+    return;
+  }
+  const panel = crearPanelChat(dir, { contexto });
+  panel.reveal();
+
+  /* Si el panel ya existía, su script ya avisó «listo»: no hay nada que
+   * esperar (antes se aguantaban 10 s por una promesa que no volvería). */
+  if (!panel._sddListo) {
+    await new Promise((resolve) => {
+      const disposable = panel.webview.onDidReceiveMessage((m) => {
+        if (m && m.tipo === 'listo') {
+          panel._sddListo = true;
+          disposable.dispose();
+          resolve();
+        }
+      });
+      /* Timeout de seguridad: si no llega 'listo' en 10s, igual se envía. */
+      setTimeout(() => { disposable.dispose(); resolve(); }, 10000);
+    });
+  }
+
+  const { codigo, salida } = await correrParaChat(carpeta() || dir, ['clarify', specId, '--panel']);
+  /* Usar solo stdout para parsear JSON: stderr no debe mezclarse. */
+  const soloStdout = salida.split('\n').filter((l) => !l.startsWith('⛔') && !l.startsWith('🟢')).join('\n').trim();
+  if (soloStdout.startsWith('{')) {
+    try {
+      const payload = JSON.parse(soloStdout);
+      if (payload.comando === 'abrir_panel_clarificaciones') {
+        if (!panelChat) return;
+        panelChat.webview.postMessage({ tipo: 'clarificaciones', spec_id: payload.spec_id, preguntas: payload.preguntas });
+        await refrescar();
+        return;
+      }
+    } catch (e) { /* no es JSON de panel: se muestra como resultado */ }
+  }
+  if (!panelChat) return;
+  panelChat.webview.postMessage({ tipo: 'resultado', orden: `clarify ${specId} --panel`, codigo, salida });
+  await refrescar();
+}
+
+/* Vigila el archivo de señalización que escribe la CLI cuando detecta
+ * VSCODE_PID: .specify/.clarify-panel-request.json. Cuando aparece, abre
+ * el panel webview automáticamente sin que el usuario escriba nada extra.
+ *
+ * Usa fs.watch con polling de fallback (cada 2s) porque fs.watch no es
+ * confiable en todos los sistemas de archivos y el directorio .specify/
+ * puede no existir aún al activar la extensión.
+ *
+ * Se reanuda automáticamente cuando el usuario abre una carpeta
+ * (onDidChangeWorkspaceFolders), porque al activar la extensión puede que
+ * aún no haya carpeta. */
+let watcherPanel = null;
+let intervaloPanel = null;
+let senalProcesada = null;
+let senalProcesadaEn = 0;
+function vigilarSenalPanel() {
+  if (watcherPanel && intervaloPanel) return;
+  const dir = carpeta();
+  if (!dir) return;
+  const señalDir = path.join(dir, '.specify');
+  const señal = path.join(señalDir, '.clarify-panel-request.json');
+
+  function revisarSenal() {
+    try {
+      if (!fs.existsSync(señal)) return;
+      const contenido = fs.readFileSync(señal, 'utf8');
+      const pedido = JSON.parse(contenido);
+      if (pedido.action === 'abrir_panel' && pedido.spec_id) {
+        const clave = pedido.spec_id + ':' + pedido.action;
+        /* Solo se ignora el duplicado inmediato (fs.watch avisa dos veces por
+         * el mismo archivo). Antes la clave quedaba fija para toda la sesión
+         * y el segundo `sdd clarify SPEC-001` no abría nada. */
+        if (senalProcesada === clave && Date.now() - senalProcesadaEn < 5000) {
+          return;
+        }
+        senalProcesada = clave;
+        senalProcesadaEn = Date.now();
+        /* Borrar la señal para no reprocesarla */
+        try { fs.unlinkSync(señal); } catch (_) { }
+        abrirPanelClarificaciones(pedido.spec_id, contextoActivacion);
+      }
+    } catch (_) { /* señal no existe aún o JSON corrupto: ignorar */ }
+  }
+
+  revisarSenal();
+  intervaloPanel = setInterval(revisarSenal, 2000);
+
+  try {
+    watcherPanel = fs.watch(señalDir, (evento, nombre) => {
+      if (nombre !== path.basename(señal)) return;
+      revisarSenal();
+    });
+  } catch (_) { /* solo polling si falla fs.watch */ }
+}
+
+function reanudarVigilanciaPanel() {
+  /* Se llama cuando se abre/cambia la carpeta de trabajo. */
+  watcherPanel = null;
+  intervaloPanel = null;
+  senalProcesada = null;
+  senalProcesadaEn = 0;
+  vigilarSenalPanel();
+}
 
 /* La paleta ejecuta capturando la salida: así el código de salida llega al
  * IDE y un fallo se ve como notificación con la salida a un clic, en vez de
@@ -444,7 +616,7 @@ function validarYTerminal(dir, argv) {
 
 /* Acceso a la CLI desde la paleta y desde la vista lateral. `cliArgs` llega
  * como array (texto libre con espacios) o como la orden que trae `export`. */
-function ejecutar(cliArgs) {
+async function ejecutar(cliArgs) {
   const dir = carpeta();
   if (!dir) {
     sinCarpeta();
@@ -459,6 +631,26 @@ function ejecutar(cliArgs) {
    * confirmación y aplica solo si el usuario acepta. Nunca automático. */
   if (argv[0] === 'update') {
     actualizarToolkit();
+    return;
+  }
+  /* `clarify` se abre en el panel visual del chat (webview) en lugar de ir
+   * directo a terminal, salvo que ya traiga --answer (modo no interactivo).
+   * Se ejecuta directamente y el webview renderiza el panel cuando la CLI
+   * devuelve el JSON de clarificaciones. No se usa ordenDesdePanel aquí para
+   * evitar el bucle: ordenDesdePanel → orden → clarify → ordenDesdePanel. */
+  if (argv[0] === 'clarify') {
+    if (!dir) { sinCarpeta(); return; }
+    /* Los modos no interactivos no son el panel: --answer aplica respuestas,
+     * --list enumera y --gate evalúa. Solo `clarify SPEC-ID` abre el panel. */
+    if (argv.some((arg) => arg !== '--panel' && SIN_PANEL.has(arg))) {
+      const { codigo, salida } = await correrParaChat(carpeta() || dir, argv);
+      mostrarSalida(comando(dir, argv), codigo, salida);
+      await refrescar();
+      return;
+    }
+    const specId = argv[1];
+    if (!specId) { validarYTerminal(dir, argv); return; }
+    await abrirPanelClarificaciones(specId, contextoActivacion);
     return;
   }
   if (INTERACTIVOS.has(argv[0])) {
@@ -574,7 +766,12 @@ function cargarDoc() {
       resolve({ doc: null, error: 'sin carpeta abierta' });
       return;
     }
-    execFile(cfg().python, [...cli(dir).args, '--root', dir, 'export'],
+    /* Igual que el resto: si la CLI se resuelve al binario global (`sdd`
+     * instalado con uv/pipx), hay que ejecutar ese binario. Lanzar siempre
+     * `python3` dejaba cualquier proyecto sin `cli/main.py` «sin inicializar». */
+    const resuelta = cli(dir);
+    execFile(resuelta.bin || cfg().python,
+      [...resuelta.args, '--root', dir, 'export'],
       { cwd: dir, timeout: 30000 }, (err, stdout) => {
         if (err) {
           resolve({ doc: null, error: 'sin inicializar o CLI no disponible' });
@@ -799,6 +996,7 @@ class VistaFases {
 }
 
 function activate(contexto) {
+  contextoActivacion = contexto;
   COMMANDS.forEach((entrada) => {
     contexto.subscriptions.push(
       vscode.commands.registerCommand(entrada.id, () => pedirYCorrer(entrada))
@@ -806,7 +1004,6 @@ function activate(contexto) {
   });
   /* Ejecutor genérico para los nodos clicables de la vista lateral. */
   contexto.subscriptions.push(
-    vscode.commands.registerCommand('sdd.ejecutarEnChat', (cliArgs) => ejecutarOrden(cliArgs)),
     /* Chat propio: VS Code no permite dibujar botones dentro de Copilot Chat
      * (los chat participants están deprecados), así que el flujo guiado vive
      * en un panel con píldoras clickeables. */
@@ -816,12 +1013,7 @@ function activate(contexto) {
         sinCarpeta();
         return;
       }
-      panelChat = chat.abrir({
-        ejecutar: (argv) => correrParaChat(carpeta() || dir, argv),
-        exportar: () => cargarDoc(),
-        proyecto: dir,
-        ejecutarActualizacion: () => actualizarToolkit(),
-      });
+      panelChat = crearPanelChat(dir, { contexto });
     }),
     /* Ejecutar una orden desde el panel integrado (fase, tarea, píldora) en
      * el chat, como si el usuario la hubiera escrito allí. Si el chat no está
@@ -834,14 +1026,16 @@ function activate(contexto) {
       }
       const argv = Array.isArray(comando) ? comando : String(comando || '').trim().split(/\s+/);
       if (!argv || !argv[0]) return;
+      /* Array = nodo del árbol: ejecutar directamente. */
+      if (Array.isArray(comando)) {
+        ejecutar(comando);
+        return;
+      }
+      /* Cadena: abrir el chat primero si no está abierto. */
       if (!panelChat) {
         try {
           /* Abrir el chat y luego enviar la orden una vez listo. */
-          panelChat = chat.abrir({
-            ejecutar: (a) => correrParaChat(carpeta() || dir, a),
-            exportar: () => cargarDoc(),
-            proyecto: dir,
-          });
+          panelChat = crearPanelChat(dir, { contexto });
           panelChat.webview.onDidReceiveMessage((mensaje) => {
             if (mensaje.tipo === 'listo') {
               panelChat.webview.postMessage({ tipo: 'ordenDesdePanel', comando: argv.join(' ') });
@@ -868,7 +1062,8 @@ function activate(contexto) {
   contexto.subscriptions.push(
     vscode.window.registerTreeDataProvider('sddFases', vista),
     vscode.window.registerTreeDataProvider('sddFlujo', flujo),
-    vscode.commands.registerCommand('sdd.update', actualizarToolkit),
+    /* `sdd.update` ya lo registra COMMANDS.forEach: repetirlo aquí lanzaba
+     * «command 'sdd.update' already exists» y abortaba activate(). */
     vscode.commands.registerCommand('sdd.actualizar', actualizarToolkit)
   );
   /* Panel de estado: fase actual + siguiente recomendado. */
@@ -888,38 +1083,195 @@ function activate(contexto) {
       barra.hide();
     }
   };
-  refrescar = () => {
+  refrescar = async () => {
     vista.actualizar();
     flujo.actualizar();
     refrescarBarra();
+    /* Si el panel webview está abierto, enviarle el estado actualizado para
+     * que las píldoras y el progreso se refresquen sin que el usuario tenga
+     * que hacer clic en "Refrescar estado". */
+    if (panelChat && panelChat.webview) {
+      const { doc, error } = await cargarDoc();
+      panelChat.webview.postMessage({ tipo: 'estado', doc, error });
+    }
   };
   contexto.subscriptions.push(barra);
   refrescarBarra();
   const intervalo = setInterval(refrescarBarra, 30000);
   contexto.subscriptions.push({ dispose: () => clearInterval(intervalo) });
+  /* Busca automáticamente el SPEC que tenga preguntas pendientes de clarificar.
+ * Estrategias (en orden):
+ * 1. Lee `toolkit export` y busca en el árbol nodos pendientes con aclarar/supuesto/pregunta.
+ * 2. Busca archivos spec.md en specs/ que tengan clarificaciones pendientes (busca "pendiente" en el archivo).
+ * 3. Busca archivo spec.md en la raíz del proyecto.
+ * Devuelve el specId o null. Si no se puede determinar nada, retorna null
+ * (sin lanzar error para no romper activate()). */
+function buscarSpecConPreguntasPendientes() {
+  const dir = carpeta();
+  if (!dir) return null;
+  /* Fuente de verdad: el registro de clarificaciones. Si existe y no queda
+   * ninguna pregunta pendiente no se abre nada (antes se abría el panel con
+   * el primer SPEC del proyecto y solo mostraba «no hay preguntas»). */
+  try {
+    const datos = JSON.parse(fs.readFileSync(
+      path.join(dir, '.specify', 'clarifications.json'), 'utf8'));
+    for (const [specId, entrada] of Object.entries(datos || {})) {
+      const preguntas = (entrada && entrada.preguntas) || [];
+      if (preguntas.some((p) => p && p.estado === 'pendiente')) return specId;
+    }
+    return null;
+  } catch (_) { /* sin registro: se mantienen las estrategias anteriores */ }
+  const { python } = cfg();
+  const { args, existe, bin } = cli(dir);
+  if (!existe) return null;
 
-  /* Notificación proactiva: al activar la extensión se consulta PyPI una vez.
-   * Si hay versión nueva, se avisa al usuario con una notificación discreta
-   * que ofrece actualizar. Nunca se actualiza solo: el usuario decide.
-   * Se ejecuta tras un pequeño retraso para no bloquear el arranque. */
-  setTimeout(() => {
-    const dir = carpeta();
-    if (!dir) return;
-    correrParaChat(dir, ['update', '--verificar']).then((r) => {
-      const salida = r.salida || '';
-      const match = salida.match(/Hay una versión nueva disponible:\s*(\S+)/);
-      const instalada = salida.match(/Versión instalada:\s*(\S+)/);
-      const disponible = match ? match[1] : null;
-      const verInstalada = instalada ? instalada[1] : 'desconocida';
-      if (!disponible) return;
-      vscode.window.showInformationMessage(
-        `SDD: hay una versión nueva del toolkit (${disponible}, instalada ${verInstalada}).`,
-        'Actualizar ahora'
-      ).then((elegido) => {
-        if (elegido === 'Actualizar ahora') actualizarToolkit();
-      });
+  /* Estrategia 1: leer `toolkit export` y buscar en el árbol */
+  try {
+    const salida = execFileSync(bin || python,
+      [...args, '--root', dir, 'export'],
+      { cwd: dir, timeout: 15000, maxBuffer: 8 * 1024 * 1024,
+        encoding: 'utf8' });
+    const doc = JSON.parse(salida);
+    const arbol = doc.arbol || [];
+    const pendiente = arbol.find((n) =>
+      n.estado === 'pendiente' &&
+      /clarif|aclar|supuesto|pregunta/.test(String(n.fase || '').toLowerCase()));
+    if (pendiente) {
+      const specId = doc.spec_id || doc.specId || null;
+      if (specId) return specId;
+    }
+    /* Si el export tiene spec_id pero sin árbol de clarificaciones,
+     * asumir que ese SPEC puede tener preguntas pendientes */
+    const specIdExport = doc.spec_id || doc.specId || null;
+    if (specIdExport) return specIdExport;
+  } catch (_) { /* export falló o no hay datos: seguir con otros fallbacks */ }
+
+  /* Estrategia 2: buscar archivos spec.md en specs/ que contengan "pendiente" */
+  const specsDir = path.join(dir, 'specs');
+  if (fs.existsSync(specsDir)) {
+    try {
+      const archivos = fs.readdirSync(specsDir).filter((f) => f.endsWith('.md'));
+      for (const archivo of archivos) {
+        const ruta = path.join(specsDir, archivo);
+        try {
+          const contenido = fs.readFileSync(ruta, 'utf8');
+          if (/pendiente|clarificaci|supuesto/i.test(contenido)) {
+            return archivo.replace('.md', '');
+          }
+        } catch (_) { /* no se puede leer: saltar */ }
+      }
+      /* Si hay specs/ con archivos .md, asumir que el primero puede tener clarificaciones */
+      if (archivos.length) {
+        return archivos[0].replace('.md', '');
+      }
+    } catch (_) { /* no se puede leer specs/ */ }
+  }
+
+  /* Estrategia 3: buscar spec.md en la raíz del proyecto */
+  const specRoot = path.join(dir, 'spec.md');
+  try {
+    if (fs.existsSync(specRoot)) {
+      const contenido = fs.readFileSync(specRoot, 'utf8');
+      if (/pendiente|clarificaci|supuesto/i.test(contenido)) {
+        return 'SPEC-001';
+      }
+      return 'SPEC-001';
+    }
+  } catch (_) { /* no se puede leer spec.md raíz */ }
+
+  return null;
+}
+
+/* Comando visual: abrir panel de clarificaciones para el SPEC que tenga
+ * preguntas pendientes, sin que el usuario tenga que escribir nada. */
+async function clarificarPendientes() {
+  const specId = buscarSpecConPreguntasPendientes();
+  if (!specId) {
+    vscode.window.showInformationMessage(
+      'SDD: no hay preguntas pendientes de clarificar en este proyecto.');
+    return;
+  }
+  await abrirPanelClarificaciones(specId);
+}
+
+/* Auto-apertura: al activar la extensión, si hay preguntas pendientes,
+ * abre el panel visual automáticamente. Si no hay, abre el panel igual con
+ * el estado actual para que el usuario vea el progreso. Cero clics. */
+async function autoAbrirClarificaciones() {
+  const dir = carpeta();
+  if (!dir) return;
+  const specId = buscarSpecConPreguntasPendientes();
+  if (specId) {
+    await abrirPanelClarificaciones(specId);
+  } else if (!panelChat) {
+    /* Abrir el panel aunque no haya preguntas pendientes, para que el
+     * usuario vea fase, progreso y píldoras. */
+    crearPanelChat(dir, { contexto: contextoActivacion });
+  }
+}
+
+/* Vigilar señal de panel de clarificaciones desde terminal integrado. */
+  vigilarSenalPanel();
+  /* Auto-abrir panel si hay clarificaciones pendientes al iniciar. */
+  autoAbrirClarificaciones();
+
+  /* Cuando el usuario abre una carpeta (después de iniciar VS Code), reintenta
+   * la detección de señales y el auto-abrir. Esto es clave porque al activar
+   * la extensión puede que aún no haya carpeta abierta. */
+  contexto.subscriptions.push(
+    vscode.workspace.onDidChangeWorkspaceFolders(() => {
+      reanudarVigilanciaPanel();
+      autoAbrirClarificaciones();
+    })
+  );
+
+  /* Abrir `specs/SPEC-00X.md` es el gesto natural de «quiero ver qué falta
+   * aclarar»: se abre el panel con sus preguntas pendientes. */
+  contexto.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument((documento) => {
+      revisarDocumentoSpec(documento);
+    })
+  );
+
+  /* Watcher de .specify/clarifications.json: cuando la CLI lo modifica desde
+   * la terminal (respondiste clarify SPEC-001), refrescar el panel webview si
+   * está abierto para que las píldoras y el progreso se actualicen solos. */
+  const clarifPath = path.join(carpeta() || '', '.specify', 'clarifications.json');
+  const watcherClarif = fs.watch(path.dirname(clarifPath), { persistent: false },
+    (evento, nombreArchivo) => {
+      if (nombreArchivo !== 'clarifications.json') return;
+      /* Debounce: esperar un poco a que la CLI termine de escribir. */
+      setTimeout(async () => {
+        if (panelChat && panelChat.webview) {
+          const { doc, error } = await cargarDoc();
+          panelChat.webview.postMessage({ tipo: 'estado', doc, error });
+        }
+      }, 1500);
     });
-  }, 2000);
+  contexto.subscriptions.push({ dispose: () => watcherClarif.close() });
+}
+
+
+/* Al abrir una SPEC se muestran sus preguntas pendientes, si las hay.
+ * Solo actúa sobre `specs/SPEC-*.md` del proyecto abierto. */
+function revisarDocumentoSpec(documento) {
+  const dir = carpeta();
+  const ruta = documento && documento.uri && documento.uri.fsPath;
+  if (!dir || !ruta) return;
+  const relativa = path.relative(dir, ruta).split(path.sep).join('/');
+  const encontrada = /^specs\/(SPEC-[^/]+)\.md$/i.exec(relativa);
+  if (!encontrada) return;
+  const specId = encontrada[1].toUpperCase();
+  let quedan = 0;
+  try {
+    const datos = JSON.parse(fs.readFileSync(
+      path.join(dir, '.specify', 'clarifications.json'), 'utf8'));
+    const entrada = datos[specId] || {};
+    quedan = (entrada.preguntas || [])
+      .filter((p) => p && p.estado === 'pendiente').length;
+  } catch (_) { return; /* sin registro no hay preguntas que mostrar */ }
+  if (!quedan) return;
+  abrirPanelClarificaciones(specId, contextoActivacion);
 }
 
 function deactivate() {}

@@ -22,7 +22,7 @@ BASE = {
     "extension/extension.js": "// extension\n",
     "extension/chat.js": "// chat\n",
     "extension/package.json": '{"name": "sdd-visual-toolkit"}',
-    "extension/readme.md": "# SDD\n",
+    "extension/README.md": "# SDD\n",
     "extension/LICENSE.txt": "MIT\n",
 }
 
@@ -46,6 +46,13 @@ class TestVerificarVsix(unittest.TestCase):
         codigo, salida = self._rex(BASE)
         self.assertEqual(codigo, 0, salida)
         self.assertIn("verificado", salida)
+
+    def test_acepta_el_readme_en_minusculas(self):
+        """`vsce` empaqueta `readme.md`: eso no es un paquete roto."""
+        entradas = dict(BASE)
+        entradas["extension/readme.md"] = entradas.pop("extension/README.md")
+        codigo, salida = self._rex(entradas)
+        self.assertEqual(codigo, 0, salida)
 
     def test_falta_la_extension(self):
         entradas = dict(BASE)
