@@ -10,6 +10,22 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+## [0.2.6] — 2026-11-14
+
+### Corregido
+
+- **El texto libre del panel se guardaba cortado en palabras.** El script del
+  webview viaja dentro de un template literal y ahí se pierde la barra
+  invertida: el entrecomillado terminaba mirando `/[s"]/` en vez de `/[\s"]/`,
+  así que una respuesta con espacios solo se entrecomillaba si contenía una
+  «s». El resto se partía en argumentos sueltos y quedaba guardada como
+  «definido, en, la, prueba, 1».
+- **`clarify SPEC-001` escrito en el chat no abría el panel** por el mismo
+  motivo: el selector llegaba como `/^clarifys+SPEC-d+s*$/i` y la orden caía en
+  el camino de «idea».
+- El arnés headless revisa ahora el HTML que se le sirve al webview y falla si
+  un escape se vuelve a perder (47 comprobaciones en verde).
+
 ## [0.2.5] — 2026-11-14
 
 ### Añadido
@@ -626,7 +642,8 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.2.5...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.2.6...HEAD
+[0.2.6]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.6
 [0.2.5]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.5
 [0.2.1]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.1
 [0.2.0]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.0
