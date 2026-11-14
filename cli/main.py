@@ -124,6 +124,49 @@ def _clientes_de_init(args) -> list[str] | None:
     return elegidos
 
 
+def _menu_ide() -> str | None:
+    """Muestra menú interactivo para elegir el IDE y devuelve su clave.
+
+    Sin terminal no pregunta nada: en CI o con la entrada redirigida se omite
+    la capa visual en vez de quedarse esperando una respuesta que no llega.
+    """
+    if not sys.stdin.isatty():
+        return None
+    print("\n¿Qué IDE vas a usar con este proyecto?")
+    print("  1. VS Code")
+    print("  2. Trae IDE")
+    print("  3. Cursor")
+    print("  4. Windsurf")
+    print("  5. IntelliJ IDEA")
+    print("  6. Eclipse")
+    print("  7. Neovim")
+    print("  8. Sublime Text")
+    print("  0. Ninguno (solo CLI, sin capa visual)")
+    print()
+    try:
+        respuesta = input("Elige una opción (0-8): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print()
+        return None
+    mapa = {
+        "1": "vscode",
+        "2": "trae",
+        "3": "cursor",
+        "4": "windsurf",
+        "5": "intellij",
+        "6": "eclipse",
+        "7": "neovim",
+        "8": "sublime",
+        "0": None,
+    }
+    elegido = mapa.get(respuesta)
+    if elegido is None:
+        print("· Sin capa visual (solo CLI)")
+        return None
+    print(f"· IDE seleccionado: {elegido}")
+    return elegido
+
+
 def cmd_init(args) -> int:
     # `--root` es la opción global de todos los comandos (la extensión de VS
     # Code la pasa siempre); init la ignoraba y creaba .specify/ en la carpeta
@@ -170,6 +213,37 @@ def cmd_init(args) -> int:
         print(f"✓ {ide_entorno.GITIGNORE}: añadidas las reglas que faltaban")
         for regla in añadidas:
             print(f"    {regla}")
+
+    # La capa visual es la extensión: se recomienda siempre en el proyecto (el
+    # IDE ofrece instalarla al abrir la carpeta) y se instala si hay un .vsix.
+    _, agregada = ide_entorno.recomendar_extension(raiz)
+    if agregada:
+        print(f"✓ {ide_entorno.CARPETA}/{ide_entorno.EXTENSIONES}: recomienda"
+              f" {ide_entorno.EXTENSION_ID}")
+
+    # Menú de selección de IDE para la capa visual
+    ide = _menu_ide()
+    if ide is None:
+        if sys.stdin.isatty():
+            print("· Capa visual omitida (solo CLI)")
+        else:
+            print("· Sin menú de IDE (sin terminal): la extensión queda"
+                  " recomendada en el proyecto")
+    else:
+        informe = ide_entorno.configurar_ide(
+            raiz, cli, sys.executable or "python3", ide)
+        print(f"✓ Capa visual configurada para {ide}")
+        if informe["recomendada"]:
+            print(f"  {ide_entorno.CARPETA}/{ide_entorno.EXTENSIONES} la"
+                  " recomienda: el IDE la ofrece al abrir la carpeta")
+        if informe["instalada"]:
+            print(f"  ✓ Extensión instalada ({informe['detalle']})")
+        elif informe["comando"]:
+            print(f"  · No se pudo instalar: {informe['detalle']}")
+            print(f"    instalala con: {informe['comando']}")
+        else:
+            print(f"  · {informe['detalle']}")
+
     # Los comandos de barra son lo único que `init` no dejaba listo: sin ellos
     # el agente no ve `/sdd-*`. Se generan aquí si el usuario ya dijo el
     # cliente (o lo eligió en la pregunta); si no, se deja la orden a mano.
@@ -318,11 +392,13 @@ def construir_parser() -> argparse.ArgumentParser:
 
     p_clarify = sub.add_parser("clarify", help="aclarar SPEC (RF-04)")
     p_clarify.add_argument("texto", nargs="?", default=None, help="SPEC-ID")
-    p_clarify.add_argument("--answer", nargs=2, action="append", default=None,
+    p_clarify.add_argument("--answer", nargs="+", action="append", default=None,
                            metavar=("CLA-ID", "RESPUESTA"))
     p_clarify.add_argument("--skip", action="append", default=None, metavar="CLA-ID")
     p_clarify.add_argument("--list", default=None, metavar="SPEC-ID")
     p_clarify.add_argument("--gate", action="store_true")
+    p_clarify.add_argument("--panel", action="store_true",
+                           help="abrir el panel webview visual de clarificaciones")
     p_clarify.set_defaults(func=cmd_clarify.despachar)
 
     p_inv = sub.add_parser("investigar",

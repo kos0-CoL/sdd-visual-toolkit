@@ -1,7 +1,7 @@
 # SDD Visual Toolkit
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.11-blue)
-![Tests](https://img.shields.io/badge/tests-484%20passed-green)
+![Tests](https://img.shields.io/badge/tests-491%20passed-green)
 ![Deps](https://img.shields.io/badge/dependencias-cero-lightgrey)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -78,7 +78,7 @@ Deja dos nombres para el mismo programa: **`sdd`** y **`toolkit`**, en
 
 ```console
 $ sdd --version
-toolkit 0.2.1
+toolkit 0.2.5
 ```
 
 Si responde `Orden «sdd» no encontrada`, ese directorio no está en el `PATH`:
@@ -121,7 +121,7 @@ python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\ac
 # 2. Dependencias de desarrollo (pytest y pytest-xdist, en requirements-dev.txt)
 python3 -m pip install -r requirements-dev.txt
 
-# 3. Verificar que todo funciona (484 tests, ~40 s; ~20 s con -n 2)
+# 3. Verificar que todo funciona (491 tests, ~40 s; ~20 s con -n 2)
 python3 -m pytest tests/ -q
 python3 -m pytest tests/ -q -m "not lento"   # sin el arnés de la extensión
 ```
@@ -192,16 +192,17 @@ cuál toca (`/sdd-enrich --accept ENR-001`, `/sdd-specify ENR-001`…). La lista
 completa, con lo que ejecuta cada uno, está en [Comandos](#comandos).
 
 **Paso 2 — la extensión (opcional).** Añade la vista `Fases y tareas`, la barra
-de estado y la paleta `SDD: …`. El `.vsix` no viene en el repositorio: descárguelo
-de la [última release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/latest)
-y instálelo desde la ruta donde quedó:
+de estado y la paleta `SDD: …`. No hace falta instalar nada a mano: `sdd init`
+la recomienda en `.vscode/extensions.json` —el editor la ofrece al abrir la
+carpeta— y, si el CLI del IDE está en el `PATH` (`code`, `trae`, `cursor`,
+`windsurf`), instala el `.vsix` que viaja dentro del paquete (cada release lo
+adjunta siempre). Solo queda recargar la ventana.
 
-```bash
-code --install-extension /ruta/a/sdd-visual-toolkit-0.2.1.vsix
-```
-
-y recargar la ventana; en el editor también sirve *Extensiones → … → Instalar
-desde VSIX…*. El chat del paso 1 funciona sin este paso.
+Si prefiere hacerlo a mano, el `.vsix` está en cada
+[release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/latest) y
+dentro del propio paquete (`share/sdd-toolkit/`); en el editor sirve
+*Extensiones → … → Instalar desde VSIX…*. El chat del paso 1 funciona sin
+este paso.
 
 La extensión se instala **una vez, para todo el usuario**: aparece en cualquier
 ventana. La vista, en cambio, lee el estado de una carpeta concreta, así que
@@ -499,7 +500,7 @@ IDE tampoco es instalar nada en el editor; cada superficie se consigue así:
 | Superficie | Qué añade | Cómo se consigue |
 |---|---|---|
 | **Chat del IDE** | los comandos `/sdd-enrich`, `/sdd-plan`, `/sdd-test`… | `init --cliente copilot` escribe `.github/skills/` en el proyecto. Nada que instalar |
-| **Extensión de VS Code** | vista `Fases y tareas`, barra de estado, paleta `SDD: …`, aviso de comandos desactualizados | instalar el `.vsix`. **Opcional** |
+| **Extensión de VS Code** | vista `Fases y tareas`, barra de estado, paleta `SDD: …`, aviso de comandos desactualizados | `sdd init` la recomienda e intenta instalarla; el `.vsix` viaja en el paquete. **Opcional** |
 | **Terminal** | todos los subcomandos, incluidos los que no tienen botón | `python3 cli/main.py …` desde la raíz de tu proyecto, o con `--root RUTA` desde cualquier carpeta |
 
 **Basta el chat** para el flujo completo, los catorce: `/sdd`, `/sdd-enrich`,
@@ -624,13 +625,15 @@ Detalles útiles:
   para la matriz por entorno (Antigravity: pendiente de verificación en su
   entorno real).
 
-  Para instalarla, descargue el `.vsix` de la
-  [última release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/latest)
-  y en el editor use *Extensiones → … → Instalar desde VSIX…*; en VS Code
-  también sirve el comando
-  `code --install-extension sdd-visual-toolkit-X.Y.Z.vsix`. Requiere 1.80 o
-  superior (`engines.vscode`). Las releases anteriores a v0.1.5 no adjuntan
-  el archivo.
+  La instala `sdd init`: escribe la recomendación en `.vscode/extensions.json`
+  y, si encuentra el CLI del IDE en el `PATH`, corre
+  `<ide> --install-extension <vsix> --force` con el `.vsix` que el paquete
+  lleva en `share/sdd-toolkit/`. Sin CLI a mano, el editor ofrece la extensión
+  recomendada al abrir la carpeta o se instala desde *Extensiones → … →
+  Instalar desde VSIX…* con el archivo de la
+  [última release](https://github.com/kos0-CoL/sdd-visual-toolkit/releases/latest).
+  Requiere 1.80 o superior (`engines.vscode`). Las releases anteriores a
+  v0.1.5 no adjuntan el archivo.
 
   La extensión ejecuta la CLI en vez de reimplementarla, así que hay que
   indicarle dónde está: `sddToolkit.cliPath` (por defecto `cli/main.py`
@@ -763,7 +766,7 @@ declaran su vacío en repos de otros lenguajes en vez de inventar.
 cli/        CLI completa (commands/ con despachar() por comando)
 core/       Lógica pura y renders (sin I/O salvo su módulo)
 state/      Persistencia atómica bajo .specify/
-tests/      Suite pytest (484 tests, uno o más por RF)
+tests/      Suite pytest (491 tests, uno o más por RF)
 ide/vscode/ Extensión VS Code (RF-39) + matriz de compatibilidad
 mcp/        Servidor MCP stdio (RF-40)
 docs/       SPEC-v0.1.md (requerimientos §44 y marco del producto)

@@ -1,0 +1,102 @@
+name: Release
+
+# Cada tag `vX.Y.Z` publica la release con sus notas y el `.vsix` de la
+# extensión: el paquete se genera y se verifica acá, así que no queda como un
+# artefacto que alguien tenga que armar y subir a mano (docs/RELEASES.md).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    name: empaquetar la extensión y adjuntarla
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # `vsce` no está instalado: `npx --yes` lo baja, y el script lo corre con
+      # `--no-dependencies` porque la extensión no tiene dependencias.
+      - name: Empaquetar y verificar la extensión
+        run: python3 scripts/empaquetar_extension.py
+
+      - name: Comprobar que el .vsix es el del tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          vsix="ide/vscode/sdd-visual-toolkit-${version}.vsix"
+          if [ ! -f "$vsix" ]; then
+            echo "⛔ el tag es $TAG y el .vsix quedó con otra versión:" >&2
+            echo "   ide/vscode/package.json dice $(python3 -c 'import json;print(json.load(open("ide/vscode/package.json"))["version"])')" >&2
+            exit 1
+          fi
+          echo "✓ $vsix"
+
+      # El wheel se arma **después** del .vsix: `pyproject.toml` lo mete en
+      # `share/sdd-toolkit/`, así que instalarlo deja `sdd init` con la
+      # extensión adentro en vez de solo la recomendación.
+      - name: Construir el wheel con el .vsix adentro
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          if ! command -v uv >/dev/null 2>&1; then
+            python3 -m pip install --quiet uv
+          fi
+          uv build --out-dir dist
+          python3 - "$version" <<'PY'
+          import sys
+          import tomllib
+          import zipfile
+          from pathlib import Path
+
+          version = sys.argv[1]
+          dist = Path("dist")
+          wheels = sorted(dist.glob(f"sdd_toolkit-{version}-*.whl"))
+          if not wheels:
+              declarada = tomllib.loads(
+                  Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+              sys.exit(
+                  f"⛔ el tag es {version} y pyproject.toml declara {declarada}: "
+                  f"no se generó ningún wheel para este tag")
+          dentro = [n for n in zipfile.ZipFile(wheels[0]).namelist()
+                    if n.endswith(".vsix")]
+          if not dentro:
+              sys.exit("⛔ el wheel salió sin el .vsix: share/sdd-toolkit quedó vacío")
+          print(f"✓ {wheels[0].name} incluye {dentro[0]}")
+          PY
+
+      - name: Publicar la release con los artefactos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          vsix="ide/vscode/sdd-visual-toolkit-${version}.vsix"
+          notas="docs/release-notes-v${version}.md"
+          artefactos=("$vsix" dist/*.whl dist/*.tar.gz)
+          if [ ! -f "$notas" ]; then
+            echo "⛔ faltan las notas de la release: $notas" >&2
+            exit 1
+          fi
+          # Si la release ya existe (se creó a mano) solo se adjuntan los
+          # artefactos; si no, se crea con las notas del repo, como pide el
+          # proceso. `--verify-tag` evita que `gh` invente un tag nuevo.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${artefactos[@]}" --clobber
+          else
+            gh release create "$TAG" --title "$TAG" --verify-tag \
+              --notes-file "$notas" "${artefactos[@]}"
+          fi
+          gh release view "$TAG" --json assets --jq '.assets[].name'

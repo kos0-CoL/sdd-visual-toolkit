@@ -15,7 +15,7 @@ from pathlib import Path
 
 # Lo que `ide/PRUEBA-MANUAL.md` promete que viaja en el paquete.
 ESPERADOS = ("extension/extension.js", "extension/chat.js",
-             "extension/package.json", "extension/readme.md")
+             "extension/package.json", "extension/README.md")
 MANIFIESTO = ("[Content_Types].xml", "extension.vsixmanifest")
 # `vsce` renombra LICENSE a LICENSE.txt: basta con que empiece así.
 LICENCIA = "extension/LICENSE"
@@ -33,14 +33,18 @@ def revisar(ruta: Path, esperados: tuple[str, ...] = ESPERADOS) -> list[str]:
         return [f"{ruta.name} no es un .vsix válido"]
 
     problemas: list[str] = []
+    # `vsce` renombra README.md a readme.md: se compara sin distinguir
+    # mayúsculas para no dar por roto un paquete que sí se instala.
+    por_minusculas = {nombre.lower(): nombre for nombre in entradas}
     for nombre in MANIFIESTO + esperados:
-        if nombre not in entradas:
+        encontrado = por_minusculas.get(nombre.lower())
+        if encontrado is None:
             problemas.append(f"falta {nombre}")
-        elif entradas[nombre].file_size == 0:
+        elif entradas[encontrado].file_size == 0:
             problemas.append(f"{nombre} está vacío")
-    permitidos = set(esperados) | set(MANIFIESTO)
+    permitidos = {nombre.lower() for nombre in esperados + MANIFIESTO}
     for nombre in sorted(entradas):
-        if nombre in permitidos or nombre.startswith(LICENCIA):
+        if nombre.lower() in permitidos or nombre.lower().startswith(LICENCIA.lower()):
             continue
         if nombre.endswith(".vsix") or "vscodeignore" in nombre:
             problemas.append(f"sobra {nombre} (no debería viajar)")

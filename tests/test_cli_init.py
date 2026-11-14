@@ -390,6 +390,22 @@ class TestInitDejaElIDEListo(unittest.TestCase):
             self.assertIn("${workspaceFolder}", tarea["args"])
             self.assertEqual(tarea["options"]["cwd"], "${workspaceFolder}")
 
+    def test_recomienda_la_extension(self):
+        """Sin instalar nada a mano: el IDE ofrece la extensión al abrir."""
+        extensiones = self._json("extensions.json")
+        self.assertIn("sdd-toolkit.sdd-visual-toolkit",
+                      extensiones["recommendations"])
+
+    def test_la_recomendacion_no_pisa_la_del_usuario(self):
+        destino = self.raiz / ".vscode" / "extensions.json"
+        destino.write_text(json.dumps({"recommendations": ["otra.extension"]}),
+                           encoding="utf-8")
+        codigo, salida = _despachar(["--root", str(self.raiz), "init"])
+        self.assertEqual(codigo, 0, salida)
+        recomendadas = json.loads(destino.read_text(encoding="utf-8"))["recommendations"]
+        self.assertEqual(recomendadas,
+                         ["otra.extension", "sdd-toolkit.sdd-visual-toolkit"])
+
     def test_no_toca_un_settings_que_ya_existe(self):
         destino = self.raiz / ".vscode" / "settings.json"
         mio = '{"editor.tabSize": 2}\n'

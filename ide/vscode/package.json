@@ -2,14 +2,14 @@
   "name": "sdd-visual-toolkit",
   "displayName": "SDD Visual Toolkit",
   "description": "Fases, tareas, pruebas e historial del SDD Visual Toolkit dentro del IDE. Lee el mismo estado central que la CLI (toolkit export).",
-  "version": "0.2.1",
+  "version": "0.2.5",
   "publisher": "sdd-toolkit",
   "license": "MIT",
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": ["Other"],
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": ["onStartupFinished", "onView:sddFases", "onView:sddFlujo"],
   "main": "./extension.js",
   "contributes": {
     "configuration": {

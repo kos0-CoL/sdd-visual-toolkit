@@ -80,20 +80,37 @@ empujó: la release cuelga del tag ya verificado. Una release solo se anuncia
 cuando CI está verde y los artefactos corresponden al tag.
 
 Cada release adjunta además la extensión del IDE, empaquetada desde el mismo
-commit que el tag:
+commit que el tag. Ya no se arma a mano: empujar el tag dispara el workflow
+`Release` (`.github/workflows/release.yml`), que
+
+1. genera el `.vsix` con `vsce` (`python3 scripts/empaquetar_extension.py`),
+2. lo revisa con `scripts/verificar_vsix.py` y corta si quedó incompleto,
+3. arma el wheel y el sdist **después** del `.vsix`, así el wheel lo lleva en
+   `share/sdd-toolkit/`: instalar ese wheel deja `sdd init` con la extensión
+   adentro, no solo la recomendación,
+4. crea la release con `docs/release-notes-vX.Y.Z.md` si todavía no existe, y
+5. adjunta el `.vsix`, el `.whl` y el `.tar.gz` con `gh release upload`.
+
+Si `pyproject.toml` declara una versión distinta de la del tag, el wheel sale
+con otro número y el job falla antes de publicar: la versión del paquete y la
+de `ide/vscode/package.json` tienen que ser la misma del tag.
+
+El nombre del archivo sale del manifiesto, así que si la versión de
+`ide/vscode/package.json` no coincide con el tag el job falla antes de
+publicar: el número no se escribe a mano en ningún otro lado. El `.vsix` no se
+versiona (`*.vsix` está en `.gitignore`).
+
+Para probar el paquete antes de etiquetar —el mismo comando que corre el
+workflow—:
 
 ```bash
-cd ide/vscode
-npx --yes @vscode/vsce package            # sdd-visual-toolkit-X.Y.Z.vsix
-cd ../..
-gh release upload vX.Y.Z "ide/vscode/sdd-visual-toolkit-X.Y.Z.vsix"
-gh release view vX.Y.Z --json assets --jq '.assets[].name'
-rm "ide/vscode/sdd-visual-toolkit-X.Y.Z.vsix"
+python3 scripts/empaquetar_extension.py --destino /tmp
+uv build --out-dir /tmp/dist           # el wheel lleva el .vsix adentro
 ```
 
-El nombre del archivo sale del manifiesto, así que si no coincide con el tag
-el paso 9 no habría pasado: la versión no se escribe a mano en ningún otro
-lado. El `.vsix` no se versiona (`*.vsix` está en `.gitignore`).
+Si hay que rehacerlo, `gh release upload vX.Y.Z RUTA --clobber` reemplaza el
+adjunto; `scripts/verificar_release.py` comprueba después que la release
+publicada lo tenga y que no pese 0.
 
 ## Verificar tras publicar
 

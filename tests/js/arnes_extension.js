@@ -55,6 +55,7 @@ const vscode = {
   StatusBarAlignment: { Left: 1, Right: 2 },
   ProgressLocation: { Notification: 15 },
   FileType: { File: 1, Directory: 2 },
+  ViewColumn: { Active: -1, Beside: -2, One: 1, Two: 2 },
   EventEmitter,
   Uri: { file: (p) => ({ fsPath: p, scheme: 'file', toString: () => 'file://' + p }) },
   window: {
@@ -99,6 +100,36 @@ const vscode = {
       registros.providers[id] = provider;
       return { dispose() {} };
     },
+    /* El panel del chat vive en un webview: el stub guarda lo que la extensión
+     * le manda y simula el «listo» que el script real avisa al arrancar. Sin
+     * ese aviso cada apertura esperaría 10 s de tiempo de seguridad. */
+    createWebviewPanel(vista, titulo) {
+      const manejadores = [];
+      const panel = {
+        title: titulo,
+        visible: true,
+        webview: {
+          html: '',
+          cspSource: 'arnes',
+          asWebviewUri: (uri) => uri,
+          postMessage: (mensaje) => {
+            (registros.mensajes_webview ||= []).push(mensaje);
+            return Promise.resolve(true);
+          },
+          onDidReceiveMessage: (fn) => {
+            manejadores.push(fn);
+            setTimeout(() => manejadores.forEach((f) => f({ tipo: 'listo' })), 0);
+            return { dispose() {} };
+          },
+        },
+        onDidDispose: () => ({ dispose() {} }),
+        onDidChangeViewState: () => ({ dispose() {} }),
+        reveal() {},
+        dispose() { panel.visible = false; },
+      };
+      registros.panel = panel;
+      return panel;
+    },
   },
   workspace: {
     getConfiguration: (seccion) => ({
@@ -108,6 +139,16 @@ const vscode = {
       },
     }),
     get workspaceFolders() { return carpetas; },
+    /* La extensión se reengancha al abrir una carpeta o un documento: el
+     * stub guarda los manejadores por si una prueba necesita dispararlos. */
+    onDidChangeWorkspaceFolders: (fn) => {
+      (registros.cambio_carpetas ||= []).push(fn);
+      return { dispose() {} };
+    },
+    onDidOpenTextDocument: (fn) => {
+      (registros.documentos_abiertos ||= []).push(fn);
+      return { dispose() {} };
+    },
     fs: {
       stat: (uri) => new Promise((resolve, reject) => {
         try {
@@ -316,24 +357,33 @@ const textos = (nodos) => nodos.map((n) => n.label);
   check('paleta: Escape en el segundo no ejecuta',
     !registros.canal.some((l) => /pin PLAN-001/.test(l)) && registros.mensajes.length === 0);
 
-  /* 6. Aclarar: válido abre terminal, inexistente no */
+  /* 6. Aclarar: abre el panel del chat y le pasa el resultado de la CLI. El
+   * fixture no tiene preguntas pendientes, así que la CLI contesta por stdout;
+   * un ID inexistente también se ve en el panel, sin abrir terminal. */
   registros.terminal.length = 0;
   registros.mensajes.length = 0;
+  registros.mensajes_webview.length = 0;
   respuestas = ['SPEC-001'];
   registros.comandos['sdd.clarify']();
-  await hasta(() => registros.terminal.length || registros.mensajes.length);
-  check('clarify: abre en terminal con la orden',
-    registros.terminal.some((t) => /clarify SPEC-001/.test(t)), registros.terminal.join(' | '));
+  await hasta(() => registros.mensajes_webview
+    .some((m) => m.tipo === 'resultado' && /clarify SPEC-001/.test(String(m.orden))), 40000);
+  check('clarify: abre el panel con la orden',
+    Boolean(registros.panel) && registros.mensajes_webview
+      .some((m) => m.tipo === 'resultado'),
+    registros.mensajes_webview.map((m) => `${m.tipo}:${m.orden || ''}`).join(' | '));
 
   registros.terminal.length = 0;
   registros.mensajes.length = 0;
+  registros.mensajes_webview.length = 0;
   respuestas = ['SPEC-999'];
   registros.comandos['sdd.clarify']();
-  await hasta(() => registros.mensajes.length);
-  check('clarify: ID inexistente avisa',
-    registros.mensajes.some((m) => m.tipo === 'error' && /SPEC inexistente/.test(m.texto)),
-    registros.mensajes.map((m) => m.texto).join(' | '));
-  check('clarify: ID inexistente no abre terminal', registros.terminal.length === 0);
+  await hasta(() => registros.mensajes_webview
+    .some((m) => m.tipo === 'resultado' && m.codigo !== 0), 40000);
+  check('clarify: ID inexistente se ve en el panel',
+    registros.mensajes_webview.some((m) => m.tipo === 'resultado' && m.codigo !== 0
+      && /SPEC inexistente/.test(String(m.salida))),
+    registros.mensajes_webview.map((m) => `${m.tipo}:${m.codigo}`).join(' | '));
+  check('clarify: no abre terminal', registros.terminal.length === 0);
 
   /* 7. Fallo visible */
   registros.mensajes.length = 0;

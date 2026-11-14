@@ -100,10 +100,10 @@ scripts/preparar-manual.sh --solo-verificar   # ¿sirve lo que ya hay?
 
 ## VS Code — extensión
 
-`ide/vscode/package.json` declara `0.2.1`; sirve el `.vsix` de esa release o el
+`ide/vscode/package.json` declara `0.2.5`; sirve el `.vsix` de esa release o el
 que arma `scripts/preparar-manual.sh`, que sale de la copia actual del repo.
 
-- [x] Instalar: `code --install-extension sdd-visual-toolkit-0.2.1.vsix`.
+- [x] Instalar: `code --install-extension sdd-visual-toolkit-0.2.5.vsix`.
       Recargar la ventana. *(2026-11-11: instalada en un perfil aislado; el
       registro de la extensión muestra `onStartupFinished`.)*
 - [x] Abrir `/tmp/sdd-manual` como carpeta. *(2026-11-11: título de la ventana

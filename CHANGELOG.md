@@ -8,6 +8,31 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Añadido
 
+### Corregido
+
+## [0.2.5] — 2026-11-14
+
+### Añadido
+
+- **La extensión se empaqueta sola en cada release**: empujar el tag `vX.Y.Z`
+  dispara el workflow `Release`, que genera el `.vsix` con `vsce`, lo verifica
+  con `scripts/verificar_vsix.py` y lo adjunta a la release (creándola con sus
+  notas si no existía). Deja de ser un artefacto que se arma y se sube a mano;
+  en local, `python3 scripts/empaquetar_extension.py` hace lo mismo antes de
+  etiquetar.
+- **La release adjunta también el wheel y el sdist**, armados después del
+  `.vsix` para que el wheel lo lleve en `share/sdd-toolkit/`: al instalar ese
+  wheel, `sdd init` ya puede instalar la extensión en el IDE en vez de solo
+  recomendarla. El job comprueba que el wheel sea el del tag y que traiga el
+  `.vsix` adentro antes de publicar.
+- **`sdd init` deja la extensión lista.** Escribe `.vscode/extensions.json`
+  recomendándola y, si el CLI del IDE está en el `PATH` (`code`, `trae`,
+  `cursor`, `windsurf`), instala el `.vsix` que viaja en el paquete. Sin CLI
+  queda la recomendación y la orden manual; sin terminal no pregunta nada.
+- **El panel de clarificaciones se abre solo en el editor.** `sdd clarify
+  SPEC-001` con la extensión activa abre un webview con las preguntas (radios,
+  casillas y texto libre), la opción recomendada marcada y «Aplicar
+  respuestas», que ejecuta las órdenes una por una y refresca el estado.
 - `SDD: Abrir chat`: panel de chat propio, con burbujas y **píldoras
   clickeables** que ejecutan el paso siguiente. Escribir la idea la enriquece;
   las píldoras que necesitan un dato lo piden antes de correr. El estado sale de
@@ -19,6 +44,19 @@ y el versionado [SemVer](https://semver.org/lang/es/).
 
 ### Corregido
 
+- Contestar una pregunta de opciones con la etiqueta («Descartar») o con «no
+  sé» caía en la rama por defecto: «Descartar» aceptaba el requisito y «ns» lo
+  confirmaba. Ahora las etiquetas se traducen a su valor y una opción
+  desconocida se rechaza con la lista de válidas.
+- El panel de clarificaciones moría al abrirse (`escaparHtml` no está
+  definido), la activación fallaba por un `sdd.update` registrado dos veces y
+  «Aplicar respuestas» solo enviaba la primera: ahora las encola todas y cierra
+  cuando terminan.
+- `scripts/verificar_vsix.py` daba por roto un `.vsix` correcto: `vsce`
+  empaqueta `readme.md` en minúsculas y el verificador exigía `README.md`, así
+  que siempre reportaba «falta extension/README.md» y «sobra
+  extension/readme.md». Ahora compara sin distinguir mayúsculas, que es como lo
+  hace el editor al instalar.
 - Las píldoras del panel que traen un hueco (`enrich «idea»`) ya no mandan el
   hueco literal como argumento: piden el dato con el mismo cuadro de texto que
   la paleta y después ejecutan la orden completa, con los flags que traía.
@@ -588,7 +626,8 @@ verificado, con gates humanos y estado recuperable.
   afectados.
 - Cada fase de testing se ejecuta en una sola invocación del runner.
 
-[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.2.1...HEAD
+[No publicado]: https://github.com/kos0-CoL/sdd-visual-toolkit/compare/v0.2.5...HEAD
+[0.2.5]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.5
 [0.2.1]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.1
 [0.2.0]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.2.0
 [0.1.6]: https://github.com/kos0-CoL/sdd-visual-toolkit/releases/tag/v0.1.6

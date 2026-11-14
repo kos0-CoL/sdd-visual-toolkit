@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import pathlib
 
 from cli.commands import enrich as mod_enrich
 from cli.commands import specify as mod_specify
 from core.clarify import (
+    OMITIDA,
     PENDIENTE,
     ClarifyError,
+    Opcion,
     consolidar,
     detectar,
     pendientes,
+    preguntas_para_panel,
     responder,
 )
 from core.spec import Spec, SpecError
@@ -139,7 +144,10 @@ def cmd_clarify_answer(args) -> int:
         print(f"⛔ {error}")
         return 1
     codigo = 0
-    for pid, respuesta in args.answer or []:
+    for entrada in args.answer or []:
+        pid = entrada[0]
+        respuestas = entrada[1:]
+        respuesta = respuestas[0] if len(respuestas) == 1 else respuestas
         if _aplicar_respuesta(raiz, spec, preguntas, historial, pid, respuesta):
             codigo = 1
     for pid in args.skip or []:
@@ -165,16 +173,40 @@ def _mostrar_esencial(p) -> None:
         print(f"   ↳ {p.contexto}")
     if p.tipo == "opciones" and p.opciones:
         for n, op in enumerate(p.opciones, 1):
-            marca_recomendada = " ✓ (recomendado)" if n == 1 else ""
-            print(f"   {n}. {op}{marca_recomendada}")
+            etiqueta = op.etiqueta if isinstance(op, Opcion) else str(op)
+            op_rec = op if isinstance(op, Opcion) else None
+            marca_recomendada = " ✓ (recomendado)" if (op_rec and op_rec.recomendada) else ""
+            print(f"   {n}. {etiqueta}{marca_recomendada}")
         print("   (número, texto libre, o 's' para omitir)")
     else:
         print("   (texto libre, o 's' para omitir)")
 
 
+def _mostrar_todas_preguntas(preguntas: list) -> None:
+    """Muestra todas las preguntas pendientes con sus opciones numeradas."""
+    print(f"\n🔍 Preguntas pendientes — {len(preguntas)} pregunta(s):")
+    print("=" * 60)
+    for i, p in enumerate(preguntas, 1):
+        marca = {"pendiente": "○", "respondida": "✓", "omitida": "—"}[p.estado]
+        print(f"\n{i}. {marca} {p.id} [{p.kind}] {p.texto}")
+        if p.contexto:
+            print(f"   ↳ {p.contexto}")
+        if p.tipo == "opciones" and p.opciones:
+            for n, op in enumerate(p.opciones, 1):
+                etiqueta = op.etiqueta if isinstance(op, Opcion) else str(op)
+                op_rec = op if isinstance(op, Opcion) else None
+                marca_rec = " ✓ (recomendado)" if (op_rec and op_rec.recomendada) else ""
+                print(f"      {n}. {etiqueta}{marca_rec}")
+            print("      → responde con el número, texto libre, o 's' para omitir")
+        else:
+            print("      → responde con texto libre, o 's' para omitir")
+    print("=" * 60)
+
+
 def cmd_clarify_interactivo(args) -> int:
-    """Modo visual por defecto: 3-7 preguntas prioritarias, múltiple choice
-    con opción recomendada (primera). El humano elige qué aclarar."""
+    """Modo visual: muestra TODAS las preguntas pendientes sin límite,
+    con múltiple choice numerado (1, 2, 3…) y opción recomendada (primera).
+    El humano responde una por una en el mismo chat."""
     raiz = _raiz(args)
     try:
         spec = mod_specify._cargar_spec(raiz, args.texto)
@@ -185,16 +217,39 @@ def cmd_clarify_interactivo(args) -> int:
         print(f"⛔ {error}")
         return 1
 
-    esenciales = [p for p in preguntas if p.esencial and p.estado == PENDIENTE][:7]
-    if not esenciales:
-        print(f"🟢 No hay preguntas esenciales pendientes para {args.texto}.")
+    pendientes = [p for p in preguntas if p.estado == PENDIENTE]
+    if not pendientes:
+        print(f"🟢 No hay preguntas pendientes para {args.texto}.")
         return cmd_clarify_gate_ns(raiz, spec.spec_id, esencial=True)
 
-    print(f"🔍 Preguntas prioritarias — {len(esenciales)} pregunta(s):")
-    for pregunta in esenciales:
-        _mostrar_esencial(pregunta)
+    # Siempre escribir la señal para que cualquier extensión de IDE
+    # (VS Code, Trae, Cursor, Windsurf) pueda vigilar el archivo y abrir
+    # el panel webview automáticamente.
+    raiz_path = raiz if isinstance(raiz, pathlib.Path) else pathlib.Path(raiz)
+    señal = raiz_path / store.SPECIFY_DIR / ".clarify-panel-request.json"
+    señal.parent.mkdir(parents=True, exist_ok=True)
+    señal.write_text(
+        json.dumps({"spec_id": args.texto, "action": "abrir_panel"},
+                   ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+    # Si corre dentro de una terminal integrada de VS Code/Trae/Cursor
+    # (VSCODE_PID), no imprimir texto plano ni bloquear con input():
+    # solo escribir la señal y salir en silencio. La extensión del IDE
+    # vigila el archivo y abre el panel webview automáticamente.
+    if os.environ.get("VSCODE_PID"):
+        return 0
+
+    # Mostrar TODAS las preguntas de una vez (sin límite de 7)
+    _mostrar_todas_preguntas(pendientes)
+
+    # Responder una por una
+    for pregunta in pendientes:
+        if pregunta.estado != PENDIENTE:
+            continue
         try:
-            entrada = input("   > ").strip()
+            entrada = input(f"\n   Respuesta para {pregunta.id} > ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\n— interrumpido; lo respondido quedó guardado")
             break
@@ -205,14 +260,49 @@ def cmd_clarify_interactivo(args) -> int:
                  "cambio": f"{pregunta.id}: omitida explícitamente por el humano"}
             )
             _persistir(raiz, spec, preguntas, historial)
+            print(f"   — {pregunta.id} omitida")
             continue
         if _aplicar_respuesta(raiz, spec, preguntas, historial,
                               pregunta.id, entrada):
             continue
+        print(f"   ✓ {pregunta.id} respondida")
 
+    # Re-evaluar qué queda pendiente
+    restantes = [p for p in preguntas if p.estado == PENDIENTE]
+    if not restantes:
+        print(f"\n🟢 Todas las preguntas de {args.texto} han sido respondidas u omitidas.")
+        return cmd_clarify_gate_ns(raiz, spec.spec_id, esencial=True)
+
+    print(f"\n⏳ Quedan {len(restantes)} pregunta(s) pendiente(s).")
+    print(f"   Puedes volver a ejecutar: clarify {args.texto}")
     print(f"\n¿Qué desea hacer ahora?")
-    print(f"[ clarify {args.texto} --gate ]  [ clarify {args.texto} --list ]")
+    print(f"[ clarify {args.texto} ]  [ clarify {args.texto} --list ]")
     print(f"[ specify --show {args.texto} ]  [ plan {args.texto} ]")
+    return 0
+
+
+def cmd_clarify_panel(args) -> int:
+    """Abre el panel webview visual de clarificaciones para la SPEC."""
+    raiz = _raiz(args)
+    try:
+        spec = mod_specify._cargar_spec(raiz, args.texto)
+        preguntas, historial = _asegurar_preguntas(
+            raiz, spec, mod_enrich._registro_req(raiz)
+        )
+    except (ClarifyError, SpecError, store.StoreError) as error:
+        print(f"⛔ {error}")
+        return 1
+
+    pendientes = [p for p in preguntas if p.estado == PENDIENTE]
+    if not pendientes:
+        print(f"🟢 No hay preguntas pendientes para {args.texto}.")
+        return cmd_clarify_gate_ns(raiz, spec.spec_id, esencial=True)
+
+    # Exportar el estado para que el panel webview se abra desde VS Code
+    payload = preguntas_para_panel(pendientes)
+    print(json.dumps({"comando": "abrir_panel_clarificaciones",
+                      "spec_id": spec.spec_id,
+                      "preguntas": payload}))
     return 0
 
 
@@ -264,6 +354,8 @@ def cmd_clarify_gate_ns(raiz, spec_id: str, esencial: bool = False) -> int:
 def despachar(args) -> int:
     if args.list:
         return cmd_clarify_list(args)
+    if getattr(args, "panel", False):
+        return cmd_clarify_panel(args)
     if getattr(args, "gate", False):
         return cmd_clarify_gate_ns(_raiz(args), args.texto, esencial=False)
     if getattr(args, "answer", None) or getattr(args, "skip", None):

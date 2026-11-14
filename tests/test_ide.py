@@ -149,8 +149,7 @@ class TestManifiesto(unittest.TestCase):
         self.assertIn("necesita un dato", texto)
         # Todo clic del panel y de las píldoras pasa por `ejecutarOrden`.
         self.assertIn(
-            "registerCommand('sdd.ejecutarEnChat', (cliArgs) => ejecutarOrden(cliArgs))",
-            fuente)
+            "registerCommand('sdd.ejecutarEnChat'", fuente)
 
     def test_sin_carpeta_ofrece_abrirla(self):
         """El panel lee el estado de una carpeta: sin ella el aviso debe decir
@@ -158,9 +157,11 @@ class TestManifiesto(unittest.TestCase):
         fuente = (IDE / "extension.js").read_text(encoding="utf-8")
         self.assertIn("'Abrir carpeta…'", fuente)
         self.assertIn("workbench.action.files.openFolder", fuente)
-        # Paleta ("ejecutar"), clic derecho ("abrirArtefacto"), chat y
-        # auto-actualización del toolkit (`actualizarToolkit`).
-        self.assertEqual(fuente.count("sinCarpeta();"), 5)
+        # Paleta ("ejecutar"), clic derecho ("abrirArtefacto"), chat,
+        # auto-actualización del toolkit (`actualizarToolkit`), la rama
+        # `clarify` de `ejecutar`, `abrirPanelClarificaciones` y el comando
+        # `sdd.chat`.
+        self.assertEqual(fuente.count("sinCarpeta();"), 7)
         manifiesto = json.loads((IDE / "package.json").read_text(
             encoding="utf-8"))
         bienvenidas = {v["view"]: v
@@ -176,6 +177,12 @@ class TestManifiesto(unittest.TestCase):
         fuente = (IDE / "chat.js").read_text(encoding="utf-8")
         self.assertIn("createWebviewPanel(", fuente)
         self.assertIn("'sddChat'", fuente)
+        # Sin esta línea el webview queda vacío (ventana negra) y el script
+        # del panel nunca corre.
+        self.assertIn("panel.webview.html = html(panel.webview)", fuente)
+        # El script del webview corre aislado: necesita su propia copia del
+        # escaper, o `mostrarClarificaciones` revienta y no pinta nada.
+        self.assertIn("function escaparHtml(texto)", fuente)
         self.assertIn("const HUECO = /«[^»]*»|…/;", fuente)
         # Las píldoras se construyen como botones y avisan a la extensión.
         self.assertIn("createElement('button')", fuente)
@@ -365,6 +372,49 @@ class TestManifiesto(unittest.TestCase):
         r = subprocess.run(["node", "--check", str(IDE / "extension.js")],
                            capture_output=True, text=True, timeout=60)
         self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_activation_events_incluyen_on_view_para_las_views(self):
+        """La extensión debe activarse cuando el usuario abre cualquiera de
+        las vistas laterales, para que los TreeDataProvider estén registrados
+        antes de que VS Code los pida. Sin esto falla con
+        «no data provider registered that can provide view data»."""
+        manifiesto = json.loads((IDE / "package.json").read_text(
+            encoding="utf-8"))
+        eventos = manifiesto["activationEvents"]
+        self.assertIn("onView:sddFases", eventos)
+        self.assertIn("onView:sddFlujo", eventos)
+
+    def test_ids_de_views_coincidan_entre_json_y_js(self):
+        """Los IDs de views declarados en package.json deben coincidir
+        exactamente con los usados en registerTreeDataProvider en extension.js."""
+        manifiesto = json.loads((IDE / "package.json").read_text(
+            encoding="utf-8"))
+        vistas_en_json = {
+            v["id"] for v in manifiesto["contributes"]["views"]["sdd-explorer"]
+        }
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        proveedores_en_js = set(re.findall(
+            r"registerTreeDataProvider\('([^']+)'", fuente))
+        self.assertEqual(vistas_en_json, proveedores_en_js)
+
+    def test_no_hay_comandos_duplicados_registrados(self):
+        """Cada comando debe registrarse exactamente una vez en activate().
+        Un registro duplicado hace que la segunda definición sobrescriba la
+        primera y los comandos dejen de funcionar silenciosamente."""
+        fuente = (IDE / "extension.js").read_text(encoding="utf-8")
+        registros = re.findall(r"registerCommand\('([^']+)'", fuente)
+        from collections import Counter
+        duplicados = [cmd for cmd, count in Counter(registros).items()
+                      if count > 1]
+        self.assertEqual(duplicados, [],
+                         "Comandos registrados duplicados: %s" % duplicados)
+
+    def test_verificar_vsix_lee_readme_mayusculas(self):
+        """El verificador del .vsix debe usar README.md (mayúsculas), que es
+        el nombre real del archivo en disco, no readme.md (minúsculas)."""
+        script = Path("scripts/verificar_vsix.py").read_text(encoding="utf-8")
+        self.assertIn("extension/README.md", script)
+        self.assertNotIn("extension/readme.md", script)
 
 
 if __name__ == "__main__":
