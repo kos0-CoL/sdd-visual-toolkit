@@ -45,9 +45,9 @@ const COMMANDS = [
   { id: 'sdd.restricciones', cli: 'restricciones', prompt: 'SPEC-ID o TASK-ID (vacío = activa)', opcional: true },
   { id: 'sdd.diff', cli: 'diff', prompt: 'TASK-ID' },
   { id: 'sdd.export', cli: 'export' },
-  /* sdd.update NO va en COMMANDS: se registra manualmente más abajo en activate()
-   * para evitar el error "command 'sdd.update' already exists" que impide
-   * que la extensión se active y por tanto que abra el panel visual. */
+  /* El comando de actualizar no va en COMMANDS: se registra una sola vez más
+   * abajo en activate(). Al declararlo también acá, `registerCommand` lanzaba
+   * «command 'sdd.update' already exists» y abortaba la activación. */
 ];
 
 function cfg() {
@@ -1062,8 +1062,8 @@ function activate(contexto) {
   contexto.subscriptions.push(
     vscode.window.registerTreeDataProvider('sddFases', vista),
     vscode.window.registerTreeDataProvider('sddFlujo', flujo),
-    /* `sdd.update` ya lo registra COMMANDS.forEach: repetirlo aquí lanzaba
-     * «command 'sdd.update' already exists» y abortaba activate(). */
+    /* Único registro de la actualización (COMMANDS no lo incluye): repetirlo
+     * lanzaba «command ... already exists» y abortaba activate(). */
     vscode.commands.registerCommand('sdd.actualizar', actualizarToolkit)
   );
   /* Panel de estado: fase actual + siguiente recomendado. */
